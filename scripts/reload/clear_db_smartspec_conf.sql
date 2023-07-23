@@ -1,0 +1,1 @@
+TRUNCATE TABLE simcattle.smartspec_conf;
