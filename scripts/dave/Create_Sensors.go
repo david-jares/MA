@@ -12,6 +12,14 @@ import (
 	"strings"
 )
 
+// Setttings
+const sensorMinLat float64 = 0.0
+const sensorMaxLat float64 = 100.0
+const sensorMinLon float64 = 12.0
+const sensorMaxLon float64 = 100.0
+
+//
+
 type Sensor struct {
 	ID             int       `json:"id"`
 	Description    string    `json:"description"`
@@ -22,6 +30,8 @@ type Sensor struct {
 	Coordinates    []float64 `json:"coordinates"`
 	Neighbors      []int     `json:"neighbors"`
 }
+
+var nextSensorID = 1
 
 func PrintSensors(sensorCollection []*Sensor) {
 
@@ -45,19 +55,10 @@ func PrintSensors(sensorCollection []*Sensor) {
 			}
 		}
 		neighborStr := "[ " + strings.Join(neighborStrs, " ") + " ]"
-		fmt.Printf("Sensor %-*d has lat %f and lon %f and nbs %s \n", len(strconv.Itoa(nextSensorID-1)), sensor.ID, sensor.Latitude, sensor.Longitude, neighborStr)
+		fmt.Printf("Sensor: %-*d   lat: %f   lon: %f   nbs: %s \n", len(strconv.Itoa(nextSensorID-1)), sensor.ID, sensor.Latitude, sensor.Longitude, neighborStr)
 	}
 
 }
-
-var nextSensorID = 1
-
-// type Sensor struct {
-// 	ID        int
-// 	X         float64
-// 	Y         float64
-// 	Neighbors []int
-// }
 
 type Direction string
 
@@ -133,7 +134,7 @@ func FindAndAssignNeighbors(data []*Sensor) map[int]map[Direction]*Sensor {
 
 		sensor.Neighbors = neighborValues
 		// sensor.Latitude = 23.0
-		fmt.Println(sensor.Neighbors)
+		// fmt.Println(sensor.Neighbors)
 	}
 
 	return result
@@ -161,6 +162,8 @@ func WriteSensorCollectionToFile(sensorCollection []Sensor, filepath string) err
 
 func main() {
 	// Open the CSV file
+	fmt.Println("<<<<<<<<<<<< Creating Sensors... >>>>>>>>>>>>>")
+
 	file, err := os.Open("/root/2022-ma-paul-pongratz/code/data/cattle-gps-formatted.csv")
 	if err != nil {
 		panic(err)
@@ -193,12 +196,17 @@ func main() {
 	sensorCollection := []*Sensor{}
 	uniqueSensors := make(map[string]bool)
 	for _, record := range records[1:] {
-		id := nextSensorID
 		longitude, _ := strconv.ParseFloat(record[2], 64)
 		latitude, _ := strconv.ParseFloat(record[3], 64)
 
+		if latitude < sensorMinLat || latitude > sensorMaxLat || longitude < sensorMinLon || longitude > sensorMaxLon {
+			continue
+		}
+
+		id := nextSensorID
 		key := fmt.Sprintf("%f,%f", latitude, longitude)
 		if _, ok := uniqueSensors[key]; !ok {
+
 			sensorCollection = append(sensorCollection, &Sensor{
 				ID:             id,
 				Description:    "Cattle GPS Sensor for the Field (exernal test data from simon)",
@@ -213,7 +221,9 @@ func main() {
 			nextSensorID++
 		}
 	}
-
+	// sensorCollection = FilterSensors(sensorCollection, 50.0, 51.0, 12.0, 13.0)
+	// filteredSensors := FilterSensors(sensorCollection, 48.0, 100.0, 12, 100.0)
+	// filteredSensors := sensorCollection
 	FindAndAssignNeighbors(sensorCollection)
 	PrintSensors(sensorCollection)
 

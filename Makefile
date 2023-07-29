@@ -60,13 +60,13 @@ reload-db-config:
 
 
 run-my-script:
-# go run ./scripts/dave/Testprint.go
-# go run ./scripts/dave/Testprint.go
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/read_cattlegps.go"
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/reformat_cattlegps.go"
+	go run ./scripts/dave/Testprint.go
+	go run ./scripts/dave/Testprint.go
+	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/read_cattlegps.go"
+	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/reformat_cattlegps.go"
 # go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Another.go"
 	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_Sensors.go"
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Countandprint.go",
+# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Countandprint.go"
 
 # .PHONY: command1 command2 command3
 
