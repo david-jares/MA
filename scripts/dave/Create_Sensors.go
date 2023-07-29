@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"math"
 	"os"
+	"sort"
 	"strconv"
+	"strings"
 )
 
 type Sensor struct {
@@ -19,6 +21,33 @@ type Sensor struct {
 	GeoCoordinates []float64 `json:"geoCoordinates"`
 	Coordinates    []float64 `json:"coordinates"`
 	Neighbors      []int     `json:"neighbors"`
+}
+
+func PrintSensors(sensorCollection []*Sensor) {
+
+	maxDigits := 0
+	for _, sensor := range sensorCollection {
+		idStr := strconv.Itoa(sensor.ID)
+		if len(idStr) > maxDigits {
+			maxDigits = len(idStr)
+		}
+	}
+	maxDigits++
+
+	// Print the sensors with formatted neighbor IDs
+	for _, sensor := range sensorCollection {
+		neighborStrs := make([]string, 8)
+		for i := 0; i < 8; i++ {
+			if i < len(sensor.Neighbors) {
+				neighborStrs[i] = fmt.Sprintf("%-*d", maxDigits, sensor.Neighbors[i])
+			} else {
+				neighborStrs[i] = strings.Repeat(" ", maxDigits)
+			}
+		}
+		neighborStr := "[ " + strings.Join(neighborStrs, " ") + " ]"
+		fmt.Printf("Sensor %-*d has lat %f and lon %f and nbs %s \n", len(strconv.Itoa(nextSensorID-1)), sensor.ID, sensor.Latitude, sensor.Longitude, neighborStr)
+	}
+
 }
 
 var nextSensorID = 1
@@ -43,7 +72,7 @@ const (
 	BottomRight Direction = "BottomRight"
 )
 
-func FindNeighbors(data []*Sensor) map[int]map[Direction]*Sensor {
+func FindAndAssignNeighbors(data []*Sensor) map[int]map[Direction]*Sensor {
 	result := make(map[int]map[Direction]*Sensor)
 
 	for _, sensor := range data {
@@ -97,6 +126,11 @@ func FindNeighbors(data []*Sensor) map[int]map[Direction]*Sensor {
 		for _, neighbor := range neighbors {
 			neighborValues = append(neighborValues, neighbor.ID)
 		}
+		// Sort the neighbor values in ascending order
+		sort.Slice(neighborValues, func(i, j int) bool {
+			return neighborValues[i] < neighborValues[j]
+		})
+
 		sensor.Neighbors = neighborValues
 		// sensor.Latitude = 23.0
 		fmt.Println(sensor.Neighbors)
@@ -180,13 +214,8 @@ func main() {
 		}
 	}
 
-	FindNeighbors(sensorCollection)
-	// Apply a function to each member of the collection
-	for _, sensor := range sensorCollection {
-
-		fmt.Printf("Sensor %d has lat %f and lon %f and nbs %s \n", sensor.ID, sensor.Latitude, sensor.Longitude, sensor.Neighbors)
-		// Apply your function here
-	}
+	FindAndAssignNeighbors(sensorCollection)
+	PrintSensors(sensorCollection)
 
 	// Write the sensorCollection to a file
 	sensorSlice := make([]Sensor, len(sensorCollection))

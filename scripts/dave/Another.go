@@ -2,14 +2,17 @@ package main
 
 import (
 	"encoding/csv"
+
 	"fmt"
 	"os"
 	"sort"
 )
 
 func main() {
+	fmt.Println("Counting unique values...")
 	countUniqueValues()
 }
+
 func countUniqueValues() {
 	// Open the input file
 	file, err := os.Open("/root/2022-ma-paul-pongratz/code/data/cattle-gps-formatted.csv")

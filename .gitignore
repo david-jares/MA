@@ -3,3 +3,5 @@
 *.png
 *.json
 *.conf
+
+*tndr.go

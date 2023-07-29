@@ -49,7 +49,7 @@ var measurementsMapLatitude = make(map[float64]bool)
 
 func main() {
 	// Open the CSV file
-	file, err := os.Open("^/root/2022-ma-paul-pongratz/code/data/cattle-gps.csv")
+	file, err := os.Open("/root/2022-ma-paul-pongratz/code/data/cattle-gps.csv")
 	if err != nil {
 		fmt.Println("Error:", err)
 		return

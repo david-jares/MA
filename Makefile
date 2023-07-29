@@ -21,7 +21,7 @@ restart: stop up
 state:
 	docker compose ps
 
-## Rebuild all containers
+## Rebuild all containers 
 rebuild: stop
 	docker compose pull
 	docker compose build --pull
@@ -59,23 +59,25 @@ reload-db-config:
 		
 
 
-.PHONY: command1 command2 command3
+run-my-script:
+# go run ./scripts/dave/Testprint.go
+# go run ./scripts/dave/Testprint.go
+# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/read_cattlegps.go"
+# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/reformat_cattlegps.go"
+# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Another.go"
+	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_Sensors.go"
+# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Countandprint.go",
 
-command1:
-	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/read_cattlegps.go"
-	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/reformat_cattlegps.go"
-	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/count_and_print_reformatted_unique_gps_values.go",
-	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_Sensors.go",
+# .PHONY: command1 command2 command3
 
-command2:
-	go run script3.go
-	go run script4.go
+# command1:
+# # go run "/root/2022-ma-paul-pongratz/code/scripts/dave/read_cattlegps.go"
+# # go run "/root/2022-ma-paul-pongratz/code/scripts/dave/reformat_cattlegps.go"
+# # go run "/root/2022-ma-paul-pongratz/code/scripts/dave/count_and_print_reformatted_unique_gps_values.go",
+# 	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Testprint.go",
+# # go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_Sensors.go",
 
-command3:
-	go run script5.go
-	go run script6.go
 
-	# 	"/root/2022-ma-paul-pongratz/code/scripts/dave/read_cattlegps.go",
-	# "/root/2022-ma-paul-pongratz/code/scripts/dave/reformat_cattlegps.go",
-	# "/root/2022-ma-paul-pongratz/code/scripts/dave/count_and_print_reformatted_unique_gps_values.go",
-	# "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_Sensors.go",
+# So David die E-Mail nur an dich.
+# Die CSV mit den Koordinaten ist etwas verwirrend formatiert. Latitude ist immer etwas mit 480.xxxxxxxx und Longtitude ist zweistellig mit 12.xxxxxxx
+# Kirchweihdach müsste das sein.
