@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math"
 	"os"
 	"sort"
 	"strconv"
@@ -21,14 +20,14 @@ const sensorMaxLon float64 = 13.0
 //
 
 type Sensor struct {
-	ID                 int       `json:"id"`
-	Description        string    `json:"description"`
-	Capacity           int       `json:"capacity"`
-	Longitude          float64   `json:"longitude"`
-	Latitude           float64   `json:"latitude"`
-	GeoCoordinates     []float64 `json:"geoCoordinates"`
-	LogicalCoordinates []int     `json:"logicalCoordinates"`
-	Neighbors          []int     `json:"neighbors"`
+	ID             int       `json:"id"`
+	Description    string    `json:"description"`
+	Capacity       int       `json:"capacity"`
+	Longitude      float64   `json:"longitude"`
+	Latitude       float64   `json:"latitude"`
+	GeoCoordinates []float64 `json:"geoCoordinates"`
+	Coordinates    []int     `json:"coordinates"`
+	Neighbors      []int     `json:"neighbors"`
 }
 
 var nextSensorID = 1
@@ -55,7 +54,7 @@ func PrintSensors(sensorCollection []*Sensor) {
 			}
 		}
 		neighborStr := "[ " + strings.Join(neighborStrs, " ") + " ]"
-		fmt.Printf("Sensor: %-*d   lat: %f   lon: %f   nbs: %s logcoord: %v\n", len(strconv.Itoa(nextSensorID-1)), sensor.ID, sensor.Latitude, sensor.Longitude, neighborStr, sensor.LogicalCoordinates)
+		fmt.Printf("Sensor: %-*d   lat: %f   lon: %f   nbs: %s coords: %v\n", len(strconv.Itoa(nextSensorID-1)), sensor.ID, sensor.Latitude, sensor.Longitude, neighborStr, sensor.Coordinates)
 	}
 
 }
@@ -73,169 +72,158 @@ const (
 	BottomRight Direction = "BottomRight"
 )
 
-func FindAndAssignNeighbors(data []*Sensor) map[int]map[Direction]*Sensor {
-	result := make(map[int]map[Direction]*Sensor)
-
-	for _, sensor := range data {
-		neighbors := make(map[Direction]*Sensor)
-		directionDistances := make(map[Direction]float64)
-
-		for _, other := range data {
-			if other.ID == sensor.ID {
-				continue
-			}
-
-			dx := other.Latitude - sensor.Latitude
-			dy := other.Longitude - sensor.Longitude
-
-			var direction Direction
-			if dx == 0 {
-				if dy > 0 {
-					direction = Above
-				} else {
-					direction = Below
-				}
-			} else if dy == 0 {
-				if dx > 0 {
-					direction = Right
-				} else {
-					direction = Left
-				}
-			} else if dx > 0 {
-				if dy > 0 {
-					direction = TopRight
-				} else {
-					direction = BottomRight
-				}
-			} else if dx < 0 {
-				if dy > 0 {
-					direction = TopLeft
-				} else {
-					direction = BottomLeft
-				}
-			}
-
-			distance := math.Sqrt(dx*dx + dy*dy)
-
-			if prevDistance, exists := directionDistances[direction]; !exists || distance < prevDistance {
-				directionDistances[direction] = distance
-				neighbors[direction] = other
-			}
+func containsInt(slice []int, value int) bool {
+	for _, v := range slice {
+		if v == value {
+			return true
 		}
-		result[sensor.ID] = neighbors
-		neighborValues := make([]int, 0, len(neighbors))
-		for _, neighbor := range neighbors {
-			neighborValues = append(neighborValues, neighbor.ID)
-		}
-		// Sort the neighbor values in ascending order
-		sort.Slice(neighborValues, func(i, j int) bool {
-			return neighborValues[i] < neighborValues[j]
-		})
-
-		sensor.Neighbors = neighborValues
-		// sensor.Latitude = 23.0
-		// fmt.Println(sensor.Neighbors)
 	}
-
-	return result
+	return false
+}
+func AbsInt(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+func SortSensorsByYX(sensorCollection []*Sensor) {
+	sort.Slice(sensorCollection, func(i, j int) bool {
+		if sensorCollection[i].Coordinates[1] == sensorCollection[j].Coordinates[1] {
+			return sensorCollection[i].Coordinates[0] < sensorCollection[j].Coordinates[0]
+		}
+		return sensorCollection[i].Coordinates[1] < sensorCollection[j].Coordinates[1]
+	})
+}
+func SortSensorsByXY(sensorCollection []*Sensor) {
+	sort.Slice(sensorCollection, func(i, j int) bool {
+		if sensorCollection[i].Coordinates[0] == sensorCollection[j].Coordinates[0] {
+			return sensorCollection[i].Coordinates[1] < sensorCollection[j].Coordinates[1]
+		}
+		return sensorCollection[i].Coordinates[0] < sensorCollection[j].Coordinates[0]
+	})
 }
 
-// func AssignLogicalCoordinates(sensorCollection []*Sensor) {
-// 	// Sort the sensors by latitude and longitude
-// 	sort.Slice(sensorCollection, func(i, j int) bool {
-// 		if sensorCollection[i].Latitude == sensorCollection[j].Latitude {
-// 			return sensorCollection[i].Longitude < sensorCollection[j].Longitude
-// 		}
-// 		return sensorCollection[i].Latitude < sensorCollection[j].Latitude
-// 	})
+// func FindAndAssignNeighbors(data []*Sensor) map[int]map[Direction]*Sensor {
+// 	result := make(map[int]map[Direction]*Sensor)
 
-//		// Assign logical coordinates to each sensor
-//		minLat := sensorCollection[0].Latitude
-//		minLon := sensorCollection[0].Longitude
-//		for i, sensor := range sensorCollection {
-//			sensor.LogicalCoordinates[2] = 1
-//			if sensor.Latitude == minLat {
-//				sensor.LogicalCoordinates[1] = float64(i)
-//			} else {
-//				sensor.LogicalCoordinates[1] = float64(i) - sensorCollection[0].LogicalCoordinates[1]
-//			}
-//			if sensor.Longitude == minLon {
-//				sensor.LogicalCoordinates[0] = 0
-//			} else {
-//				sensor.LogicalCoordinates[0] = math.Round((sensor.Longitude - minLon) / (sensorCollection[len(sensorCollection)-1].Longitude - minLon) * float64(len(sensorCollection)-1))
-//			}
-//		}
-//	}
-// func AssignLogicalCoordinates(sensorCollection []*Sensor) {
-// 	// Sort the sensors by latitude and longitude
-// 	sort.Slice(sensorCollection, func(i, j int) bool {
-// 		if sensorCollection[i].Latitude == sensorCollection[j].Latitude {
-// 			return sensorCollection[i].Longitude < sensorCollection[j].Longitude
-// 		}
-// 		return sensorCollection[i].Latitude < sensorCollection[j].Latitude
-// 	})
+// 	for _, sensor := range data {
+// 		neighbors := make(map[Direction]*Sensor)
+// 		directionDistances := make(map[Direction]float64)
 
-// 	// Assign logical coordinates to each sensor
-// 	minLat := sensorCollection[0].Latitude
-// 	minLon := sensorCollection[0].Longitude
-// 	for _, sensor := range sensorCollection {
-// 		sensor.LogicalCoordinates[2] = 1
-// 		if sensor.Latitude == minLat {
-// 			sensor.LogicalCoordinates[1] = 0
-// 		} else {
-// 			sensor.LogicalCoordinates[1] = int(math.Round((float64(sensor.Latitude) - minLat) / (sensorCollection[len(sensorCollection)-1].Latitude - minLat) * float64(len(sensorCollection)-1)))
-// 		}
-// 		if sensor.Longitude == minLon {
-// 			sensor.LogicalCoordinates[0] = 0
-// 		} else {
-// 			// Find the sensor with the smallest x-coordinate
-// 			var minSensor *Sensor
-// 			for _, s := range sensorCollection {
-// 				if minSensor == nil || s.Longitude < minSensor.Longitude {
-// 					minSensor = s
+// 		for _, other := range data {
+// 			if other.ID == sensor.ID {
+// 				continue
+// 			}
+
+// 			dx := other.Latitude - sensor.Latitude
+// 			dy := other.Longitude - sensor.Longitude
+
+// 			var direction Direction
+// 			if dx == 0 {
+// 				if dy > 0 {
+// 					direction = Above
+// 				} else {
+// 					direction = Below
+// 				}
+// 			} else if dy == 0 {
+// 				if dx > 0 {
+// 					direction = Right
+// 				} else {
+// 					direction = Left
+// 				}
+// 			} else if dx > 0 {
+// 				if dy > 0 {
+// 					direction = TopRight
+// 				} else {
+// 					direction = BottomRight
+// 				}
+// 			} else if dx < 0 {
+// 				if dy > 0 {
+// 					direction = TopLeft
+// 				} else {
+// 					direction = BottomLeft
 // 				}
 // 			}
-// 			// Calculate the x-coordinate based on proximity to the sensor with the smallest x-coordinate
-// 			sensor.LogicalCoordinates[0] = int(math.Round((float64(sensor.Longitude) - minSensor.Longitude) / (sensorCollection[len(sensorCollection)-1].Longitude - minSensor.Longitude) * float64(len(sensorCollection)-1)))
+
+// 			distance := math.Sqrt(dx*dx + dy*dy)
+
+// 			if prevDistance, exists := directionDistances[direction]; !exists || distance < prevDistance {
+// 				directionDistances[direction] = distance
+// 				neighbors[direction] = other
+// 			}
 // 		}
+// 		result[sensor.ID] = neighbors
+// 		neighborValues := make([]int, 0, len(neighbors))
+// 		for _, neighbor := range neighbors {
+// 			neighborValues = append(neighborValues, neighbor.ID)
+// 		}
+// 		// Sort the neighbor values in ascending order
+// 		sort.Slice(neighborValues, func(i, j int) bool {
+// 			return neighborValues[i] < neighborValues[j]
+// 		})
+
+// 		sensor.Neighbors = neighborValues
+// 		// sensor.Latitude = 23.0
+// 		// fmt.Println(sensor.Neighbors)
 // 	}
-// }
 
-// func AssignLogicalCoordinates(sensorCollection []*Sensor) {
-// 	// Sort the sensors by latitude and longitude
-// 	sort.Slice(sensorCollection, func(i, j int) bool {
-// 		if sensorCollection[i].Latitude == sensorCollection[j].Latitude {
-// 			return sensorCollection[i].Longitude < sensorCollection[j].Longitude
-// 		}
-// 		return sensorCollection[i].Latitude < sensorCollection[j].Latitude
-// 	})
-
-//		// Assign logical coordinates to each sensor
-//		minLat := sensorCollection[0].Latitude
-//		minLon := sensorCollection[0].Longitude
-//		for _, sensor := range sensorCollection {
-//			sensor.LogicalCoordinates[2] = 1
-//			if sensor.Latitude == minLat {
-//				sensor.LogicalCoordinates[1] = 0
-//			} else {
-//				sensor.LogicalCoordinates[1] = int(math.Round((float64(sensor.Latitude) - minLat) / (sensorCollection[len(sensorCollection)-1].Latitude - minLat) * float64(len(sensorCollection)-1)))
-//			}
-//			if sensor.Longitude == minLon {
-//				sensor.LogicalCoordinates[0] = 0
-//			} else {
-//				// Find the sensor with the smallest x-coordinate
-//				var minSensor *Sensor
-//				for _, s := range sensorCollection {
-//					if minSensor == nil || s.Longitude < minSensor.Longitude {
-//						minSensor = s
-//					}
-//				}
-//				// Calculate the x-coordinate based on proximity to the sensor with the smallest x-coordinate
-//				sensor.LogicalCoordinates[0] = int(math.Round((float64(sensor.Longitude) - minSensor.Longitude) / (sensorCollection[len(sensorCollection)-1].Longitude - minSensor.Longitude) * float64(len(sensorCollection)-1)))
-//			}
-//		}
+//		return result
 //	}
 
+// must be called after Assigning Logical Coordinates
+func FindAndAssignLogicalNeighbors(sensorCollection []*Sensor) {
+	// Sort the sensors by x-geocoordinate
+	sort.Slice(sensorCollection, func(i, j int) bool {
+		return sensorCollection[i].Coordinates[0] < sensorCollection[j].Coordinates[0]
+	})
+
+	// Find neighbors for each sensor
+	for i, sensor := range sensorCollection {
+
+		if len(sensor.Neighbors) == 8 {
+			continue
+		}
+
+		for j := i + 1; j < len(sensorCollection); j++ {
+			otherSensor := sensorCollection[j]
+
+			if AbsInt(sensor.Coordinates[0]-otherSensor.Coordinates[0]) <= 1 &&
+				AbsInt(sensor.Coordinates[1]-otherSensor.Coordinates[1]) <= 1 {
+
+				sensor.Neighbors = append(sensor.Neighbors, otherSensor.ID)
+				if !containsInt(otherSensor.Neighbors, sensor.ID) {
+					otherSensor.Neighbors = append(otherSensor.Neighbors, sensor.ID)
+				}
+			}
+			// otherSensor.Neighbors = append(otherSensor.Neighbors, sensor.ID)
+		}
+
+		// if for some circumstance we didnt find any neighbours, increase the radius
+		radius := 2
+		for len(sensor.Neighbors) == 0 && radius < 10 {
+			if len(sensor.Neighbors) == 0 {
+				// for j := i + 1; j < len(sensorCollection); j++ {
+				for j := 0; j < len(sensorCollection); j++ {
+					otherSensor := sensorCollection[j]
+					if otherSensor.ID == sensor.ID {
+						continue
+					}
+
+					if AbsInt(sensor.Coordinates[0]-otherSensor.Coordinates[0]) <= radius &&
+						AbsInt(sensor.Coordinates[1]-otherSensor.Coordinates[1]) <= radius {
+
+						sensor.Neighbors = append(sensor.Neighbors, otherSensor.ID)
+						if !containsInt(otherSensor.Neighbors, sensor.ID) {
+							otherSensor.Neighbors = append(otherSensor.Neighbors, sensor.ID)
+						}
+					}
+					// otherSensor.Neighbors = append(otherSensor.Neighbors, sensor.ID)
+				}
+			}
+			radius++
+		}
+	}
+}
 func AssignLogicalCoordinates(sensorCollection []*Sensor) {
 	// Sort the sensors by x-geocoordinate
 	sort.Slice(sensorCollection, func(i, j int) bool {
@@ -246,15 +234,15 @@ func AssignLogicalCoordinates(sensorCollection []*Sensor) {
 	sameValueCount := 0
 	for i, sensor := range sensorCollection {
 		if i == 0 {
-			sensor.LogicalCoordinates[0] = 0
+			sensor.Coordinates[0] = 0
 
 		} else {
 			if sensorCollection[i].GeoCoordinates[0] > sensorCollection[i-1].GeoCoordinates[0] {
-				sensor.LogicalCoordinates[0] = i - sameValueCount
+				sensor.Coordinates[0] = i - sameValueCount
 
 			} else {
 				sameValueCount++
-				sensor.LogicalCoordinates[0] = i - sameValueCount
+				sensor.Coordinates[0] = i - sameValueCount
 			}
 		}
 	}
@@ -268,22 +256,22 @@ func AssignLogicalCoordinates(sensorCollection []*Sensor) {
 	// Assign y-logicalcoordinates to each sensor
 	for i, sensor := range sensorCollection {
 		if i == 0 {
-			sensor.LogicalCoordinates[1] = 0
+			sensor.Coordinates[1] = 0
 
 		} else {
 			if sensorCollection[i].GeoCoordinates[1] > sensorCollection[i-1].GeoCoordinates[1] {
-				sensor.LogicalCoordinates[1] = i - sameValueCount
+				sensor.Coordinates[1] = i - sameValueCount
 
 			} else {
 				sameValueCount++
-				sensor.LogicalCoordinates[1] = i - sameValueCount
+				sensor.Coordinates[1] = i - sameValueCount
 			}
 		}
 	}
 
 	// Assign z-logicalcoordinates to each sensor
 	for _, sensor := range sensorCollection {
-		sensor.LogicalCoordinates[2] = 1
+		sensor.Coordinates[2] = 1
 	}
 
 	sort.Slice(sensorCollection, func(i, j int) bool {
@@ -306,11 +294,88 @@ func WriteSensorCollectionToFile(sensorCollection []Sensor, filepath string) err
 	return nil
 }
 
-// func AssignNeighbors(sensor *Sensor, neighborIDs []int) {
-// 	sensor.Neighbors = neighborIDs
-// }
+func ReassignSensorIDs(sensorCollection []*Sensor) {
+	for i, sensor := range sensorCollection {
+		sensor.ID = i + 1
+	}
+}
 
+//	func AssignNeighbors(sensor *Sensor, neighborIDs []int) {
+//		sensor.Neighbors = neighborIDs
+//	}
+func DisplayGrid(grid [][]int) {
+	for _, row := range grid {
+		for _, value := range row {
+			// if value == 0 {
+			// 	fmt.Printf("%v  ", "-")
+			// } else {
+			fmt.Printf("%3d ", value)
+			// }
+		}
+		fmt.Println()
+		fmt.Println()
+	}
+}
+func DisplaySensorCollection(sensorCollection []*Sensor) {
+	// Find the minimum and maximum x and y coordinates of the sensors
+	var minX, maxX, minY, maxY int
+	for _, sensor := range sensorCollection {
+		if sensor.Coordinates[0] < minX {
+			minX = sensor.Coordinates[0]
+		}
+		if sensor.Coordinates[0] > maxX {
+			maxX = sensor.Coordinates[0]
+		}
+		if sensor.Coordinates[1] < minY {
+			minY = sensor.Coordinates[1]
+		}
+		if sensor.Coordinates[1] > maxY {
+			maxY = sensor.Coordinates[1]
+		}
+	}
+
+	// Create a grid of integer values to represent the sensors
+	gridWidth := int(maxX-minX) + 1
+	gridHeight := int(maxY-minY) + 1
+	grid := make([][]string, gridHeight+1)
+	for i := range grid {
+		grid[i] = make([]string, gridWidth+1)
+		for j := range grid[i] {
+			if i == 0 {
+				if j == 0 {
+					grid[i][j] = " |   "
+				} else {
+					grid[i][j] = " " + strconv.Itoa(minY+j-1)
+				}
+			} else if j == 0 {
+				grid[i][j] = strconv.Itoa(minX + i - 1)
+			} else {
+				grid[i][j] = "+"
+			}
+		}
+	}
+
+	// Assign the sensor IDs to the grid based on their coordinates
+	for _, sensor := range sensorCollection {
+		x := sensor.Coordinates[0] - minX
+		y := sensor.Coordinates[1] - minY
+		grid[y+1][x+1] = strconv.Itoa(sensor.ID)
+	}
+
+	// Convert the grid to a slice of integers
+	intGrid := make([][]int, len(grid))
+	for i := range grid {
+		intGrid[i] = make([]int, len(grid[i]))
+		for j := range grid[i] {
+			intGrid[i][j], _ = strconv.Atoi(grid[i][j])
+		}
+	}
+
+	// Display the grid using the DisplayGrid function
+	DisplayGrid(intGrid)
+}
 func main() {
+
 	// Open the CSV file
 	fmt.Println("<<<<<<<<<<<< Creating Sensors... >>>>>>>>>>>>>")
 
@@ -358,14 +423,14 @@ func main() {
 		if _, ok := uniqueSensors[key]; !ok {
 
 			sensorCollection = append(sensorCollection, &Sensor{
-				ID:                 id,
-				Description:        "Cattle GPS Sensor for the Field (exernal test data from simon)",
-				Capacity:           -1,
-				Longitude:          longitude,
-				Latitude:           latitude,
-				GeoCoordinates:     []float64{latitude, longitude, 1},
-				LogicalCoordinates: []int{-1, -1, 1},
-				Neighbors:          []int{},
+				ID:             id,
+				Description:    "Cattle GPS Sensor for the Field (exernal test data from simon)",
+				Capacity:       -1,
+				Longitude:      longitude,
+				Latitude:       latitude,
+				GeoCoordinates: []float64{latitude, longitude, 1},
+				Coordinates:    []int{-1, -1, 1},
+				Neighbors:      []int{},
 			})
 			uniqueSensors[key] = true
 			nextSensorID++
@@ -374,9 +439,12 @@ func main() {
 	// sensorCollection = FilterSensors(sensorCollection, 50.0, 51.0, 12.0, 13.0)
 	// filteredSensors := FilterSensors(sensorCollection, 48.0, 100.0, 12, 100.0)
 	// filteredSensors := sensorCollection
-	FindAndAssignNeighbors(sensorCollection)
 	AssignLogicalCoordinates(sensorCollection)
+	ReassignSensorIDs(sensorCollection)
+	// FindAndAssignNeighbors(sensorCollection)
+	FindAndAssignLogicalNeighbors(sensorCollection)
 	PrintSensors(sensorCollection)
+
 	// Write the sensorCollection to a file
 	sensorSlice := make([]Sensor, len(sensorCollection))
 	for i, s := range sensorCollection {
@@ -386,4 +454,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	// DisplayGrid(grid)
+	SortSensorsByXY(sensorCollection)
+	DisplaySensorCollection(sensorCollection)
 }
