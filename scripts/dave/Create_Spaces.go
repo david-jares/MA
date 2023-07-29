@@ -17,7 +17,7 @@ const spaceMaxLat float64 = 49.0
 const spaceMinLon float64 = 12.0
 const spaceMaxLon float64 = 13.0
 
-//sonsor
+//sensor
 // "id": 2,
 // "metasensor-id": 1,
 // "coverage": [2],

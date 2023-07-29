@@ -68,6 +68,7 @@ run-my-script:
 	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_Spaces.go"
 	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Countandprint.go"
 	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/analyze_cattle_gps.go"
+	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_Sensors.go"
 
 # .PHONY: command1 command2 command3
 
