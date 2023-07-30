@@ -18,6 +18,8 @@ const App = () => {
         <Route path="" element={<Execution />} />
         <Route path="/map" element={<MapView />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/MySettingSelectValueNumeric" element={<MySettingSelectValueNumeric />} />
+
       </Routes>
     </>
   )

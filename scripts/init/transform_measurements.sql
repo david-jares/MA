@@ -1,6 +1,20 @@
+-- INSERT INTO simcattle.learning_measurement (`wifi_ap`, `cnx_time`, `client_id`)
+-- SELECT 
+--   CASE 
+--     WHEN `input_type` = 'GPS' THEN `column_1`, `time`, `device`
+--     WHEN `input_type` = 'MIOTY' THEN `column_4`, `time`, `device`
+--     ELSE SUBSTRING_INDEX(`beacon`, '-', -1), `time`, `device`
+--   END
+-- FROM `simcattle.measurement`;
+
+
+
+--  that was how it was done before:
 INSERT INTO simcattle.learning_measurement (`wifi_ap`, `cnx_time`, `client_id`)
   SELECT SUBSTRING_INDEX(`beacon`, '-', -1), `time`, `device`
   FROM simcattle.measurement;
+
+
 
 ---------
 -- here we extract the movement-data from our real cows and their movements from the database ( we stored it there in an earlier step ) and use&transform the necessary columns as input for our learning.

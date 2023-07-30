@@ -32,14 +32,34 @@ rebuild: stop
 logs:
 	docker compose logs -f --tail=50 $(s)
 
+# ## Reloads a service with updated src
+# ## Usage: make reload s=some-service
+# reload:
+# 	docker exec -it code_$(s)_1 bash -c "cd /app && go build -o /service && chown 1000:1000 /service"
+# 	docker stop code_$(s)_1
+# 	docker commit code_$(s)_1 code_$(s)
+# 	docker rm code_$(s)_1
+# 	make up
+
 ## Reloads a service with updated src
 ## Usage: make reload s=some-service
-reload:
-	docker exec -it code_$(s)_1 bash -c "cd /app && go build -o /service && chown 1000:1000 /service"
-	docker stop code_$(s)_1
-	docker commit code_$(s)_1 code_$(s)
-	docker rm code_$(s)_1
-	make up
+# reload:
+# 	docker exec -it code-$(s)-1 bash -c "cd /app && go build -o /service && chown 1000:1000 /service"
+# 	docker stop code-$(s)_1
+# 	docker commit code-$(s)-1 code-$(s)
+# 	docker rm code-$(s)-1
+# 	make up
+
+# reloadui:
+# 	docker exec -it code-web-ui-1 sh -c "cd /app && go build -o /service && chown 1000:1000 /service"
+# 	docker stop code-web-ui-1
+# 	docker commit code-web-ui-1 code-web-ui
+# 	docker rm code-web-ui-1
+# 	make up
+
+update-frontend:
+	docker cp "/root/2022-ma-paul-pongratz/code/web-ui/." code-web-ui-1:"/"
+	docker restart code-web-ui-1
 
 # .PHONY: reload-sql-scripts
 
@@ -71,14 +91,6 @@ run-my-script:
 # go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_insert_in_smartspec_conf_gps_sql.go"
 	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_load_data_from_csv_GPS_sql.go"
 
-# .PHONY: command1 command2 command3
-
-# command1:
-# # go run "/root/2022-ma-paul-pongratz/code/scripts/dave/read_cattlegps.go"
-# # go run "/root/2022-ma-paul-pongratz/code/scripts/dave/reformat_cattlegps.go"
-# # go run "/root/2022-ma-paul-pongratz/code/scripts/dave/count_and_print_reformatted_unique_gps_values.go",
-# 	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Testprint.go",
-# # go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_Sensors.go",
 
 
 # So David die E-Mail nur an dich.

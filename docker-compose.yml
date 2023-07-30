@@ -76,7 +76,7 @@ services:
       #mounts the create_tables.sql file on the host system to the /docker-entrypoint-initdb.d/1.sql file in the container. This file is executed when the container is started, and is used to create the necessary database tables.
       - ./scripts/init/create_tables.sql:/docker-entrypoint-initdb.d/1.sql 
       - ./scripts/init/insert_in_smartspec_conf.sql:/docker-entrypoint-initdb.d/2.sql
-      - ./scripts/init/insert_in_smartspec_conf_GPS.sql:/docker-entrypoint-initdb.d/3.sql
+      # - ./scripts/init/insert_in_smartspec_conf_GPS.sql:/docker-entrypoint-initdb.d/3.sql
       - ./scripts/init/load_data_from_csv.sql:/docker-entrypoint-initdb.d/4.sql
       - ./scripts/init/transform_measurements.sql:/docker-entrypoint-initdb.d/5.sql
 
