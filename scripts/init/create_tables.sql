@@ -23,7 +23,7 @@ CREATE TABLE simcattle.measurement
 
 
 -- learning_measurement
-
+-- this is the movement data from the cows that we get as input for the learning stage
 CREATE TABLE simcattle.learning_measurement 
 (
     `wifi_ap` VARCHAR(32) NULL,
@@ -36,7 +36,7 @@ CREATE INDEX idx_ap ON simcattle.learning_measurement (wifi_ap);
 CREATE INDEX time_and_ap ON simcattle.learning_measurement (cnx_time, wifi_ap);
 
 -- smartspec_conf
-
+-- here we have a table that stores the state of the currently active configuration data.
 CREATE TABLE simcattle.smartspec_conf 
 (
     `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,

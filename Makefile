@@ -55,20 +55,20 @@ dave:
 
 reload-db-config:
 	docker exec -i code-db mysql -u user -ppassword simcattle < ./scripts/reload/clear_db_smartspec_conf.sql
-	docker exec -i code-db mysql -u user -ppassword simcattle < ./scripts/init/insert_in_smartspec_conf_GPS.sql
+# docker exec -i code-db mysql -u user -ppassword simcattle < ./scripts/init/insert_in_smartspec_conf_GPS.sql
 		
 
 
 run-my-script:
-	go run ./scripts/dave/Testprint.go
-	go run ./scripts/dave/Testprint.go
-	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/read_cattlegps.go"
-	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/reformat_cattlegps.go"
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Another.go"
-	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_Spaces.go"
-	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Countandprint.go"
-	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/analyze_cattle_gps.go"
-	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_Sensors.go"
+# go run ./scripts/dave/Testprint.go
+# go run ./scripts/dave/Testprint.go
+# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/read_cattlegps.go"
+# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/reformat_cattlegps.go"
+# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_Spaces.go"
+# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Countandprint.go"
+# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/analyze_cattle_gps.go"
+# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_Sensors.go"
+	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_insert_in_smartspec_conf_gps_sql.go"
 
 # .PHONY: command1 command2 command3
 

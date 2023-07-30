@@ -1,5 +1,7 @@
 INSERT INTO simcattle.smartspec_conf (`sensors`, `spaces`, `metasensors`, `learn_conf`, `gen_conf`)
 VALUES (
+-- sensors and spaces configuration
+-- sensors
 '[
     {
         "id": 1,
@@ -135,6 +137,7 @@ VALUES (
         "geoCoordinates": [49.681637855756065,12.199179120361807,1]
     }
 ]',
+-- spaces
 '[
     {
         "id": 0,
@@ -324,8 +327,9 @@ VALUES (
         "description" : "Bluetooth Beacon"
     }
 ]',
+-- scenario learning configuration
 '[learners]
-start       = 2022-04-26
+start       = 2022-04-26 
 end         = 2022-04-28
 unit        = 1
 validity    = 1
@@ -335,6 +339,7 @@ time-thresh = 5
 occ-thresh  = 1
 
 ',
+-- scenario generation configuration
 '[people]
 number = 10
 generation = all

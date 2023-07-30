@@ -2,6 +2,14 @@ INSERT INTO simcattle.learning_measurement (`wifi_ap`, `cnx_time`, `client_id`)
   SELECT SUBSTRING_INDEX(`beacon`, '-', -1), `time`, `device`
   FROM simcattle.measurement;
 
+---------
+-- here we extract the movement-data from our real cows and their movements from the database ( we stored it there in an earlier step ) and use&transform the necessary columns as input for our learning.
+-- we put that transformed data into simcattle.learning_measurement, which will be used by SMARTSpec as source for the learning stage.
+---------
+
+
+
+
 -- This script is inserting data into the learning_measurement table of the simcattle database.
 --  The data being inserted is obtained from the measurement table of the same database.
 
