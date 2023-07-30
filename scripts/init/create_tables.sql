@@ -21,6 +21,8 @@ CREATE TABLE simcattle.measurement
     PRIMARY KEY (`id`)
 );
 
+-- we want to add another column to the measurement table so we can distinguish between the different input types
+ALTER TABLE simcattle.measurement ADD COLUMN `input_type` ENUM('BEACON', 'GPS', 'MIOTY') NOT NULL DEFAULT 'BEACON';
 
 -- learning_measurement
 -- this is the movement data from the cows that we get as input for the learning stage

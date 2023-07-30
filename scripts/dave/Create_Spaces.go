@@ -17,22 +17,6 @@ const spaceMaxLat float64 = 49.0
 const spaceMinLon float64 = 12.0
 const spaceMaxLon float64 = 13.0
 
-//sensor
-// "id": 2,
-// "metasensor-id": 1,
-// "coverage": [2],
-// "coordinates": [3,2,1],
-// "geoCoordinates": [49.68163864109388,12.199289060635687,1]
-
-// space
-// "id": 1,
-// "capacity": 10,
-// "neighbors": [
-// 	2, 19
-// ],
-// "coordinates": [3,3,1],
-// "geoCoordinates": [49.68168614140271,12.199246531983448,1]
-
 type Space struct {
 	ID             int       `json:"id"`
 	Description    string    `json:"description"`
@@ -425,21 +409,7 @@ func main() {
 		panic(err)
 	}
 
-	// // Create a collection of Space instances
-	// spaceCollection := make([]Space, len(records)-1)
-	// for i, record := range records[1:] {
-	// 	id := nextSpaceID
-	// 	nextSpaceID++
-	// 	longitude, _ := strconv.ParseFloat(record[2], 64)
-	// 	latitude, _ := strconv.ParseFloat(record[3], 64)
-
-	// 	spaceCollection[i] = Space{
-	// 		ID:        id,
-	// 		Longitude: longitude,
-	// 		Latitude:  latitude,
-	// 		Neighbors: []int{},
-	// 	}
-	// }
+	
 
 	spaceCollection := []*Space{}
 	uniqueSpaces := make(map[string]bool)

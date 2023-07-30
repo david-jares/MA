@@ -17,7 +17,8 @@ SET `valid` = @valid="TRUE",
     `minor` = @minor,
     `uuid` = @uuid,
     `speed` = @speed,
-    `attributes` = @attributes;
+    `attributes` = @attributes,
+    `input_type` = 'BEACON';
 
 -- 125_(W10T_A7H_10)
 LOAD DATA INFILE '/data/125_(W10T_A7H_10).csv'
@@ -38,7 +39,8 @@ SET `valid` = @valid="TRUE",
     `minor` = @minor,
     `uuid` = @uuid,
     `speed` = @speed,
-    `attributes` = @attributes;
+    `attributes` = @attributes,
+    `input_type` = 'BEACON';
 
 -- 130_(W10T_A7H_1)
 LOAD DATA INFILE '/data/130_(W10T_A7H_1).csv'
@@ -59,7 +61,8 @@ SET `valid` = @valid="TRUE",
     `minor` = @minor,
     `uuid` = @uuid,
     `speed` = @speed,
-    `attributes` = @attributes;
+    `attributes` = @attributes,
+    `input_type` = 'BEACON';
 
 -- 142_(W10T_A7H_3)
 LOAD DATA INFILE '/data/142_(W10T_A7H_3).csv'
@@ -80,7 +83,8 @@ SET `valid` = @valid="TRUE",
     `minor` = @minor,
     `uuid` = @uuid,
     `speed` = @speed,
-    `attributes` = @attributes;
+    `attributes` = @attributes,
+    `input_type` = 'BEACON';
 
 -- 807_(W10T_A7H_5)
 LOAD DATA INFILE '/data/807_(W10T_A7H_5).csv'
@@ -101,7 +105,8 @@ SET `valid` = @valid="TRUE",
     `minor` = @minor,
     `uuid` = @uuid,
     `speed` = @speed,
-    `attributes` = @attributes;
+    `attributes` = @attributes,
+    `input_type` = 'BEACON';
 
 -- 838_(W10T_A7H_9)
 LOAD DATA INFILE '/data/838_(W10T_A7H_9).csv'
@@ -122,7 +127,8 @@ SET `valid` = @valid="TRUE",
     `minor` = @minor,
     `uuid` = @uuid,
     `speed` = @speed,
-    `attributes` = @attributes;
+    `attributes` = @attributes,
+    `input_type` = 'BEACON';
 
 -- 906_(W10T_A7H_8)
 LOAD DATA INFILE '/data/906_(W10T_A7H_8).csv'
@@ -143,7 +149,8 @@ SET `valid` = @valid="TRUE",
     `minor` = @minor,
     `uuid` = @uuid,
     `speed` = @speed,
-    `attributes` = @attributes;
+    `attributes` = @attributes,
+    `input_type` = 'BEACON';
 
 -- 930_(W10T_A7H_7)
 LOAD DATA INFILE '/data/930_(W10T_A7H_7).csv'
@@ -164,4 +171,5 @@ SET `valid` = @valid="TRUE",
     `minor` = @minor,
     `uuid` = @uuid,
     `speed` = @speed,
-    `attributes` = @attributes;
+    `attributes` = @attributes,
+    `input_type` = 'BEACON';
