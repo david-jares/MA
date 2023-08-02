@@ -14,6 +14,15 @@ stop:
 destroy:
 	docker compose down -v
 
+clean:
+	docker compose down -v --remove-orphans
+	docker image prune -af
+
+clean-sm:
+	docker compose down -v --remove-orphans
+	docker image prune --filter "label=ma-smartspec-service" --force
+
+
 ## Restart all project containers
 restart: stop up
 
@@ -96,3 +105,6 @@ run-my-script:
 # So David die E-Mail nur an dich.
 # Die CSV mit den Koordinaten ist etwas verwirrend formatiert. Latitude ist immer etwas mit 480.xxxxxxxx und Longtitude ist zweistellig mit 12.xxxxxxx
 # Kirchweihdach müsste das sein.
+
+
+

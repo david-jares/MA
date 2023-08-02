@@ -9,8 +9,12 @@ RUN go mod download
 # Copy all content to the image
 COPY . .
 
-# Build the service
-RUN go build -o /service
+# go: updates to go.mod needed; to update it:
+
+# # Build the service
+# RUN go build -o /service ./service
+RUN go mod tidy
+RUN go build -o /service 
 
 # Install Python & jq
 RUN apt-get update

@@ -10,7 +10,7 @@ services:
     volumes:
       - ./gateway:/app
   
-  ### SmartSPEC service ###
+  # ### SmartSPEC service ###
   smartspec-service:
     build: smartspec-service
     depends_on : 
