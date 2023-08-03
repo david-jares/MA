@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+// SETTINGS
+const filepath_cattle_gps_csv = "/root/MA/data/cattle-gps.csv"
+
+// SETTINGS END
+
 func ParseCattleGPS(filename string) (map[int][7]interface{}, error) {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -94,5 +99,5 @@ func ParseCattleGPS(filename string) (map[int][7]interface{}, error) {
 
 func main() {
 	fmt.Println("<<<<<<<<<<<< Analyzing Cattle Data... >>>>>>>>>>>>>")
-	ParseCattleGPS("/root/2022-ma-paul-pongratz/code/data/cattle-gps.csv")
+	ParseCattleGPS(filepath_cattle_gps_csv)
 }

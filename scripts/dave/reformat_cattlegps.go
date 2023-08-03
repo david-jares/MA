@@ -10,8 +10,12 @@ import (
 	"time"
 )
 
-// Setttings
+// SETTINGS
 const coordResolution_m float64 = 1000 // meters
+const filepath_cattle_gps_csv = "/root/MA/data/cattle-gps.csv"
+const filepath_cattle_gps_formatted_csv = "/root/MA/data/cattle-gps-formatted.csv"
+
+// SETTINGS END
 //---------------------------------
 
 func truncateCoordinate(coordinate float64, resolution int) float64 {
@@ -37,7 +41,7 @@ func truncateCoordinate(coordinate float64, resolution int) float64 {
 
 func main() {
 	// Open the input file
-	inputFile, err := os.Open("/root/2022-ma-paul-pongratz/code/data/cattle-gps.csv")
+	inputFile, err := os.Open(filepath_cattle_gps_csv)
 	if err != nil {
 		fmt.Println("Error opening input file:", err)
 		return
@@ -45,7 +49,7 @@ func main() {
 	defer inputFile.Close()
 
 	// Create the output file
-	outputFile, err := os.Create("/root/2022-ma-paul-pongratz/code/data/cattle-gps-formatted.csv")
+	outputFile, err := os.Create(filepath_cattle_gps_formatted_csv)
 	if err != nil {
 		fmt.Println("Error creating output file:", err)
 		return

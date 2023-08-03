@@ -7,10 +7,10 @@ import (
 )
 
 var filepaths []string = []string{
-	"/root/2022-ma-paul-pongratz/code/scripts/dave/read_cattlegps.go",
-	"/root/2022-ma-paul-pongratz/code/scripts/dave/reformat_cattlegps.go",
-	"/root/2022-ma-paul-pongratz/code/scripts/dave/count_and_print_reformatted_unique_gps_values.go",
-	"/root/2022-ma-paul-pongratz/code/scripts/dave/Create_Sensors.go",
+	"/root/MA/scripts/dave/read_cattlegps.go",
+	"/root/MA/scripts/dave/reformat_cattlegps.go",
+	"/root/MA/scripts/dave/count_and_print_reformatted_unique_gps_values.go",
+	"/root/MA/scripts/dave/Create_Sensors.go",
 }
 
 func main() {

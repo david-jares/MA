@@ -89,16 +89,15 @@ reload-db-config:
 
 
 run-my-script:
-# go run ./scripts/dave/Testprint.go
-# go run ./scripts/dave/Testprint.go
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/read_cattlegps.go"
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/reformat_cattlegps.go"
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_Spaces.go"
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Countandprint.go"
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/analyze_cattle_gps.go"
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_Sensors.go"
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_insert_in_smartspec_conf_gps_sql.go"
-	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_load_data_from_csv_GPS_sql.go"
+	go run ./scripts/dave/Testprint.go
+	go run "/root/MA/scripts/dave/read_cattlegps.go"
+	go run "/root/MA/scripts/dave/reformat_cattlegps.go"
+	go run "/root/MA/scripts/dave/Create_Spaces.go"
+	go run "/root/MA/scripts/dave/Countandprint.go"
+	go run "/root/MA/scripts/dave/analyze_cattle_gps.go"
+	go run "/root/MA/scripts/dave/Create_Sensors.go"
+	go run "/root/MA/scripts/dave/Create_insert_in_smartspec_conf_gps_sql.go"
+	go run "/root/MA/scripts/dave/Create_cattle_gps_formatted_with_sensorid_csv.go"
 
 
 

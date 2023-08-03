@@ -5,6 +5,13 @@ import (
 	"io/ioutil"
 )
 
+// SETTINGS
+const filepath_cattle_gps_sensors_json = "/root/MA/data/cattle-gps-sensors.json"
+const filepath_cattle_gps_spaces_json = "/root/MA/data/cattle-gps-spaces.json"
+const filepath_insert_in_smartspec_conf_GPS_sql = "/root/MA/scripts/init/insert_in_smartspec_conf_GPS.sql"
+
+//END SETTINGS
+
 func ReadJSONFileToString(path string) (string, error) {
 	// Read the file
 	data, err := ioutil.ReadFile(path)
@@ -20,12 +27,12 @@ func ReadJSONFileToString(path string) (string, error) {
 
 func main() {
 	// Define the file content
-	jsonString_Sensors, err := ReadJSONFileToString("/root/2022-ma-paul-pongratz/code/data/cattle-gps-sensors.json")
+	jsonString_Sensors, err := ReadJSONFileToString(filepath_cattle_gps_sensors_json)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	jsonString_Spaces, err := ReadJSONFileToString("/root/2022-ma-paul-pongratz/code/data/cattle-gps-spaces.json")
+	jsonString_Spaces, err := ReadJSONFileToString(filepath_cattle_gps_spaces_json)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -65,7 +72,7 @@ end   = 2022-04-26
 	fileContent := str1 + str2 + "',\n'" + str3 + "',\n" + str4 + "\n" + str5 + "\n"
 
 	// Write the file
-	err = ioutil.WriteFile("/root/2022-ma-paul-pongratz/code/scripts/init/insert_in_smartspec_conf_GPS.sql", []byte(fileContent), 0644)
+	err = ioutil.WriteFile(filepath_insert_in_smartspec_conf_GPS_sql, []byte(fileContent), 0644)
 	if err != nil {
 		fmt.Println(err)
 		return
