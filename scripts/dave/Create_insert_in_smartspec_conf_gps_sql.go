@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 )
@@ -11,8 +12,53 @@ const filepath_cattle_gps_spaces_json = "/root/MA/data/cattle-gps-spaces.json"
 const filepath_insert_in_smartspec_conf_GPS_sql = "/root/MA/scripts/init/insert_in_smartspec_conf_GPS.sql"
 
 //END SETTINGS
+// func ReadJSONFileToString(path string) (string, error) {
+// 	// Read the file
+// 	data, err := ioutil.ReadFile(path)
+// 	if err != nil {
+// 		return "", err
+// 	}
 
+// 	// Convert the data to a string
+// 	jsonString := string(data)
+
+//		return jsonString, nil
+//	}
 func ReadJSONFileToString(path string) (string, error) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+
+	// Decode the JSON data into a Go data structure
+	var jsonData interface{}
+	err = json.Unmarshal(data, &jsonData)
+	if err != nil {
+		return "", err
+	}
+
+	// Encode the data structure back into a formatted JSON string
+	jsonString, err := json.MarshalIndent(jsonData, "", "    ")
+	if err != nil {
+		return "", err
+	}
+
+	return string(jsonString), nil
+}
+func ReadJSONFile_Sensors_ToString(path string) (string, error) {
+	// Read the file
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+
+	// Convert the data to a string
+	jsonString := string(data)
+
+	return jsonString, nil
+}
+
+func ReadJSONFile_Spaces_ToString(path string) (string, error) {
 	// Read the file
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -41,7 +87,14 @@ func main() {
 	str2 := jsonString_Sensors
 
 	str3 := jsonString_Spaces
-	str4 := `-- scenario learning configuration
+	str4 := `,
+	'[
+		{
+			"id" : 1,
+			"description" : "Bluetooth Beacon"
+		}
+	]',`
+	str5 := `-- scenario learning configuration
 '[learners]
 start       = 2022-04-26 
 end         = 2022-04-28
@@ -68,8 +121,8 @@ end   = 2022-04-26
 
 '`
 
-	str5 := ");"
-	fileContent := str1 + str2 + "',\n'" + str3 + "',\n" + str4 + "\n" + str5 + "\n"
+	str6 := ");"
+	fileContent := str1 + str2 + "',\n'" + str3 + "'\n" + str4 + "\n" + str5 + "\n" + str6 + "\n"
 
 	// Write the file
 	err = ioutil.WriteFile(filepath_insert_in_smartspec_conf_GPS_sql, []byte(fileContent), 0644)

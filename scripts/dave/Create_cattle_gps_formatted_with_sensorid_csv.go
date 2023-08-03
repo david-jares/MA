@@ -132,7 +132,12 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(i, "  ", cattleGPSList[i], " - closets Sensor: ", closestSensor)
+		if i < 100 {
+			fmt.Println(i, "  ", cattleGPSList[i], " - closets Sensor: ", closestSensor)
+		}
+		if i == 100 {
+			fmt.Println("...")
+		}
 
 	}
 
