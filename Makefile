@@ -87,9 +87,11 @@ reload-db-config:
 	docker exec -i code-db mysql -u user -ppassword simcattle < ./scripts/init/insert_in_smartspec_conf_GPS.sql
 
 reload-db:	
-	docker exec -i code-db mysql -u user -ppassword simcattle < ./scripts/reload/clear_db_smartspec_conf.sql
-	docker exec -i code-db mysql -u user -ppassword simcattle < ./scripts/reload/clear_db_smartspec_data.sql
-	docker exec -i code-db mysql -u user -ppassword simcattle < ./scripts/init/insert_in_smartspec_conf_GPS.sql
+	docker exec -i code-db mysql -u root -ppassword simcattle < ./scripts/init/grant_rights_to_user.sql
+	docker exec -i code-db mysql -u root -ppassword simcattle < ./scripts/reload/clear_db_smartspec_conf.sql
+	docker exec -i code-db mysql -u root -ppassword simcattle < ./scripts/reload/clear_db_smartspec_data.sql
+	docker exec -i code-db mysql -u root -ppassword simcattle < ./scripts/init/insert_in_smartspec_conf_GPS.sql
+	docker exec -i code-db mysql -u root -ppassword simcattle < ./scripts/init/load_data_from_csv_GPS.sql
 
 
 run-my-script:

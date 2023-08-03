@@ -5,7 +5,7 @@ LINES TERMINATED BY '\n'
 IGNORE 1 ROWS
 (@cattle_id, @timestamp, @longitude, @latitude, @nmea_valid, @sensor_id)
 SET `valid` = @valid="TRUE",
-    `device` = @cattle_id
+    `device` = @cattle_id,
     `time` = @time,
     `latitude` = @latitude,
     `longitude` = @longitude,
