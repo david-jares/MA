@@ -1,12 +1,12 @@
-LOAD DATA INFILE '/root/MA/data/cattle-gps-formatted-with-sensorid.csv'
+LOAD DATA INFILE '/data/cattle-gps-formatted-with-sensorid.csv'
 INTO TABLE simcattle.measurement
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS
 (@cattle_id, @timestamp, @longitude, @latitude, @nmea_valid, @sensor_id)
-SET `valid` = @valid="TRUE",
+SET `valid` = @nmea_valid="TRUE",
     `device` = @cattle_id,
-    `time` = @time,
+    `time` = @timestamp,
     `latitude` = @latitude,
     `longitude` = @longitude,
     `altitude` = 0,
@@ -19,7 +19,7 @@ SET `valid` = @valid="TRUE",
     `input_type` = 'GPS';
 
 -- -- 103_(W10T_A7H_2)
--- LOAD DATA INFILE '/data/cattle-gps-formatted.csv'
+-- LOAD DATA INFILE '/data/103_(W10T_A7H_2).csv'
 -- INTO TABLE simcattle.measurement
 -- FIELDS TERMINATED BY ','
 -- LINES TERMINATED BY '\n'
