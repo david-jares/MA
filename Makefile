@@ -93,6 +93,7 @@ reload-db:
 	docker exec -i code-db mysql -u root -ppassword simcattle < ./scripts/init/insert_in_smartspec_conf_GPS.sql
 	docker exec -i code-db mysql -u root -ppassword simcattle < ./scripts/init/load_data_from_csv_GPS.sql
 # docker exec -i code-db mysql -u root -ppassword simcattle < ./scripts/init/load_data_from_csv.sql
+	docker exec -i code-db mysql -u root -ppassword simcattle < ./scripts/init/transform_measurements.sql
 
 
 run-my-script:

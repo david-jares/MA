@@ -1,9 +1,9 @@
 INSERT INTO simcattle.learning_measurement (`wifi_ap`, `cnx_time`, `client_id`)
 SELECT 
   CASE 
-    WHEN `input_type` = 'GPS' THEN `minor`, `time`, `device`
-    WHEN `input_type` = 'MIOTY' THEN `column_4`, `time`, `device`
-    ELSE SUBSTRING_INDEX(`beacon`, '-', -1), `time`, `device`
+    WHEN `input_type` = 'GPS' THEN (`minor`, `time`, `device`)
+    WHEN `input_type` = 'MIOTY' THEN (`column_4`, `time`, `device`)
+    ELSE (SUBSTRING_INDEX(`beacon`, '-', -1), `time`, `device`)
   END
 FROM `simcattle.measurement`;
 
