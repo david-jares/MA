@@ -6,6 +6,12 @@ import (
 	"io/ioutil"
 )
 
+// SETTINGS
+const filepath_cattle_gps_spaces_json = "/root/MA/data/cattle-gps-spaces.json"
+const filepath_cattle_gps_sensors_json = "/root/MA/data/cattle-gps-sensors.json"
+
+//SETTINGS END
+
 type Space struct {
 	ID             int       `json:"id"`
 	Description    string    `json:"description"`
@@ -52,7 +58,7 @@ func ReadJSONFile(filename string) ([]Space, error) {
 func main() {
 	fmt.Println("<<<<<<<<<<<< Creating Sensors >>>>>>>>>>>>>")
 	// Read the JSON file
-	mySpaces, err := ReadJSONFile("/root/2022-ma-paul-pongratz/code/data/cattle-gps-spaces.json")
+	mySpaces, err := ReadJSONFile(filepath_cattle_gps_spaces_json)
 	if err != nil {
 		panic(err)
 	}
@@ -81,7 +87,7 @@ func main() {
 	}
 
 	// Write the JSON byte slice to a file
-	err = ioutil.WriteFile("/root/2022-ma-paul-pongratz/code/data/cattle-gps-sensors.json", mySensorsJSON, 0644)
+	err = ioutil.WriteFile(filepath_cattle_gps_sensors_json, mySensorsJSON, 0644)
 	if err != nil {
 		fmt.Println(err)
 	}

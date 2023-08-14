@@ -16,6 +16,8 @@ const spaceMinLat float64 = 48.0
 const spaceMaxLat float64 = 49.0
 const spaceMinLon float64 = 12.0
 const spaceMaxLon float64 = 13.0
+const filepath_cattle_gps_spaces_json = "/root/MA/data/cattle-gps-spaces.json"
+const filepath_cattle_gps_formatted_csv = "/root/MA/data/cattle-gps-formatted.csv"
 
 type Space struct {
 	ID             int       `json:"id"`
@@ -396,7 +398,7 @@ func main() {
 	// Open the CSV file
 	fmt.Println("<<<<<<<<<<<< Creating Spaces... >>>>>>>>>>>>>")
 
-	file, err := os.Open("/root/2022-ma-paul-pongratz/code/data/cattle-gps-formatted.csv")
+	file, err := os.Open(filepath_cattle_gps_formatted_csv)
 	if err != nil {
 		panic(err)
 	}
@@ -408,8 +410,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	
 
 	spaceCollection := []*Space{}
 	uniqueSpaces := make(map[string]bool)
@@ -451,7 +451,7 @@ func main() {
 	for i, s := range spaceCollection {
 		spaceSlice[i] = *s
 	}
-	err = WriteSpaceCollectionToFile(spaceSlice, "/root/2022-ma-paul-pongratz/code/data/cattle-gps-spaces.json")
+	err = WriteSpaceCollectionToFile(spaceSlice, filepath_cattle_gps_spaces_json)
 	if err != nil {
 		panic(err)
 	}

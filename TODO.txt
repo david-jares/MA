@@ -8,3 +8,5 @@ Questions to paul:
 
 TODO: 
     - TImestamp of Cattle Data is wrong when I parse the data
+
+    - lat lon with manual draw generation is reversed direction

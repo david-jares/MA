@@ -14,6 +14,15 @@ stop:
 destroy:
 	docker compose down -v
 
+clean:
+	docker compose down -v --remove-orphans
+	docker image prune -af
+
+clean-sm:
+	docker compose down -v --remove-orphans
+	docker image prune --filter "label=ma-smartspec-service" --force
+
+
 ## Restart all project containers
 restart: stop up
 
@@ -75,24 +84,34 @@ dave:
 
 reload-db-config:
 	docker exec -i code-db mysql -u user -ppassword simcattle < ./scripts/reload/clear_db_smartspec_conf.sql
-# docker exec -i code-db mysql -u user -ppassword simcattle < ./scripts/init/insert_in_smartspec_conf_GPS.sql
-		
+	docker exec -i code-db mysql -u user -ppassword simcattle < ./scripts/init/insert_in_smartspec_conf_GPS.sql
+
+reload-db:	
+	docker exec -i code-db mysql -u root -ppassword simcattle < ./scripts/init/grant_rights_to_user.sql
+	docker exec -i code-db mysql -u root -ppassword simcattle < ./scripts/reload/clear_db_smartspec_conf.sql
+	docker exec -i code-db mysql -u root -ppassword simcattle < ./scripts/reload/clear_db_smartspec_data.sql
+	docker exec -i code-db mysql -u root -ppassword simcattle < ./scripts/init/insert_in_smartspec_conf_GPS.sql
+	docker exec -i code-db mysql -u root -ppassword simcattle < ./scripts/init/load_data_from_csv_GPS.sql
+# docker exec -i code-db mysql -u root -ppassword simcattle < ./scripts/init/load_data_from_csv.sql
+	docker exec -i code-db mysql -u root -ppassword simcattle < ./scripts/init/transform_measurements.sql
 
 
 run-my-script:
-# go run ./scripts/dave/Testprint.go
-# go run ./scripts/dave/Testprint.go
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/read_cattlegps.go"
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/reformat_cattlegps.go"
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_Spaces.go"
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Countandprint.go"
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/analyze_cattle_gps.go"
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_Sensors.go"
-# go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_insert_in_smartspec_conf_gps_sql.go"
-	go run "/root/2022-ma-paul-pongratz/code/scripts/dave/Create_load_data_from_csv_GPS_sql.go"
+	go run ./scripts/dave/Testprint.go
+	go run "/root/MA/scripts/dave/read_cattlegps.go"
+	go run "/root/MA/scripts/dave/reformat_cattlegps.go"
+	go run "/root/MA/scripts/dave/Create_Spaces.go"
+	go run "/root/MA/scripts/dave/Countandprint.go"
+	go run "/root/MA/scripts/dave/analyze_cattle_gps.go"
+	go run "/root/MA/scripts/dave/Create_Sensors.go"
+	go run "/root/MA/scripts/dave/Create_insert_in_smartspec_conf_gps_sql.go"
+	go run "/root/MA/scripts/dave/Create_cattle_gps_formatted_with_sensorid_csv.go"
 
 
 
 # So David die E-Mail nur an dich.
 # Die CSV mit den Koordinaten ist etwas verwirrend formatiert. Latitude ist immer etwas mit 480.xxxxxxxx und Longtitude ist zweistellig mit 12.xxxxxxx
 # Kirchweihdach müsste das sein.
+
+
+
