@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polygon Canvas</title>
+</head>
+
+<body>
+    <div style="display: flex;">
+        <div class="leftside" style=" flex: 1; flex-direction: column;">
+            <canvas id="myCanvas" width="800" height="600" style="border:1px solid;"></canvas>
+            <div id="coordinatesLabel">Coordinates: </div>
+        </div>
+        <div class="rightside" style=" flex: 1;  flex-direction: column;"">
+
+            <div class=" form-container" style="display: flex;flex-direction: column;">
+            <div style="display: flex;flex-direction: row;">
+                <label for="cowIdInput" style="flex: 0 1 250px;">Cow ID:</label>
+                <input type="text" id="cowIdInput" oninput="updateUserData()" value="1" style="flex: 0 1 100px;" />
+            </div>
+            <div style="display: flex;flex-direction: row; ">
+                <label for="recordIntervalInSeconds" style="flex: 0 1 250px;">Record Interval In Seconds:</label>
+                <input type="number" id="recordIntervalInSeconds" oninput="updateUserData()" value="60"
+                    style="flex: 0 1 100px;" />
+            </div>
+            <div style="display: flex;flex-direction: row; ">
+                <label for="recordDurationInDays" style="flex: 0 1 250px;">Record Duration In Days:</label>
+                <input type="number" id="recordDurationInDays" oninput="updateUserData()" value="2"
+                    style="flex: 0 1 100px;" />
+            </div>
+            <div style="display: flex;flex-direction: row; ">
+                <label for="timeSpeedMultiplier" style="flex: 0 1 250px;">Time Speed Multiplier</label>
+                <input type="number" id="timeSpeedMultiplier" oninput="updateUserData()" value="600"
+                    style="flex: 0 1 100px;" />
+            </div>
+        </div>
+        </br>
+        </br>
+        <button id="resetTimerButton">Reset Timer</button>
+        </br>
+        </br>
+        <button id="clearRecordsButton">Clear Records</button>
+        </br>
+        </br>
+        <button id="saveButton">Save as CSV</button>
+        <input type="file" id="csvFiles" multiple accept=".csv" onchange="combineFiles()">
+        <button onclick="selectFiles()">Select and Combine CSV Files</button>
+
+        <div style="display: flex;flex-direction: row; ">
+            <textarea id="consoleOutput" rows="5" style="flex: 0 1 750px;"></textarea>
+        </div>
+    </div>
+    </div>
+    <script src="filefunctions.js"></script>
+    <script src="drawingfunctions.js"></script>
+    <script src="interactionfunctions.js"></script>
+    <script src="utilityfunctions.js"></script>
+    <script>
+
+
+        helloDave()
+
+        let canvas = document.getElementById('myCanvas');
+        let ctx = canvas.getContext('2d');
+        let coordinatesLabel = document.getElementById('coordinatesLabel');
+        const rect = canvas.getBoundingClientRect();
+        let recordeddata = [
+
+        ];
+        let mousePosition = { x: 0, y: 0 };
+        let isrecording = false;
+        const now = new Date('2021-01-01T01:00:00');
+        let recordingID;
+
+        // Calculate the scaled coordinates for use in the isInsidePolygon function
+        let minLat = Math.min(...coordinates.map(p => p.lat));
+        let maxLat = Math.max(...coordinates.map(p => p.lat));
+        let minLon = Math.min(...coordinates.map(p => p.lon));
+        let maxLon = Math.max(...coordinates.map(p => p.lon));
+
+        let scaleX = canvas.width / (maxLon - minLon);
+        let scaleY = canvas.height / (maxLat - minLat);
+
+        let scaledCoordinates = coordinates.map(point => {
+            return {
+                x: (point.lon - minLon) * scaleX,
+                y: canvas.height - (point.lat - minLat) * scaleY
+            };
+        });
+
+        clearConsoleOutput();
+
+        let cowId = '1';
+        let recordIntervalInSeconds = 60;
+        let recordDurationInDays = 2;
+        let timeSpeedMultiplier = 600;
+
+        function updateUserData() {
+            cowId = document.getElementById('cowIdInput').value;
+            recordIntervalInSeconds = parseInt(document.getElementById('recordIntervalInSeconds').value);
+            recordDurationInDays = parseInt(document.getElementById('recordDurationInDays').value);
+            timeSpeedMultiplier = parseInt(document.getElementById('timeSpeedMultiplier').value);
+            setUpRecording();
+        }
+        function printUserData() {
+            console.log(`cowId: ${cowId} recordIntervalInSeconds: ${recordIntervalInSeconds} recordDurationInDays: ${recordDurationInDays} timeSpeedMultiplier: ${timeSpeedMultiplier}`);
+        }
+
+        let isDrawing = false;
+        let path = [];
+        drawPolygon(ctx);
+
+
+        canvas.onmousedown = (e) => {
+            toggleDrawing(e);
+        };
+
+        function drawScene() {
+            // Redraw the entire scene
+            drawPolygon(ctx);
+            ctx.beginPath();
+            path.forEach((point, index) => {
+                if (index === 0) ctx.moveTo(point.x, point.y);
+                else ctx.lineTo(point.x, point.y);
+            });
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+        function toggleDrawing(evevnt) {
+            isDrawing = !isDrawing;
+
+            if (isDrawing) {
+
+                let rect = canvas.getBoundingClientRect();
+                let x = event.clientX - rect.left;
+                let y = event.clientY - rect.top;
+                if (isInsidePolygon({ x, y }, scaledCoordinates)) {
+                    path = [{ x, y }];
+
+                } else {
+                    isDrawing = false;
+                    console.log('Mouse is outside of polygon');
+                }
+
+            } else {
+                // Draw the final path
+                ctx.beginPath();
+                path.forEach((point, index) => {
+                    if (index === 0) ctx.moveTo(point.x, point.y);
+                    else ctx.lineTo(point.x, point.y);
+                });
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+            }
+        }
+        function updateDrawings(event) {
+            let rect = canvas.getBoundingClientRect();
+            if (isDrawing) {
+                let x = event.clientX - rect.left;
+                let y = event.clientY - rect.top;
+
+                if (!isInsidePolygon({ x, y }, scaledCoordinates)) {
+                    // Find the closest point on the polygon to the current mouse position
+                    const clampedPoint = closestPointOnPolygon({ x, y }, scaledCoordinates);
+                    x = clampedPoint.x;
+                    y = clampedPoint.y;
+                }
+                mousePosition.x = x;
+                mousePosition.y = y;
+                path.push({ x, y });
+
+                drawScene();
+            }
+        }
+
+        canvas.onmousemove = (e) => {
+            // update live coordinates label
+            geocoords = GetGeoocordinatesUnderMouse(e);
+            coordinatesLabel.innerText = `Coordinates: ${geocoords.latitude.toFixed(6)}, ${geocoords.longitude.toFixed(6)}`;
+
+            updateDrawings(e);
+
+        };
+
+        canvas.onmouseout = (e) => {
+            coordinatesLabel.innerText = "Coordinates: ";
+        };
+
+
+        function toggleRecording() {
+            isrecording = !isrecording;
+            console.log(isrecording ? 'Recording started!' : 'Recording stopped!');
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space') {
+                toggleRecording();
+            }
+        });
+
+
+        document.getElementById('resetTimerButton').addEventListener('click', () => {
+            loops = 0;
+        });
+        document.getElementById('clearRecordsButton').addEventListener('click', () => {
+            recordeddata = [];
+            clearConsoleOutput();
+        });
+        document.getElementById('saveButton').addEventListener('click', () => {
+            saveAsCsv(recordeddata);
+        });
+
+
+
+
+        function setUpRecording() {
+            let loops = 0;
+            let totalDurationInSeconds = 60 * 60 * 24 * recordDurationInDays;
+            let SecondsPerLoop = recordIntervalInSeconds;
+            let loopIntevalMilliSeconds = (1 / timeSpeedMultiplier) * 1000;
+
+            console.log(`Resetting Interval: ${loopIntevalMilliSeconds}`);
+
+            clearInterval(recordingID);
+
+            recordingID = setInterval(() => {
+
+                if (isrecording) {
+                    let offsetSeconds = SecondsPerLoop * loops++;
+                    let newDate = new Date(now.getTime() + offsetSeconds * 1000);
+                    let lastDate = new Date(now.getTime() + totalDurationInSeconds * 1000);
+                    if (newDate.getTime() <= lastDate.getTime()) {
+
+                        const formattedTime = newDate.toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
+                        const latitude = MouseXYToGeoCoords(mousePosition.x, mousePosition.y).latitude;
+                        const longitude = MouseXYToGeoCoords(mousePosition.x, mousePosition.y).longitude;
+                        console.log(`${cowId}  ${formattedTime} - mouseposition: ${mousePosition.x}, ${mousePosition.y} lon: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).longitude} lat: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).latitude} `);
+                        recordeddata.push({ cowid: cowId, time: formattedTime, longitude: longitude, latitude: latitude });
+                        writeToCOnsoleOutput(`${cowId}, ${formattedTime}, ${longitude},${latitude}\n`)
+
+                    } else {
+                        toggleRecording();
+                    }
+                }
+            }, loopIntevalMilliSeconds);
+        }
+        setUpRecording();
+
+
+
+
+    </script>
+</body>
+
+</html>
