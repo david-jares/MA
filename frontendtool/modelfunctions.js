@@ -41,8 +41,9 @@ class Space {
 
 
 class Sensor {
-    constructor(id, metasensorId, coverage, coordinates, geoCoordinates) {
+    constructor(id, metasensorId, sensorType, coverage, coordinates, geoCoordinates) {
         this.id = id;
+        this.sensorType = sensorType;
         this.metasensorId = metasensorId;
         this.coverage = coverage;
         this.coordinates = coordinates;

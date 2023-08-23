@@ -365,7 +365,7 @@ function calculateSpaces(canvas, width, height) {
     sensors.length = 0;
     for (let i = 0; i < spaces.length; i++) {  
         const space = spaces[i];
-        let sensor = new Sensor(space.id,1, [space.id], [space.coordinates[0], space.coordinates[1], 1], space.geoCoordinates);
+        let sensor = new Sensor(space.id,1,space.sensorType, [space.id], [space.coordinates[0], space.coordinates[1], 1], space.geoCoordinates);
         sensors.push(sensor);
     }
     console.log(sensors);
@@ -382,6 +382,19 @@ function calculateSpaces(canvas, width, height) {
     // 	Coordinates:    []int{0, 0, 0},
     // 	Neighbors:      []int{1, put them all in here},
     // })
+
+    let outsideSpace = new Space(0,"outside","Mioty",-1,spaces[0].geoCoordinates.longitude, spaces[0].geoCoordinates.latitude, spaces[0].geoCoordinates,[-1,-1,1],[-1,-1],[1]);
+    spaces.push(outsideSpace);
+    // {
+    //     "id": 0,
+    //     "description": "outside",
+    //     "capacity": -1,
+    //     "neighbors": [
+    //         8
+    //     ],
+    //     "coordinates": [6,1,1],
+    //     "geoCoordinates": [49.68181426283488,12.198898781537865,1]
+    // },
 
 }
 
