@@ -51,6 +51,7 @@
                         style="flex: 0 1 100px;" />
                 </div>
             </div>
+            <button id="exportSensorsAndSpaces" onclick="exportSensorsAndSpaces()">Export Spaces and Sensors to JSON</button>
             <hr style="border: 1px solid black;">
 
             <button id="resetTimerButton">Reset Timer</button>
@@ -59,7 +60,7 @@
             <button id="clearRecordsButton">Clear Records</button>
             </br>
             </br>
-            <button id="saveButton">Save as CSV</button>
+            <button id="saveButton">Export as CSV</button>
             <input type="file" id="csvFiles" multiple accept=".csv" onchange="combineFiles()">
             <button onclick="selectFiles()">Select and Combine CSV Files</button>
 

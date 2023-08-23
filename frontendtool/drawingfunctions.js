@@ -303,9 +303,10 @@ function calculateSpaces(canvas, width, height) {
         }
         if (foundRectangle) {
 
+            // create spaces
             let centerX = rectangle.x + (rectangle.width / 2);
             let centerY = rectangle.y + (rectangle.height / 2);
-            let geoCoords = ConvertCanvasXYToGeoCoords(centerX, centerY);
+            let geoCoords = ConvertCanvasXYToGeoCoords(centerX, centerY); // we use the center of the rectangel as the geooords for the space and for its sensor
             let space = new Space(spaceId + 1, "myspace",sensorType, "-1", geoCoords.longitude, geoCoords.latitude, [geoCoords.latitude, geoCoords.longitude, 1], [rectangle.x, rectangle.y, 1],[rectangle.x, rectangle.y], [])
             spaces.push(space);
             spaceId++;
@@ -360,6 +361,16 @@ function calculateSpaces(canvas, width, height) {
     // })
 
 
+    // create Sensors
+    sensors.length = 0;
+    for (let i = 0; i < spaces.length; i++) {  
+        const space = spaces[i];
+        let sensor = new Sensor(space.id,1, [space.id], [space.coordinates[0], space.coordinates[1], 1], space.geoCoordinates);
+        sensors.push(sensor);
+    }
+    console.log(sensors);
+
+    // TODO 
     // add outside space
     // spaceCollection = append(spaceCollection, &Space{
     // 	ID:             0,

@@ -1,6 +1,6 @@
 function helloDave() {
- console.log("Hello Dave"); 
- console.log(document)   
+    console.log("Hello Dave");
+    console.log(document)
 }
 function readFile(file) {
     return new Promise((resolve, reject) => {
@@ -63,4 +63,18 @@ function convertToCsv(data) {
 
 function selectFiles() {
     document.getElementById("csvFiles").click();
+}
+
+function exportSensorsAndSpaces() {
+    const data = {
+        sensors,
+        spaces
+    };
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = 'SensorsAndSpaces.json';
+    link.href = url;
+    link.click();
 }
