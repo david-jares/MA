@@ -38,6 +38,17 @@
         </div>
         </br>
         </br>
+        <hr style="border: 1px solid black;">
+        <div class="rightside" style=" flex: 1;  flex-direction: column;"">
+            <div class=" form-container" style="display: flex;flex-direction: column;">
+            <div style="display: flex;flex-direction: row;">
+                <label for="sensorWidthInMeters" style="flex: 0 1 250px;">Sensor Width In Meters:</label>
+                <input type="number" id="sensorWidthInMeters" oninput="updateUserData()" value="100"
+                    style="flex: 0 1 100px;" />
+            </div>
+        </div>
+        <hr style="border: 1px solid black;">
+
         <button id="resetTimerButton">Reset Timer</button>
         </br>
         </br>
@@ -53,16 +64,20 @@
         </div>
     </div>
     </div>
+    <script src="globals.js"></script>
     <script src="filefunctions.js"></script>
     <script src="drawingfunctions.js"></script>
     <script src="interactionfunctions.js"></script>
     <script src="utilityfunctions.js"></script>
+    <script src="tempfunctions.js"></script>
     <script>
 
 
         helloDave()
 
         let canvas = document.getElementById('myCanvas');
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
         let ctx = canvas.getContext('2d');
         let coordinatesLabel = document.getElementById('coordinatesLabel');
         const rect = canvas.getBoundingClientRect();
@@ -74,35 +89,21 @@
         const now = new Date('2021-01-01T01:00:00');
         let recordingID;
 
-        // Calculate the scaled coordinates for use in the isInsidePolygon function
-        let minLat = Math.min(...coordinates.map(p => p.lat));
-        let maxLat = Math.max(...coordinates.map(p => p.lat));
-        let minLon = Math.min(...coordinates.map(p => p.lon));
-        let maxLon = Math.max(...coordinates.map(p => p.lon));
-
-        let scaleX = canvas.width / (maxLon - minLon);
-        let scaleY = canvas.height / (maxLat - minLat);
-
-        let scaledCoordinates = coordinates.map(point => {
-            return {
-                x: (point.lon - minLon) * scaleX,
-                y: canvas.height - (point.lat - minLat) * scaleY
-            };
-        });
 
         clearConsoleOutput();
 
-        let cowId = '1';
-        let recordIntervalInSeconds = 60;
-        let recordDurationInDays = 2;
-        let timeSpeedMultiplier = 600;
+        
 
         function updateUserData() {
             cowId = document.getElementById('cowIdInput').value;
             recordIntervalInSeconds = parseInt(document.getElementById('recordIntervalInSeconds').value);
             recordDurationInDays = parseInt(document.getElementById('recordDurationInDays').value);
             timeSpeedMultiplier = parseInt(document.getElementById('timeSpeedMultiplier').value);
+            sensorWidthInMeters = parseInt(document.getElementById('sensorWidthInMeters').value);
             setUpRecording();
+            drawScene();
+
+
         }
         function printUserData() {
             console.log(`cowId: ${cowId} recordIntervalInSeconds: ${recordIntervalInSeconds} recordDurationInDays: ${recordDurationInDays} timeSpeedMultiplier: ${timeSpeedMultiplier}`);
@@ -110,74 +111,14 @@
 
         let isDrawing = false;
         let path = [];
-        drawPolygon(ctx);
-
+        drawScene();
 
         canvas.onmousedown = (e) => {
             toggleDrawing(e);
         };
 
-        function drawScene() {
-            // Redraw the entire scene
-            drawPolygon(ctx);
-            ctx.beginPath();
-            path.forEach((point, index) => {
-                if (index === 0) ctx.moveTo(point.x, point.y);
-                else ctx.lineTo(point.x, point.y);
-            });
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-        }
-        function toggleDrawing(evevnt) {
-            isDrawing = !isDrawing;
 
-            if (isDrawing) {
-
-                let rect = canvas.getBoundingClientRect();
-                let x = event.clientX - rect.left;
-                let y = event.clientY - rect.top;
-                if (isInsidePolygon({ x, y }, scaledCoordinates)) {
-                    path = [{ x, y }];
-
-                } else {
-                    isDrawing = false;
-                    console.log('Mouse is outside of polygon');
-                }
-
-            } else {
-                // Draw the final path
-                ctx.beginPath();
-                path.forEach((point, index) => {
-                    if (index === 0) ctx.moveTo(point.x, point.y);
-                    else ctx.lineTo(point.x, point.y);
-                });
-                ctx.strokeStyle = 'black';
-                ctx.lineWidth = 1;
-                ctx.stroke();
-
-            }
-        }
-        function updateDrawings(event) {
-            let rect = canvas.getBoundingClientRect();
-            if (isDrawing) {
-                let x = event.clientX - rect.left;
-                let y = event.clientY - rect.top;
-
-                if (!isInsidePolygon({ x, y }, scaledCoordinates)) {
-                    // Find the closest point on the polygon to the current mouse position
-                    const clampedPoint = closestPointOnPolygon({ x, y }, scaledCoordinates);
-                    x = clampedPoint.x;
-                    y = clampedPoint.y;
-                }
-                mousePosition.x = x;
-                mousePosition.y = y;
-                path.push({ x, y });
-
-                drawScene();
-            }
-        }
-
+       
         canvas.onmousemove = (e) => {
             // update live coordinates label
             geocoords = GetGeoocordinatesUnderMouse(e);
@@ -239,7 +180,7 @@
                         const formattedTime = newDate.toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
                         const latitude = MouseXYToGeoCoords(mousePosition.x, mousePosition.y).latitude;
                         const longitude = MouseXYToGeoCoords(mousePosition.x, mousePosition.y).longitude;
-                        console.log(`${cowId}  ${formattedTime} - mouseposition: ${mousePosition.x}, ${mousePosition.y} lon: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).longitude} lat: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).latitude} `);
+                        // console.log(`${cowId}  ${formattedTime} - mouseposition: ${mousePosition.x}, ${mousePosition.y} lon: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).longitude} lat: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).latitude} `);
                         recordeddata.push({ cowid: cowId, time: formattedTime, longitude: longitude, latitude: latitude });
                         writeToCOnsoleOutput(`${cowId}, ${formattedTime}, ${longitude},${latitude}\n`)
 
@@ -252,8 +193,8 @@
         setUpRecording();
 
 
-
-
+        
+        
     </script>
 </body>
 
