@@ -25,14 +25,16 @@
 
 
 class Space {
-    constructor(id, description, capacity, longitude, latitude, geoCoordinates, coordinates, neighbors) {
+    constructor(id, description, sensorType, capacity, longitude, latitude, geoCoordinates, coordinates,canvasCoordinates, neighbors) {
         this.id = id;
         this.description = description;
+        this.sensorType = sensorType;
         this.capacity = capacity;
         this.longitude = longitude;
         this.latitude = latitude;
         this.geoCoordinates = geoCoordinates;
         this.coordinates = coordinates;
+        this.canvasCoordinates = canvasCoordinates;
         this.neighbors = neighbors;
     }
 }

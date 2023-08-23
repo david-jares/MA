@@ -254,16 +254,16 @@ function closestPointOnPolygon(point, scaledCoordinates) {
 
 
 
-function drawRectangle(canvas, id, x, y, width, height) {
+function drawRectangle(canvas, id, x, y, width, height, fillColor = 'rgba(255, 0, 0, 0.25)') {
     const ctx = canvas.getContext('2d');
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, width, height);
-    ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+    ctx.fillStyle = fillColor;
     ctx.fillRect(x + 2, y + 2, width - 4, height - 4);
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.font = '16px Arial';
-    ctx.fillText(id, x + 5, y + 20);
+    ctx.font = '14px Arial';
+    ctx.fillText(id, x + 3, y + 14);
 }
 
 function calculateSpaces(canvas, width, height) {
@@ -273,12 +273,12 @@ function calculateSpaces(canvas, width, height) {
     const trianglesOutside = triangulatePolygon(polygonOutside);
     const trianglesBarn = triangulatePolygon(polygonBarn);
     const triangles = trianglesOutside.concat(trianglesBarn);
-    for (let i = 0; i < triangles.length; i++) {
-        const triangle = triangles[i];
-        // drawTriangle(ctx, triangle);
-    }
+    // for (let i = 0; i < triangles.length; i++) {
+    //     const triangle = triangles[i];
+    //     // drawTriangle(ctx, triangle);
+    // }
 
-    for (let i = 0; i < rectangles.length; i++) {
+    for (let i = 0, spaceId = 0; i < rectangles.length; i++) {
         const rectangle = rectangles[i];
         let x1 = rectangle.x;
         let x2 = rectangle.x + rectangle.width;
@@ -291,28 +291,26 @@ function calculateSpaces(canvas, width, height) {
         let p4 = { x: x2, y: y2 }
 
         let foundRectangle = false
-
-        for (let i = 0; i < triangles.length; i++) {
-            const triangle = triangles[i];
+        let sensorType = "";
+        for (let j = 0; j < triangles.length; j++) {
+            const triangle = triangles[j];
             if (isPointInsideTriangle(p1, triangle) || isPointInsideTriangle(p2, triangle) || isPointInsideTriangle(p3, triangle) || isPointInsideTriangle(p4, triangle)) {
                 // console.log(`Rectangle ${rectangle.id} overlaps with outside polygon`);
-
                 foundRectangle = true;
+                sensorType = j >= trianglesOutside.length ? "Beacon" : "Mioty";
                 break;
             }
         }
         if (foundRectangle) {
 
-            // let space = new Space()
-            // console.log(i);
             let centerX = rectangle.x + (rectangle.width / 2);
             let centerY = rectangle.y + (rectangle.height / 2);
             let geoCoords = ConvertCanvasXYToGeoCoords(centerX, centerY);
-
-            let space = new Space(i + 1, "myspace", "-1", geoCoords.longitude, geoCoords.latitude, [geoCoords.latitude, geoCoords.longitude, 1], [rectangle.x, rectangle.y, 1], [])
+            let space = new Space(spaceId + 1, "myspace",sensorType, "-1", geoCoords.longitude, geoCoords.latitude, [geoCoords.latitude, geoCoords.longitude, 1], [rectangle.x, rectangle.y, 1],[rectangle.x, rectangle.y], [])
             spaces.push(space);
+            spaceId++;
 
-            drawRectangle(canvas, rectangle.id, rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+            drawRectangle(canvas, spaceId, rectangle.x, rectangle.y, rectangle.width, rectangle.height, sensorType === "Mioty" ? 'rgba(255, 0, 0, 0.20)' : 'rgba(0, 0, 255, 0.20)');
         }
     }
 
@@ -347,6 +345,8 @@ function calculateSpaces(canvas, width, height) {
         space.coordinates[1] = newSpaceY;
     }
 
+    findAndAssignLogicalNeighbors(spaces);
+
     // sort by y primary and by x secondary
     spaces.sort((a, b) => {
         if (a.coordinates[1] === b.coordinates[1]) {
@@ -354,16 +354,79 @@ function calculateSpaces(canvas, width, height) {
         }
         return a.coordinates[1] - b.coordinates[1];
     });
-    // console.log(spaces);
-    spaces.forEach(a=>{
-        console.log(`${a.coordinates[0]}, ${a.coordinates[1]}`)
-    })
 
-    // rectangles.forEach(rectangle=> {
+    // spaces.forEach(a => {
+    //     console.log(`id: ${a.id} , x:${a.coordinates[0]}, y:${a.coordinates[1]} , nbs: ${a.neighbors}`)
+    // })
 
-    // });
+
+    // add outside space
+    // spaceCollection = append(spaceCollection, &Space{
+    // 	ID:             0,
+    // 	Description:    "outside",
+    // 	Capacity:       -1,
+    // 	Longitude:      spaceCollection[0].Longitude,
+    // 	Latitude:       spaceCollection[0].Latitude,
+    // 	GeoCoordinates: []float64{spaceCollection[0].Latitude, spaceCollection[0].Longitude, 1},
+    // 	Coordinates:    []int{0, 0, 0},
+    // 	Neighbors:      []int{1, put them all in here},
+    // })
 
 }
+
+function findAndAssignLogicalNeighbors(spaceCollection) {
+    // Sort the spaces by x-geocoordinate
+    spaceCollection.sort((a, b) => a.coordinates[0] - b.coordinates[0]);
+
+    // Find neighbors for each space
+    for (let i = 0; i < spaceCollection.length; i++) {
+        const space = spaceCollection[i];
+
+        if (space.neighbors.length === 8) {
+            continue;
+        }
+
+        for (let j = i + 1; j < spaceCollection.length; j++) {
+            const otherSpace = spaceCollection[j];
+
+            if (
+                Math.abs(space.coordinates[0] - otherSpace.coordinates[0]) <= 1 &&
+                Math.abs(space.coordinates[1] - otherSpace.coordinates[1]) <= 1
+            ) {
+                space.neighbors.push(otherSpace.id);
+                if (!otherSpace.neighbors.includes(space.id)) {
+                    otherSpace.neighbors.push(space.id);
+                }
+            }
+        }
+
+        // if for some circumstance we didnt find any neighbours, increase the radius
+        let radius = 2;
+        while (space.neighbors.length === 0 && radius < 10) {
+            for (let j = 0; j < spaceCollection.length; j++) {
+                const otherSpace = spaceCollection[j];
+                if (otherSpace.id === space.id) {
+                    continue;
+                }
+
+                if (
+                    Math.abs(space.coordinates[0] - otherSpace.coordinates[0]) <= radius &&
+                    Math.abs(space.coordinates[1] - otherSpace.coordinates[1]) <= radius
+                ) {
+                    space.neighbors.push(otherSpace.id);
+                    if (!otherSpace.neighbors.includes(space.id)) {
+                        otherSpace.neighbors.push(space.id);
+                    }
+                }
+            }
+            radius++;
+        }
+        space.neighbors.sort((a, b) => a - b);
+
+
+    }
+}
+
 function drawSpaces() {
 
 }
