@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Polygon Canvas</title>
+
 </head>
 
 <body>
@@ -39,37 +40,42 @@
         </br>
         </br>
         <hr style="border: 1px solid black;">
-        <div class="rightside" style=" flex: 1;  flex-direction: column;"">
+        <div class="rightside" style=" flex: 1;  flex-direction: column;">
             <div class=" form-container" style="display: flex;flex-direction: column;">
-            <div style="display: flex;flex-direction: row;">
-                <label for="sensorWidthInMeters" style="flex: 0 1 250px;">Sensor Width In Meters:</label>
-                <input type="number" id="sensorWidthInMeters" oninput="updateUserData()" value="100"
-                    style="flex: 0 1 100px;" />
+                <div style="display: flex;flex-direction: row;">
+                    <label for="sensorWidthInMeters" style="flex: 0 1 250px;">Sensor Width In Meters:</label>
+                    <!-- <input type="number" id="sensorWidthInMeters" oninput="updateUserData()" style="flex: 0 1 100px;" /> -->
+                    <input type="number" id="sensorWidthInMetersNumber" oninput="updateUserData()" min="0" max="100"
+                        step="1" style="flex: 0 1 100px;" />
+                    <input type="range" id="sensorWidthInMeters" oninput="updateUserData()" min="30" max="100" step="1"
+                        style="flex: 0 1 100px;" />
+                </div>
+            </div>
+            <hr style="border: 1px solid black;">
+
+            <button id="resetTimerButton">Reset Timer</button>
+            </br>
+            </br>
+            <button id="clearRecordsButton">Clear Records</button>
+            </br>
+            </br>
+            <button id="saveButton">Save as CSV</button>
+            <input type="file" id="csvFiles" multiple accept=".csv" onchange="combineFiles()">
+            <button onclick="selectFiles()">Select and Combine CSV Files</button>
+
+            <div style="display: flex;flex-direction: row; ">
+                <textarea id="consoleOutput" rows="5" style="flex: 0 1 750px;"></textarea>
             </div>
         </div>
-        <hr style="border: 1px solid black;">
-
-        <button id="resetTimerButton">Reset Timer</button>
-        </br>
-        </br>
-        <button id="clearRecordsButton">Clear Records</button>
-        </br>
-        </br>
-        <button id="saveButton">Save as CSV</button>
-        <input type="file" id="csvFiles" multiple accept=".csv" onchange="combineFiles()">
-        <button onclick="selectFiles()">Select and Combine CSV Files</button>
-
-        <div style="display: flex;flex-direction: row; ">
-            <textarea id="consoleOutput" rows="5" style="flex: 0 1 750px;"></textarea>
-        </div>
-    </div>
     </div>
     <script src="globals.js"></script>
+    <script src="modelfunctions.js"></script>
     <script src="filefunctions.js"></script>
     <script src="drawingfunctions.js"></script>
     <script src="interactionfunctions.js"></script>
     <script src="utilityfunctions.js"></script>
     <script src="tempfunctions.js"></script>
+    <script src="uifunctions.js"></script>
     <script>
 
 
@@ -89,10 +95,16 @@
         const now = new Date('2021-01-01T01:00:00');
         let recordingID;
 
+        document.getElementById('cowIdInput').value = cowId;
+        document.getElementById('recordIntervalInSeconds').value = recordIntervalInSeconds;
+        document.getElementById('recordDurationInDays').value = recordDurationInDays;
+        document.getElementById('timeSpeedMultiplier').value = timeSpeedMultiplier;
+        document.getElementById('sensorWidthInMeters').value = sensorWidthInMeters;
+        createSlider("sensorWidthInMetersNumber", "sensorWidthInMeters", 30, 100, 1, updateUserData);
 
         clearConsoleOutput();
 
-        
+
 
         function updateUserData() {
             cowId = document.getElementById('cowIdInput').value;
@@ -100,6 +112,7 @@
             recordDurationInDays = parseInt(document.getElementById('recordDurationInDays').value);
             timeSpeedMultiplier = parseInt(document.getElementById('timeSpeedMultiplier').value);
             sensorWidthInMeters = parseInt(document.getElementById('sensorWidthInMeters').value);
+            if (sensorWidthInMeters < 30) sensorWidthInMeters = 30;
             setUpRecording();
             drawScene();
 
@@ -118,11 +131,12 @@
         };
 
 
-       
+
         canvas.onmousemove = (e) => {
             // update live coordinates label
             geocoords = GetGeoocordinatesUnderMouse(e);
-            coordinatesLabel.innerText = `Coordinates: ${geocoords.latitude.toFixed(6)}, ${geocoords.longitude.toFixed(6)}`;
+            let mouseCoords = ConvertGeoCoordsToCanvasXY(geocoords.latitude.toFixed(6), geocoords.longitude.toFixed(6))
+            coordinatesLabel.innerText = `MouseCoordinates: lat: ${geocoords.latitude.toFixed(6)}, long: ${geocoords.longitude.toFixed(6)} , ( x: ${mouseCoords.x} , y:  ${mouseCoords.y})`;
 
             updateDrawings(e);
 
@@ -178,8 +192,8 @@
                     if (newDate.getTime() <= lastDate.getTime()) {
 
                         const formattedTime = newDate.toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
-                        const latitude = MouseXYToGeoCoords(mousePosition.x, mousePosition.y).latitude;
-                        const longitude = MouseXYToGeoCoords(mousePosition.x, mousePosition.y).longitude;
+                        const latitude = ConvertCanvasXYToGeoCoords(mousePosition.x, mousePosition.y).latitude;
+                        const longitude = ConvertCanvasXYToGeoCoords(mousePosition.x, mousePosition.y).longitude;
                         // console.log(`${cowId}  ${formattedTime} - mouseposition: ${mousePosition.x}, ${mousePosition.y} lon: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).longitude} lat: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).latitude} `);
                         recordeddata.push({ cowid: cowId, time: formattedTime, longitude: longitude, latitude: latitude });
                         writeToCOnsoleOutput(`${cowId}, ${formattedTime}, ${longitude},${latitude}\n`)
@@ -193,8 +207,8 @@
         setUpRecording();
 
 
-        
-        
+
+
     </script>
 </body>
 

@@ -1,37 +1,28 @@
-// const coordinates = [
-//     { lat: 49.68101400333333, lon: 12.20009942 },
-//     { lat: 49.68115214666667, lon: 12.200764548333334 },
-//     { lat: 49.682404365, lon: 12.199464525 },
-//     { lat: 49.68266766333333, lon: 12.197345735 },
-//     { lat: 49.68249247666667, lon: 12.197450201666667 },
-//     // { lat: 49.68194168, lon: 12.198492973333334 },
-//     { lat: 49.681985108333336, lon: 12.198418175 },
-//     { lat: 49.68204832833333, lon: 12.199110575 },
-//     { lat: 49.68131979333333, lon: 12.199891363333334 },
-//     { lat: 49.68111546833333, lon: 12.200051731666667 }
-// ];
-
-
 const polygonOutside = [];
 const polygonBarn = [];
 
 function computePolygon() {
     polygonOutside.length = 0;
-    let minLat = Math.min(...coordinates.map(p => p.lat));
-    let maxLat = Math.max(...coordinates.map(p => p.lat));
-    let minLon = Math.min(...coordinates.map(p => p.lon));
-    let maxLon = Math.max(...coordinates.map(p => p.lon));
+    let minLat = Math.min(...coordinatesOutside.map(p => p.lat));
+    let maxLat = Math.max(...coordinatesOutside.map(p => p.lat));
+    let minLon = Math.min(...coordinatesOutside.map(p => p.lon));
+    let maxLon = Math.max(...coordinatesOutside.map(p => p.lon));
 
     let scaleX = canvas.width / (maxLon - minLon);
     let scaleY = canvas.height / (maxLat - minLat);
 
-    // Draw the polygon
-    coordinates.forEach((point, index) => {
+    // Fill the polygonArrays
+    coordinatesOutside.forEach((point, index) => {
         let x = (point.lon - minLon) * scaleX;
         let y = canvas.height - (point.lat - minLat) * scaleY;  // Invert Y since canvas Y is top-down
         polygonOutside.push({ x: x, y: y });
     });
 
+    coordinatesBarn.forEach((point, index) => {
+        let x = (point.lon - minLon) * scaleX;
+        let y = canvas.height - (point.lat - minLat) * scaleY;  // Invert Y since canvas Y is top-down
+        polygonBarn.push({ x: x, y: y });
+    });
 
 }
 
@@ -165,11 +156,11 @@ function isPointInTriangle(point, triangle) {
 
 
 function drawPolygon(ctx) {
-    if (polygonOutside.length === 0) computePolygon();
+    if (polygonOutside.length === 0 || polygonBarn.length === 0) computePolygon();
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw the polygon
+    // Draw the OutsidePolygon
     ctx.beginPath();
 
     polygonOutside.forEach((point, index) => {
@@ -181,6 +172,21 @@ function drawPolygon(ctx) {
     });
     ctx.closePath();
     ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
+    ctx.fill();
+
+
+    // Draw the BarnPolygon
+    ctx.beginPath();
+
+    polygonBarn.forEach((point, index) => {
+
+        if (index === 0) ctx.moveTo(point.x, point.y);
+        else ctx.lineTo(point.x, point.y);
+
+        ctx.fillText(index, point.x + 5, point.y - 5);
+    });
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(0,200 , 255, 0.5)';
     ctx.fill();
 }
 function drawTriangle(ctx, triangle) {
@@ -194,6 +200,7 @@ function drawTriangle(ctx, triangle) {
     ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
     ctx.fill();
 }
+
 function isInsidePolygon(point, scaledCoordinates) {
     let x = point.x, y = point.y;
 
@@ -259,15 +266,20 @@ function drawRectangle(canvas, id, x, y, width, height) {
     ctx.fillText(id, x + 5, y + 20);
 }
 
-function drawSpaces(canvas, width, height) {
+function calculateSpaces(canvas, width, height) {
+    spaces.length = 0;
+
     const rectangles = subdivideCanvas(canvas, width, height);
-    const triangles = triangulatePolygon(polygonOutside);
+    const trianglesOutside = triangulatePolygon(polygonOutside);
+    const trianglesBarn = triangulatePolygon(polygonBarn);
+    const triangles = trianglesOutside.concat(trianglesBarn);
     for (let i = 0; i < triangles.length; i++) {
         const triangle = triangles[i];
         // drawTriangle(ctx, triangle);
     }
 
-    rectangles.forEach(rectangle => {
+    for (let i = 0; i < rectangles.length; i++) {
+        const rectangle = rectangles[i];
         let x1 = rectangle.x;
         let x2 = rectangle.x + rectangle.width;
         let y1 = rectangle.y;
@@ -290,11 +302,72 @@ function drawSpaces(canvas, width, height) {
             }
         }
         if (foundRectangle) {
+
+            // let space = new Space()
+            // console.log(i);
+            let centerX = rectangle.x + (rectangle.width / 2);
+            let centerY = rectangle.y + (rectangle.height / 2);
+            let geoCoords = ConvertCanvasXYToGeoCoords(centerX, centerY);
+
+            let space = new Space(i + 1, "myspace", "-1", geoCoords.longitude, geoCoords.latitude, [geoCoords.latitude, geoCoords.longitude, 1], [rectangle.x, rectangle.y, 1], [])
+            spaces.push(space);
+
             drawRectangle(canvas, rectangle.id, rectangle.x, rectangle.y, rectangle.width, rectangle.height);
         }
+    }
+
+    // sort spaces by x first and reassign coords[0] to be in simple ascending 
+    spaces.sort((a, b) => a.coordinates[0] - b.coordinates[0]);
+    // console.log(spaces);
+    let newSpaceX = 0;
+    let prevSpaceCoord0 = 0;
+    for (let i = 0; i < spaces.length; i++) {
+        const space = spaces[i];
+        if (i == 0) prevSpaceCoord0 = space.coordinates[0];
+
+        if (prevSpaceCoord0 < space.coordinates[0]) {
+            newSpaceX++;
+            prevSpaceCoord0 = space.coordinates[0];
+        }
+        space.coordinates[0] = newSpaceX;
+    }
+
+    // sort spaces by y first and reassign coords[1] to be in simple ascending 
+    spaces.sort((a, b) => a.coordinates[1] - b.coordinates[1]);
+    let newSpaceY = 0;
+    let prevSpaceCoord1 = 0;
+    for (let i = 0; i < spaces.length; i++) {
+        const space = spaces[i];
+        if (i == 0) prevSpaceCoord1 = space.coordinates[1];
+
+        if (prevSpaceCoord1 < space.coordinates[1]) {
+            newSpaceY++;
+            prevSpaceCoord1 = space.coordinates[1];
+        }
+        space.coordinates[1] = newSpaceY;
+    }
+
+    // sort by y primary and by x secondary
+    spaces.sort((a, b) => {
+        if (a.coordinates[1] === b.coordinates[1]) {
+            return a.coordinates[0] - b.coordinates[0];
+        }
+        return a.coordinates[1] - b.coordinates[1];
     });
+    // console.log(spaces);
+    spaces.forEach(a=>{
+        console.log(`${a.coordinates[0]}, ${a.coordinates[1]}`)
+    })
+
+    // rectangles.forEach(rectangle=> {
+
+    // });
 
 }
+function drawSpaces() {
+
+}
+
 
 function drawScene() {
     // Redraw the entire scene
@@ -308,7 +381,8 @@ function drawScene() {
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    drawSpaces(canvas, sensorWidthInMeters, sensorWidthInMeters);
+    calculateSpaces(canvas, sensorWidthInMeters, sensorWidthInMeters);
+    drawSpaces();
     // drawTriangle(ctx,[{x:10,y:10},{x:400,y:40},{x:200,y:300}])
 }
 
