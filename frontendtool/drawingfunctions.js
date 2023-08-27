@@ -368,7 +368,7 @@ function calculateSpaces(canvas, width, height) {
         let sensor = new Sensor(space.id,1,space.sensorType, [space.id], [space.coordinates[0], space.coordinates[1], 1], space.geoCoordinates);
         sensors.push(sensor);
     }
-    console.log(sensors);
+    // console.log(sensors);
 
     // TODO 
     // add outside space
