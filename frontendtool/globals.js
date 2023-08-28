@@ -10,7 +10,7 @@ let sensorWidthInMeters = 40;
 let sensors = [];
 let spaces = [];
 
-const coordinatesOutside = [
+const coordinatesPasture = [
     { lat: 49.68101400333333, lon: 12.20009942 },
     { lat: 49.68115214666667, lon: 12.200764548333334 },
     { lat: 49.682404365, lon: 12.199464525 },
@@ -64,13 +64,9 @@ const coordinatesCombined = [
 
 
 
-const allCoordinates = coordinatesOutside.concat(coordinatesBarn);
 
+//---------------------------------------------
 // Calculate the scaled coordinates for use in the isInsidePolygon function
-// let minLat = Math.min(...coordinatesOutside.map(p => p.lat));
-// let maxLat = Math.max(...coordinatesOutside.map(p => p.lat));
-// let minLon = Math.min(...coordinatesOutside.map(p => p.lon));
-// let maxLon = Math.max(...coordinatesOutside.map(p => p.lon));
 let minLat = Math.min(...coordinatesCombined.map(p => p.lat));
 let maxLat = Math.max(...coordinatesCombined.map(p => p.lat));
 let minLon = Math.min(...coordinatesCombined.map(p => p.lon));
@@ -79,17 +75,48 @@ let maxLon = Math.max(...coordinatesCombined.map(p => p.lon));
 let scaleX = canvasWidth / (maxLon - minLon);
 let scaleY = canvasHeight / (maxLat - minLat);
 
-// let scaledCoordinates = coordinatesOutside.map(point => {
-//     return {
-//         x: (point.lon - minLon) * scaleX,
-//         y: canvasHeight - (point.lat - minLat) * scaleY
-//     };
-// });
-let scaledCoordinates = coordinatesCombined.map(point => {
+let scaledCoordinatesCombined = coordinatesCombined.map(point => {
     return {
         x: (point.lon - minLon) * scaleX,
         y: canvasHeight - (point.lat - minLat) * scaleY
     };
 });
-console.log("scaled coords")
-console.log(scaledCoordinates)
+console.log("scaled coords Combined")
+console.log(scaledCoordinatesCombined)
+
+
+
+//---------------------------------------------
+let minLatBarn = Math.min(...coordinatesBarn.map(p => p.lat));
+let maxLatBarn = Math.max(...coordinatesBarn.map(p => p.lat));
+let minLonBarn = Math.min(...coordinatesBarn.map(p => p.lon));
+let maxLonBarn = Math.max(...coordinatesBarn.map(p => p.lon));
+
+let scaleXBarn = canvasWidth / (maxLonBarn - minLonBarn);
+let scaleYBarn = canvasHeight / (maxLatBarn - minLatBarn);
+
+let scaledCoordinatesBarn = coordinatesBarn.map(point => {
+    return {
+        x: (point.lon - minLonBarn) * scaleXBarn,
+        y: canvasHeight - (point.lat - minLatBarn) * scaleYBarn
+    };
+});
+
+
+
+//---------------------------------------------
+let minLatPasture = Math.min(...coordinatesPasture.map(p => p.lat));
+let maxLatPasture = Math.max(...coordinatesPasture.map(p => p.lat));
+let minLonPasture = Math.min(...coordinatesPasture.map(p => p.lon));
+let maxLonPasture = Math.max(...coordinatesPasture.map(p => p.lon));
+
+let scaleXPasture = canvasWidth / (maxLonPasture - minLonPasture);
+let scaleYPasture = canvasHeight / (maxLatPasture - minLatPasture);
+
+let scaledCoordinatesPasture = coordinatesPasture.map(point => {
+    return {
+        x: (point.lon - minLonPasture) * scaleXPasture,
+        y: canvasHeight - (point.lat - minLatPasture) * scaleYPasture
+    };
+});
+

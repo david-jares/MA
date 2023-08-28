@@ -3,16 +3,16 @@ const polygonBarn = [];
 
 function computePolygon() {
     polygonOutside.length = 0;
-    let minLat = Math.min(...coordinatesOutside.map(p => p.lat));
-    let maxLat = Math.max(...coordinatesOutside.map(p => p.lat));
-    let minLon = Math.min(...coordinatesOutside.map(p => p.lon));
-    let maxLon = Math.max(...coordinatesOutside.map(p => p.lon));
+    let minLat = Math.min(...coordinatesPasture.map(p => p.lat));
+    let maxLat = Math.max(...coordinatesPasture.map(p => p.lat));
+    let minLon = Math.min(...coordinatesPasture.map(p => p.lon));
+    let maxLon = Math.max(...coordinatesPasture.map(p => p.lon));
 
     let scaleX = canvas.width / (maxLon - minLon);
     let scaleY = canvas.height / (maxLat - minLat);
 
     // Fill the polygonArrays
-    coordinatesOutside.forEach((point, index) => {
+    coordinatesPasture.forEach((point, index) => {
         let x = (point.lon - minLon) * scaleX;
         let y = canvas.height - (point.lat - minLat) * scaleY;  // Invert Y since canvas Y is top-down
         polygonOutside.push({ x: x, y: y });
@@ -201,20 +201,78 @@ function drawTriangle(ctx, triangle) {
     ctx.fill();
 }
 
+
+
+/**
+ * 
+ The isInsidePolygon function takes two arguments: a point object with x and y properties, and an array of scaledCoordinates objects, each with x and y properties. The function returns a boolean value indicating whether the point is inside the polygon defined by the scaledCoordinates.
+
+The function uses the "ray casting" algorithm to determine whether the point is inside the polygon. The algorithm works by drawing a horizontal line from the point to the right, and counting the number of times the line intersects with the edges of the polygon. If the number of intersections is odd, the point is inside the polygon; if it's even, the point is outside.
+
+The function loops through each pair of adjacent coordinates in the scaledCoordinates array, and checks whether the horizontal line intersects with the edge defined by those coordinates. If it does, the function toggles a boolean variable inside, which starts out as false. The inside variable is toggled each time the horizontal line crosses an edge of the polygon.
+
+Finally, the function returns the value of the inside variable, which will be true if the point is inside the polygon, and false otherwise.
+
+Step by Step Explanation:
+
+The function initializes the x and y variables to the x and y properties of the point object.
+
+The function initializes the inside variable to false.
+
+The function loops through each pair of adjacent coordinates in the scaledCoordinates array, using the i and j variables to keep track of the current and previous coordinates.
+
+The function extracts the x and y values of the current and previous coordinates into the xi, yi, xj, and yj variables.
+
+The function calculates whether the horizontal line intersects with the edge defined by the current and previous coordinates, using the following formula:
+
+This formula checks whether the y coordinate of the point is between the y coordinates of the current and previous coordinates, and whether the x coordinate of the point is to the left of the intersection point of the horizontal line with the edge. If both conditions are true, the horizontal line intersects with the edge.
+
+If the horizontal line intersects with the edge, the function toggles the inside variable by setting it to the opposite of its current value.
+
+After looping through all the edges of the polygon, the function returns the value of the inside variable, which indicates whether the point is inside the polygon.} point 
+ */
 function isInsidePolygon(point, scaledCoordinates) {
     let x = point.x, y = point.y;
-    
+
     let inside = false;
     for (let i = 0, j = scaledCoordinates.length - 1; i < scaledCoordinates.length; j = i++) {
         let xi = scaledCoordinates[i].x, yi = scaledCoordinates[i].y;
         let xj = scaledCoordinates[j].x, yj = scaledCoordinates[j].y;
-        
+
         let intersect = ((yi > y) != (yj > y))
-        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
         if (intersect) inside = !inside;
     }
-    
-    console.log(inside ? "INSIDE" : "OUTSIDE");
+
+    // console.log(inside ? "INSIDE" : "OUTSIDE");
+    return inside;
+}
+
+
+
+function isInsidePasturePolygon(point) {
+    // debugger;
+    let pastureCoords = coordinatesPasture.map(p => {
+        // console.log(p)
+        return ConvertGeoCoordsToCanvasXY(p.lat, p.lon)
+    })
+    // console.log("pastureCoords")
+    // console.log(pastureCoords)
+    let inside = isInsidePolygon(point, pastureCoords)
+    // console.log(inside ? "INSIDE PASTURE" : "OUTSIDE PASTURE");
+    return inside;
+}
+
+function isInsideBarnPolygon(point) {
+
+    let barnCoords = coordinatesBarn.map(p => {
+        return ConvertGeoCoordsToCanvasXY(p.lat, p.lon)
+    })
+    // console.log("barnCoords")
+    // console.log(point);
+    // console.log(barnCoords)
+    let inside = isInsidePolygon(point, barnCoords)
+    // console.log(inside ? "INSIDE BARN" : "OUTSIDE BARN");
     return inside;
 }
 
@@ -308,7 +366,7 @@ function calculateSpaces(canvas, width, height) {
             let centerX = rectangle.x + (rectangle.width / 2);
             let centerY = rectangle.y + (rectangle.height / 2);
             let geoCoords = ConvertCanvasXYToGeoCoords(centerX, centerY); // we use the center of the rectangel as the geooords for the space and for its sensor
-            let space = new Space(spaceId + 1, "myspace",sensorType, "-1", geoCoords.longitude, geoCoords.latitude, [geoCoords.latitude, geoCoords.longitude, 1], [rectangle.x, rectangle.y, 1],[rectangle.x, rectangle.y], [])
+            let space = new Space(spaceId + 1, "myspace", sensorType, "-1", geoCoords.longitude, geoCoords.latitude, [geoCoords.latitude, geoCoords.longitude, 1], [rectangle.x, rectangle.y, 1], [rectangle.x, rectangle.y], [])
             spaces.push(space);
             spaceId++;
 
@@ -364,9 +422,9 @@ function calculateSpaces(canvas, width, height) {
 
     // create Sensors
     sensors.length = 0;
-    for (let i = 0; i < spaces.length; i++) {  
+    for (let i = 0; i < spaces.length; i++) {
         const space = spaces[i];
-        let sensor = new Sensor(space.id,1,space.sensorType, [space.id], [space.coordinates[0], space.coordinates[1], 1], space.geoCoordinates);
+        let sensor = new Sensor(space.id, 1, space.sensorType, [space.id], [space.coordinates[0], space.coordinates[1], 1], space.geoCoordinates);
         sensors.push(sensor);
     }
     // console.log(sensors);
@@ -384,7 +442,7 @@ function calculateSpaces(canvas, width, height) {
     // 	Neighbors:      []int{1, put them all in here},
     // })
 
-    let outsideSpace = new Space(0,"outside","Mioty",-1,spaces[0].geoCoordinates.longitude, spaces[0].geoCoordinates.latitude, spaces[0].geoCoordinates,[-1,-1,1],[-1,-1],[1]);
+    let outsideSpace = new Space(0, "outside", "Mioty", -1, spaces[0].geoCoordinates.longitude, spaces[0].geoCoordinates.latitude, spaces[0].geoCoordinates, [-1, -1, 1], [-1, -1], [1]);
     spaces.push(outsideSpace);
     // {
     //     "id": 0,
@@ -482,9 +540,11 @@ function toggleDrawing(evevnt) {
         let rect = canvas.getBoundingClientRect();
         let x = event.clientX - rect.left;
         let y = event.clientY - rect.top;
-        if (isInsidePolygon({ x, y }, scaledCoordinates)) {
+        if (isInsidePolygon({ x, y }, scaledCoordinatesCombined)) {
             path = [{ x, y }];
             console.log('Mouse in polygon');
+            if (isInsideBarnPolygon({ x, y })) { console.log("inside BARN") }
+            if (isInsidePasturePolygon({ x, y })) { console.log("inside PASTURE") }
 
         } else {
             isDrawing = false;
@@ -504,17 +564,23 @@ function toggleDrawing(evevnt) {
 
     }
 }
+
+
 function updateDrawings(event) {
     let rect = canvas.getBoundingClientRect();
     if (isDrawing) {
         let x = event.clientX - rect.left;
         let y = event.clientY - rect.top;
 
-        if (!isInsidePolygon({ x, y }, scaledCoordinates)) {
+        if (isInsideBarnPolygon({ x, y })) { console.log("inside BARN") }
+        if (isInsidePasturePolygon({ x, y })) { console.log("inside PASTURE") }
+        if (!isInsidePolygon({ x, y }, scaledCoordinatesCombined)) {
+
             // Find the closest point on the polygon to the current mouse position
-            const clampedPoint = closestPointOnPolygon({ x, y }, scaledCoordinates);
+            const clampedPoint = closestPointOnPolygon({ x, y }, scaledCoordinatesCombined);
             x = clampedPoint.x;
             y = clampedPoint.y;
+
         }
         mousePosition.x = x;
         mousePosition.y = y;
