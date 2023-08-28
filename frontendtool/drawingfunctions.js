@@ -203,17 +203,18 @@ function drawTriangle(ctx, triangle) {
 
 function isInsidePolygon(point, scaledCoordinates) {
     let x = point.x, y = point.y;
-
+    
     let inside = false;
     for (let i = 0, j = scaledCoordinates.length - 1; i < scaledCoordinates.length; j = i++) {
         let xi = scaledCoordinates[i].x, yi = scaledCoordinates[i].y;
         let xj = scaledCoordinates[j].x, yj = scaledCoordinates[j].y;
-
+        
         let intersect = ((yi > y) != (yj > y))
-            && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
         if (intersect) inside = !inside;
     }
-
+    
+    console.log(inside ? "INSIDE" : "OUTSIDE");
     return inside;
 }
 
@@ -483,6 +484,7 @@ function toggleDrawing(evevnt) {
         let y = event.clientY - rect.top;
         if (isInsidePolygon({ x, y }, scaledCoordinates)) {
             path = [{ x, y }];
+            console.log('Mouse in polygon');
 
         } else {
             isDrawing = false;
