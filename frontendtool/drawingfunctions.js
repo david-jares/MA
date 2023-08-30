@@ -171,7 +171,7 @@ function drawPolygon(ctx) {
         ctx.fillText(index, point.x + 5, point.y - 5);
     });
     ctx.closePath();
-    ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
+    ctx.fillStyle = isCowInPasture ? 'rgba(0, 255, 0, 0.75)' : 'rgba(0, 255, 0, 0.45)';
     ctx.fill();
 
 
@@ -186,7 +186,7 @@ function drawPolygon(ctx) {
         ctx.fillText(index, point.x + 5, point.y - 5);
     });
     ctx.closePath();
-    ctx.fillStyle = 'rgba(0,200 , 255, 0.5)';
+    ctx.fillStyle = isCowInBarn ? 'rgba(0,200 , 255, 0.75)' : 'rgba(0,200 , 255, 0.45)';
     ctx.fill();
 }
 function drawTriangle(ctx, triangle) {
@@ -239,6 +239,9 @@ function isInsidePolygon(point, scaledCoordinates) {
         let xi = scaledCoordinates[i].x, yi = scaledCoordinates[i].y;
         let xj = scaledCoordinates[j].x, yj = scaledCoordinates[j].y;
 
+        // let intersect = ((yi > y) != (yj > y))
+        //     && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        // if (intersect) inside = !inside; 
         let intersect = ((yi > y) != (yj > y))
             && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
         if (intersect) inside = !inside;
@@ -543,8 +546,9 @@ function toggleDrawing(evevnt) {
         if (isInsidePolygon({ x, y }, scaledCoordinatesCombined)) {
             path = [{ x, y }];
             console.log('Mouse in polygon');
-            if (isInsideBarnPolygon({ x, y })) { console.log("inside BARN") }
-            if (isInsidePasturePolygon({ x, y })) { console.log("inside PASTURE") }
+            if (isInsideBarnPolygon({ x, y })) { console.log("inside BARN"); isCowInBarn = true; } else { isCowInBarn = false; }
+            if (isInsidePasturePolygon({ x, y })) { console.log("inside PASTURE"); isCowInPasture = true; } else { isCowInPasture = false; }
+
 
         } else {
             isDrawing = false;
@@ -572,16 +576,17 @@ function updateDrawings(event) {
         let x = event.clientX - rect.left;
         let y = event.clientY - rect.top;
 
-        if (isInsideBarnPolygon({ x, y })) { console.log("inside BARN") }
-        if (isInsidePasturePolygon({ x, y })) { console.log("inside PASTURE") }
         if (!isInsidePolygon({ x, y }, scaledCoordinatesCombined)) {
 
             // Find the closest point on the polygon to the current mouse position
             const clampedPoint = closestPointOnPolygon({ x, y }, scaledCoordinatesCombined);
             x = clampedPoint.x;
             y = clampedPoint.y;
-
+            
+            
         }
+        if (isInsideBarnPolygon({ x, y })) { console.log("inside BARN"); isCowInBarn = true; } else { isCowInBarn = false; }
+        if (isInsidePasturePolygon({ x, y })) { console.log("inside PASTURE"); isCowInPasture = true; } else { isCowInPasture = false; }
         mousePosition.x = x;
         mousePosition.y = y;
         path.push({ x, y });

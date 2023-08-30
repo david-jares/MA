@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Polygon Canvas</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+
 
 </head>
 
@@ -51,7 +53,8 @@
                         style="flex: 0 1 100px;" />
                 </div>
             </div>
-            <button id="exportSensorsAndSpaces" onclick="exportSensorsAndSpaces()">Export Spaces and Sensors to JSON</button>
+            <button id="exportSensorsAndSpaces" onclick="exportSensorsAndSpaces()">Export Spaces and Sensors to
+                JSON</button>
             <hr style="border: 1px solid black;">
 
             <button id="resetTimerButton">Reset Timer</button>
@@ -66,6 +69,89 @@
 
             <div style="display: flex;flex-direction: row; ">
                 <textarea id="consoleOutput" rows="5" style="flex: 0 1 750px;"></textarea>
+            </div>
+            <hr style="border: 1px solid black;">
+            <h4>Configuration</h4>
+            <div id="configuration">
+                <button onclick="generateEvent('eventsList')">AddEvent</button>
+                <div id="eventsList" style="display: flex; flex-direction:column;">
+                    <div id="event1">
+                        <div class="inputrow">
+                            <div>
+                                <button onclick="toggleHideElement('event1details')">Fold</button>
+                            </div>
+                            <div>
+                                <button onclick="removeElement('event1')">Delete</button>
+                            </div>
+                        </div>
+                        <div id="event1details">
+                            <div class="inputrow">
+                                <label class="inputrowlabel-m">description: </label>
+                                <input type="text" oninput="updateUserData()" value="human readable description"
+                                    class=".inputrow-input-m" />
+                            </div>
+                            <div class="inputrow">
+                                <label class="inputrowlabel-m">id: </label>
+                                <input type="number" oninput="updateUserData()" value="1" class=".inputrow-input-m" />
+                            </div>
+                            <div class="inputrow">
+                                <label class="inputrowlabel-m">metaevent-id: </label>
+                                <input type="number" oninput="updateUserData()" value="1" class=".inputrow-input-m" />
+                            </div>
+                            <div class="inputrow">
+                                <label class="inputrowlabel-m">profile index: </label>
+                                <input type="number" oninput="updateUserData()" value="1" class=".inputrow-input-m" />
+                            </div>
+                            <div class="inputrow">
+                                <label class="inputrowlabel-m">space ids (commaseperated): </label>
+                                <input type="text" oninput="updateUserData()" value="1,2,3" class=".inputrow-input-m" />
+                            </div>
+                            <div class="inputrow">
+                                <label class="inputrowlabel-m">capacity MetaPerson id </label>
+                                <input type="number" oninput="updateUserData()" value="1" class=".inputrow-input-m" />
+                            </div>
+                            <div class="inputrow">
+                                <label class="inputrowlabel-m">capacity range min </label>
+                                <input type="number" oninput="updateUserData()" value="0" class=".inputrow-input-m" />
+                            </div>
+                            <div class="inputrow">
+                                <label class="inputrowlabel-m">capacity range max </label>
+                                <input type="number" oninput="updateUserData()" value="1000"
+                                    class=".inputrow-input-m" />
+                            </div>
+                            <div class="inputrow">
+                                <label class="inputrowlabel-m">start date: </label>
+                                <input type="date" oninput="updateUserData()" value="2000-01-01"
+                                    class="inputrow-input-l" />
+                            </div>
+                            <div class="inputrow">
+                                <label class="inputrowlabel-m">end date: </label>
+                                <input type="date" oninput="updateUserData()" value="2999-01-01"
+                                    class="inputrow-input-l" />
+                            </div>
+                            <div class="inputrow">
+                                <label class="inputrowlabel-m">period: </label>
+                                <input type="text" oninput="updateUserData()" value="day" class="inputrow-input-l" />
+                            </div>
+                            <div class="inputrow">
+                                <label class="inputrowlabel-m">period interval: </label>
+                                <input type="number" oninput="updateUserData()" value="1" class="inputrow-input-l" />
+                            </div>
+                            <div class="inputrow">
+                                <label class="inputrowlabel-m">start-time: </label>
+                                <input type="time" oninput="updateUserData()" value="00:00" class="inputrow-input-l" />
+                            </div>
+                            <div class="inputrow">
+                                <label class="inputrowlabel-m">end-time: </label>
+                                <input type="time" oninput="updateUserData()" value="23:59" class="inputrow-input-l" />
+                            </div>
+                            <div class="inputrow">
+                                <label class="inputrowlabel-m">required-attendance: </label>
+                                <input type="time" oninput="updateUserData()" value="02:00" class="inputrow-input-l" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -101,7 +187,12 @@
         document.getElementById('recordDurationInDays').value = recordDurationInDays;
         document.getElementById('timeSpeedMultiplier').value = timeSpeedMultiplier;
         document.getElementById('sensorWidthInMeters').value = sensorWidthInMeters;
+        // create html elements
         createSlider("sensorWidthInMetersNumber", "sensorWidthInMeters", 30, 100, 1, updateUserData);
+        // document.getElementById("addEvent").appendChild(createFoldableDiv());
+
+
+
 
         clearConsoleOutput();
 

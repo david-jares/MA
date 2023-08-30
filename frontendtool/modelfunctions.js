@@ -25,7 +25,7 @@
 
 
 class Space {
-    constructor(id, description, sensorType, capacity, longitude, latitude, geoCoordinates, coordinates,canvasCoordinates, neighbors) {
+    constructor(id, description, sensorType, capacity, longitude, latitude, geoCoordinates, coordinates, canvasCoordinates, neighbors) {
         this.id = id;
         this.description = description;
         this.sensorType = sensorType;
@@ -48,5 +48,25 @@ class Sensor {
         this.coverage = coverage;
         this.coordinates = coordinates;
         this.geoCoordinates = geoCoordinates;
+    }
+}
+
+class SMARTEvent {
+    constructor(id, description, metaEventId, profileIndex, spaceIds, capacityMetaPersonId, capacityRangeMin, capacityRangeMax, startDate, endDate, period, periodInterval, startTime, endTime, requiredAttendance) {
+        this.id = id;
+        this.description = description;
+        this.metaEventId = metaEventId;
+        this.profileIndex = profileIndex;
+        this.spaceIds = spaceIds;
+        this.capacityMetaPersonId = capacityMetaPersonId;
+        this.capacityRangeMin = capacityRangeMin;
+        this.capacityRangeMax = capacityRangeMax;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.period = period;
+        this.periodInterval = periodInterval;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.requiredAttendance = requiredAttendance;
     }
 }

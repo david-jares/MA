@@ -13,21 +13,88 @@ TODO:
 
 
 
-Gebrauch der 30 Tage Geld zurück Garantie
-    Hallo Fabian.
-    Ich habe vor ein par Wochen zwei deiner Kurse gebucht ( "Match to Date System" und maximum "Matches Videokurs“).
-    Ich muss sagen ich finde deinen Content prinzipiell richtig gut, du steckst sehr viel mühe rein um alles klar und verständlich zu erklären und die Konzepte gut zu vermitteln.
 
-    Da ich mich bereits in der Vergangenheit mit solchen Sachen auseinandergetzt habe ist für mich persönlich leider nicht viel neues dabei was ich dazu lernen kann.
+Wasser  | (Innen und Außen) Continuous access to clean water is generally provided, Cattle will visit water sources multiple times a day, especially in hot weather.
+Futter  | (Innen) Usually, cattle are fed twice a day. Some farms might use an automated feeding system.
+Milking | Dairy cattle are often milked two to three times a day.
+Resting | Cattle spend a significant amount of time lying down to rest and ruminate.
+Grazing | (Outside) Cattle spend a significant amount of time grazing. This can vary based on the quality and availability of pasture.
+Health Checks | Depending on the size of the pasture and the management style, farmers may or may not check on the herd daily. However, regular checks are common for signs of illness, injury, or predation
 
-    Deshalb möchte ich bitte von der 30-Tage Geld zurück Garantie für die beiden Kurse gebrauch machen und von meinem Kauf zurücktreten.
 
-    Ich werde dich trotzdem gerne weiterempfehlen und vielleicht in Zulkunft einen deiner anderen Kurse buchen die du in Planung hast.
+Es würde reichen wenn ich bestimmte Sensoren dafür bestimme dass da events stattfinden.
+Diese Im UI Hervorheben farblich / Outline / mit Label
+Es muss konfigurierbar sein wann diese events da stattfinden/ teilnehmeranzahl / teilnehmertyp / etc...
 
-    Ich hoffe das ist ok für dich.
 
-    Danke dir vielmals.
 
-    Über ein kurze Rückmeldung würde ich mich freuen.
 
-Beste Grüße, David :)
+Event:
+    {
+        "id" : 20,
+        "metaevent-id" : 12,
+        "description" : "Computer Lab #5",
+        "profile-index" : 1,
+        "space-ids" : [183, 189, 192],
+        "capacity" : [
+            {
+                "metaperson-id" : 1,
+                "range" : [2, 8]
+            },
+            {
+                "metaperson-id" : 2,
+                "range" : [0, 1]
+            },
+            ...
+        ]
+    },
+
+Time-Profile:
+    {
+        "pattern" : {
+            "start-date" : DateStr,
+            "end-date" : DateStr,
+            "period" : "day",
+            "period-details" : {
+                 "repeat-every" : int (default=1)
+            }
+    }
+        },
+        "duration" : {
+            "start-time" : [TimeStr, TimeStr],
+            "end-time" : [TimeStr, TimeStr],
+            "required" : [TimeStr, TimeStr]
+        }
+    
+
+
+n astrology, Venus is one of the planets that represents various aspects of human personality and life experiences. It is often associated with love, relationships, beauty, art, pleasure, and harmony. Venus is considered one of the inner planets in astrology, along with Mercury, Mars, Jupiter, and Saturn.
+
+Here are some of the key traits and concepts that Venus represents astrologically:
+
+Love and Relationships: Venus is strongly associated with matters of the heart, romantic relationships, and partnerships. It governs how one expresses affection, attraction, and the kind of partner one is drawn to.
+
+Beauty and Aesthetics: Venus is connected to beauty, both in terms of physical appearance and artistic expression. It influences personal style, fashion sense, and appreciation for art and culture.
+
+Sensuality and Pleasure: Venus is linked to sensuality, enjoyment, and pleasure. It governs how individuals experience and indulge in sensory pleasures, such as good food, music, and other sensory experiences.
+
+Harmony and Diplomacy: Venus represents the desire for harmony and balance in relationships and situations. It governs how individuals navigate conflicts and seek compromise to maintain peace.
+
+Creativity: Venus is associated with artistic endeavors, creativity, and the ability to appreciate and create beauty in various forms, such as art, music, and literature.
+
+Social Interaction: This planet reflects how one interacts socially, including social skills, charm, and the ability to connect with others on a pleasant and harmonious level.
+
+Values and Material Possessions: Venus governs personal values and what an individual finds valuable and worth acquiring. It's also connected to material possessions and the enjoyment one derives from them.
+
+Desire for Pleasure: Venus represents desires and the pursuit of pleasure, whether it's related to relationships, material possessions, or other forms of enjoyment.
+
+Self-Worth and Self-Image: Venus's influence extends to how individuals perceive their own worth and self-image. It can impact self-esteem and self-confidence.
+
+In astrology, the position of Venus in a person's birth chart is significant. Its placement in a specific zodiac sign and astrological house can provide insights into how these Venusian qualities manifest in a person's life. For example, Venus in Aries might express love and attraction more assertively, while Venus in Pisces might express love and attraction in a more dreamy and empathetic way.
+
+It's important to note that astrology is a belief system, and interpretations can vary among astrologers. Some people find value in astrology as a tool for self-reflection and gaining insights into their personality and relationships, while others do not view it as a valid or scientific practice.
+
+
+kippen
+I'm wondering How often do you daydream about having sex throughout the day ?
+for example today.

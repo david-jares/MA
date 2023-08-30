@@ -10,6 +10,13 @@ let sensorWidthInMeters = 40;
 let sensors = [];
 let spaces = [];
 
+let isCowInBarn = false;
+let isCowInPasture = false
+
+let nextEventID = 1;
+let smartEvents = [];
+
+
 const coordinatesPasture = [
     { lat: 49.68101400333333, lon: 12.20009942 },
     { lat: 49.68115214666667, lon: 12.200764548333334 },
@@ -65,6 +72,8 @@ const coordinatesCombined = [
 
 
 
+
+
 //---------------------------------------------
 // Calculate the scaled coordinates for use in the isInsidePolygon function
 let minLat = Math.min(...coordinatesCombined.map(p => p.lat));
@@ -86,37 +95,37 @@ console.log(scaledCoordinatesCombined)
 
 
 
-//---------------------------------------------
-let minLatBarn = Math.min(...coordinatesBarn.map(p => p.lat));
-let maxLatBarn = Math.max(...coordinatesBarn.map(p => p.lat));
-let minLonBarn = Math.min(...coordinatesBarn.map(p => p.lon));
-let maxLonBarn = Math.max(...coordinatesBarn.map(p => p.lon));
+// //---------------------------------------------
+// let minLatBarn = Math.min(...coordinatesBarn.map(p => p.lat));
+// let maxLatBarn = Math.max(...coordinatesBarn.map(p => p.lat));
+// let minLonBarn = Math.min(...coordinatesBarn.map(p => p.lon));
+// let maxLonBarn = Math.max(...coordinatesBarn.map(p => p.lon));
 
-let scaleXBarn = canvasWidth / (maxLonBarn - minLonBarn);
-let scaleYBarn = canvasHeight / (maxLatBarn - minLatBarn);
+// let scaleXBarn = canvasWidth / (maxLonBarn - minLonBarn);
+// let scaleYBarn = canvasHeight / (maxLatBarn - minLatBarn);
 
-let scaledCoordinatesBarn = coordinatesBarn.map(point => {
-    return {
-        x: (point.lon - minLonBarn) * scaleXBarn,
-        y: canvasHeight - (point.lat - minLatBarn) * scaleYBarn
-    };
-});
+// let scaledCoordinatesBarn = coordinatesBarn.map(point => {
+//     return {
+//         x: (point.lon - minLonBarn) * scaleXBarn,
+//         y: canvasHeight - (point.lat - minLatBarn) * scaleYBarn
+//     };
+// });
 
 
 
-//---------------------------------------------
-let minLatPasture = Math.min(...coordinatesPasture.map(p => p.lat));
-let maxLatPasture = Math.max(...coordinatesPasture.map(p => p.lat));
-let minLonPasture = Math.min(...coordinatesPasture.map(p => p.lon));
-let maxLonPasture = Math.max(...coordinatesPasture.map(p => p.lon));
+// //---------------------------------------------
+// let minLatPasture = Math.min(...coordinatesPasture.map(p => p.lat));
+// let maxLatPasture = Math.max(...coordinatesPasture.map(p => p.lat));
+// let minLonPasture = Math.min(...coordinatesPasture.map(p => p.lon));
+// let maxLonPasture = Math.max(...coordinatesPasture.map(p => p.lon));
 
-let scaleXPasture = canvasWidth / (maxLonPasture - minLonPasture);
-let scaleYPasture = canvasHeight / (maxLatPasture - minLatPasture);
+// let scaleXPasture = canvasWidth / (maxLonPasture - minLonPasture);
+// let scaleYPasture = canvasHeight / (maxLatPasture - minLatPasture);
 
-let scaledCoordinatesPasture = coordinatesPasture.map(point => {
-    return {
-        x: (point.lon - minLonPasture) * scaleXPasture,
-        y: canvasHeight - (point.lat - minLatPasture) * scaleYPasture
-    };
-});
+// let scaledCoordinatesPasture = coordinatesPasture.map(point => {
+//     return {
+//         x: (point.lon - minLonPasture) * scaleXPasture,
+//         y: canvasHeight - (point.lat - minLatPasture) * scaleYPasture
+//     };
+// });
 
