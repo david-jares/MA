@@ -1,0 +1,20 @@
+.hidden {
+    display: none;
+}
+
+.inputrow {
+    display: flex;
+    flex-direction: row;
+}
+
+.inputrowlabel-m {
+    flex: 0 1 300px;
+}
+
+.inputrow-input-m {
+    flex: 0 0 180px;
+}
+
+.inputrow-input-l {
+    flex: 0 1 300px;
+}
