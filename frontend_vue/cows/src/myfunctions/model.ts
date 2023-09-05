@@ -97,16 +97,16 @@ class SMARTEvent {
     capacityMetaPersonId: number;
     capacityRangeMin: number;
     capacityRangeMax: number;
-    startDate: Date;
-    endDate: Date;
+    startDate: string;
+    endDate: string;
     period: string;
     periodInterval: number;
     startTime: string;
     endTime: string;
-    requiredAttendance: number;
+    requiredAttendance: string;
     color: string;
 
-    constructor(id: number, description: string, metaeventId: number, profileIndex: number, spaceIds: string, capacityMetaPersonId: number, capacityRangeMin: number, capacityRangeMax: number, startDate: Date, endDate: Date, period: string, periodInterval: number, startTime: string, endTime: string, requiredAttendance: number, color: string) {
+    constructor(id: number, description: string, metaeventId: number, profileIndex: number, spaceIds: string, capacityMetaPersonId: number, capacityRangeMin: number, capacityRangeMax: number, startDate: string, endDate: string, period: string, periodInterval: number, startTime: string, endTime: string, requiredAttendance: string, color: string) {
         this.id = id;
         this.description = description;
         this.metaeventId = metaeventId;

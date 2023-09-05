@@ -2,11 +2,11 @@ import { defineStore } from 'pinia';
 import type { ref } from 'vue';
 
 interface GlobalsState {
-    
+
     mousePosition: Point;
 
     canvasRef: any;
-    ctx:CanvasRenderingContext2D | null;
+    ctx: CanvasRenderingContext2D | null;
     canvasWidth: number;
     canvasHeight: number;
 
@@ -44,7 +44,7 @@ interface GlobalsState {
 export const useGlobalsStore = defineStore({
     id: 'globals',  // unique id of the store
     state: (): GlobalsState => ({
-        mousePosition : { x: 0, y: 0 },
+        mousePosition: { x: 0, y: 0 },
         ctx: null,
         canvasRef: null,
         canvasWidth: 800,
@@ -139,16 +139,50 @@ export const useGlobalsStore = defineStore({
         // }
     },
     actions: {
-        // setName(newName: string) {
-        //     this.name = newName;
-        // },
-        // incrementAge() {
-        //     this.age++;
-        // },
         getNextEventID(): number {
             return this.nextEventID++;
+        },
+        addDefaultEvent(): number {
+            console.log("addEvent");
+            let event: SMARTEvent = {
+                // gs.smartEvents.push({
+                id: this.getNextEventID(),
+                description: "defaultevent",
+                // cowId: '1',
+                metaeventId: 1,
+                profileIndex: 1,
+                spaceIds: '1',
+                capacityMetaPersonId: 1,
+                capacityRangeMin: 1,
+                capacityRangeMax: 10000,
+                startDate: "2021-01-01",
+                endDate: "2021-02-01",
+                period: 'day',
+                periodInterval: 1,
+                startTime: "00:00",
+                endTime: "23:59",
+                requiredAttendance: '02:00',
+                color: "red"
+            }
+            this.smartEvents.push(event);
+            return event.id;
+        },
+        updateSmartEvent(eventid:number, property:string, value:any){
+            let event = this.smartEvents.find(e => e.id == eventid);
+            if(event){
+                // @ts-ignore
+                event[property] = value;
+            }
         }
-    },
+    }
+    // }
+    // setName(newName: string) {
+    //     this.name = newName;
+    // },
+    // incrementAge() {
+    //     this.age++;
+    // },
+    // },
 });
 
 // console.log("Globals store created");

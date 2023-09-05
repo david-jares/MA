@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { getCurrentInstance, onMounted, ref, toRefs } from 'vue';
+import { getCurrentInstance, onMounted, ref, toRefs, watch } from 'vue';
 
 
 const props = defineProps<{
@@ -24,11 +24,16 @@ if (props.inputType == "number") {
     startValue = props.defaultValue ? props.defaultValue : "rgba(255,255,0,255)";
 }
 const inputValue = ref(startValue);
-// const inputValue = ref(props.defaultValue? props.defaultValue : props.inputType == "text" ? "": 0);
+watch(inputValue, async (newValue, oldValue) => {
+    // console.log("inputValue changed from "+oldValue+" to "+newValue);
+    emit('onInput', newValue);
+})
+console.log("Start value is: " + inputValue.value);
 
-// function emitInputValue() {
-//     getCurrentInstance()?.emit('onInput', inputValue.value);
-// }
+const emit = defineEmits<{
+    (e: 'onInput', value: any): void;
+}>();
+
 defineExpose({
     getData
 })
@@ -43,8 +48,12 @@ function getData() {
     <div class="important">
         <div style="display: flex;flex-direction: row;">
             <label for="myinput" style="flex: 0 1 250px;">{{ labelText }}</label>
-            <input :type="inputType" id="myinput" v-model="inputValue" @input="() => $emit('onInput', inputValue)"
-                style="flex: 0 1 100px;" :min="minValue" :max="maxValue" />
+            <input :type="inputType" id="myinput" v-model="inputValue" style="flex: 0 1 100px;" :min="minValue"
+                :max="maxValue" />
+            <!-- <input :type="inputType" id="myinput" v-model="inputValue" @input="() => $emit('onInput', inputValue)"
+                style="flex: 0 1 100px;" :min="minValue" :max="maxValue" /> -->
+            <!-- <input :type="inputType" id="myinput" v-model="props.defaultValue" @input="() => $emit('onInput', inputValue)"
+                style="flex: 0 1 100px;" :min="minValue" :max="maxValue" /> -->
         </div>
     </div>
 </template>

@@ -11,15 +11,17 @@ import Test from './components/Test.vue'
 import './style.css'
 import { useGlobalsStore } from './stores/globals';
 import { onMounted, onBeforeUnmount, ref, getCurrentInstance } from 'vue';
+import SmartEventList from './components/SmartEventList.vue';
 
 const gs = useGlobalsStore();
 const testevent = ref();
+
 onMounted(() => {
   document.addEventListener('keydown', (ev) => {
     handleKeyDown(ev);
   })
 
-  console.log(testevent.value.getData());
+  // console.log(testevent.value.getData());
 });
 
 onBeforeUnmount(() => {
@@ -28,7 +30,7 @@ onBeforeUnmount(() => {
 
 const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === 'o') {
-    console.log(testevent.value.getData());
+    // console.log(testevent.value.getData());
   }
 }
 
@@ -68,13 +70,12 @@ const handleKeyDown = (event: KeyboardEvent) => {
             <MyButton @click="console.log('TODO: Select and Combine CSV-Files')">Select and Combine CSV-Files</MyButton>
             <SeparationLine></SeparationLine>
             <h2>Configuration</h2>
-            <MyButton @click="console.log('TODO: Add Event')">Add new Event</MyButton>
-            <SmartEvent ref="testevent"></SmartEvent>
+            <!-- <MyButton @click="console.log('TODO: Add Event')">Add new Event</MyButton> -->
+            <!-- <SmartEvent ref="testevent"></SmartEvent> -->
+            <SmartEventList></SmartEventList>
           </div>
         </div>
       </div>
-      <!-- <Test></Test> -->
-
       <!-- <nav>
         <RouterLink to="/">Home</RouterLink>
       </nav> -->

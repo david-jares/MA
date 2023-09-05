@@ -12,9 +12,6 @@ const props = defineProps<{
 
 const inputValue = ref(props.defaultValue);
 
-// function emitInputValue() {
-//     getCurrentInstance()?.emit('onInput', inputValue.value);
-// }
 </script>
 
 
