@@ -2,11 +2,11 @@ import { defineStore } from 'pinia';
 import type { ref } from 'vue';
 
 interface GlobalsState {
-    name: string;
-    age: number;
-
+    
+    mousePosition: Point;
 
     canvasRef: any;
+    ctx:CanvasRenderingContext2D | null;
     canvasWidth: number;
     canvasHeight: number;
 
@@ -44,8 +44,8 @@ interface GlobalsState {
 export const useGlobalsStore = defineStore({
     id: 'globals',  // unique id of the store
     state: (): GlobalsState => ({
-        name: 'John Doe',
-        age: 30,
+        mousePosition : { x: 0, y: 0 },
+        ctx: null,
         canvasRef: null,
         canvasWidth: 800,
         canvasHeight: 600,
@@ -134,17 +134,20 @@ export const useGlobalsStore = defineStore({
 
 
     getters: {
-        getName(): string {
-            return this.name;
-        }
+        // getName(): string {
+        //     return this.name;
+        // }
     },
     actions: {
-        setName(newName: string) {
-            this.name = newName;
-        },
-        incrementAge() {
-            this.age++;
-        },
+        // setName(newName: string) {
+        //     this.name = newName;
+        // },
+        // incrementAge() {
+        //     this.age++;
+        // },
+        getNextEventID(): number {
+            return this.nextEventID++;
+        }
     },
 });
 

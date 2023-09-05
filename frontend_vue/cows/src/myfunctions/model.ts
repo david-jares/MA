@@ -51,12 +51,12 @@ class Space {
     capacity: number;
     longitude: number;
     latitude: number;
-    geoCoordinates: string;
-    coordinates: string;
-    canvasCoordinates: string;
+    geoCoordinates: number[];
+    coordinates: number[]; // logical coordinate ( eg [0,1,1])
+    canvasCoordinates: number[];
     neighbors: number[];
 
-    constructor(id: number, description: string, sensorType: string, capacity: number, longitude: number, latitude: number, geoCoordinates: string, coordinates: string, canvasCoordinates: string, neighbors: number[]) {
+    constructor(id: number, description: string, sensorType: string, capacity: number, longitude: number, latitude: number, geoCoordinates: number[], coordinates: number[], canvasCoordinates: number[], neighbors: number[]) {
         this.id = id;
         this.description = description;
         this.sensorType = sensorType;
@@ -74,11 +74,11 @@ class Sensor {
     id: number;
     metasensorId: number;
     sensorType: string;
-    coverage: number;
-    coordinates: string;
-    geoCoordinates: string;
+    coverage: number[];
+    coordinates: number[];
+    geoCoordinates: number[];
 
-    constructor(id: number, metasensorId: number, sensorType: string, coverage: number, coordinates: string, geoCoordinates: string) {
+    constructor(id: number, metasensorId: number, sensorType: string, coverage: number[], coordinates: number[], geoCoordinates: number[]) {
         this.id = id;
         this.sensorType = sensorType;
         this.metasensorId = metasensorId;
@@ -93,7 +93,7 @@ class SMARTEvent {
     description: string;
     metaeventId: number;
     profileIndex: number;
-    spaceIds: number[];
+    spaceIds: string;
     capacityMetaPersonId: number;
     capacityRangeMin: number;
     capacityRangeMax: number;
@@ -106,7 +106,7 @@ class SMARTEvent {
     requiredAttendance: number;
     color: string;
 
-    constructor(id: number, description: string, metaeventId: number, profileIndex: number, spaceIds: number[], capacityMetaPersonId: number, capacityRangeMin: number, capacityRangeMax: number, startDate: Date, endDate: Date, period: string, periodInterval: number, startTime: string, endTime: string, requiredAttendance: number, color: string) {
+    constructor(id: number, description: string, metaeventId: number, profileIndex: number, spaceIds: string, capacityMetaPersonId: number, capacityRangeMin: number, capacityRangeMax: number, startDate: Date, endDate: Date, period: string, periodInterval: number, startTime: string, endTime: string, requiredAttendance: number, color: string) {
         this.id = id;
         this.description = description;
         this.metaeventId = metaeventId;

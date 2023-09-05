@@ -10,6 +10,7 @@ const coordinatesLabel = ref();
 
 onMounted(() => {
     globalsStore.canvasRef = canvas;
+    globalsStore.ctx = canvas.value.getContext("2d");
     canvas.value.width = globalsStore.canvasWidth;
     canvas.value.height = globalsStore.canvasHeight;
 })
