@@ -18,3 +18,18 @@
 .inputrow-input-l {
     flex: 0 1 300px;
 }
+
+
+.rowequal {
+    display: flex;
+}
+
+.rowequal > * {
+    flex: 1;
+    /* width: 100%; */
+    /* flex-grow: 1; */
+}
+
+.mybutton{
+    margin: 3px 3px 3px 3px
+}

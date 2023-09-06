@@ -9,7 +9,9 @@ const props = defineProps<{
     minValue: number;
     maxValue: number;
 }>();
-
+const emit = defineEmits<{
+    (e: 'onInput', value: any): void;
+}>();
 const inputValue = ref(props.defaultValue);
 
 </script>

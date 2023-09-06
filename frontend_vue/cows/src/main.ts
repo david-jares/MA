@@ -1,6 +1,6 @@
 import './assets/main.css'
 
-import { createApp } from 'vue'
+import { VueElement, createApp } from 'vue'
 import { createPinia } from 'pinia'
 
 import router from './router'
@@ -11,6 +11,7 @@ import {ref} from 'vue';
 import { useGlobalsStore } from './stores/globals'
 
 const app = createApp(App)
+export const EventBus = app;
 
 app.use(createPinia())
 app.use(router)
@@ -19,3 +20,7 @@ const globalsStore = useGlobalsStore();
 // let globals = ref(combined);
 // app.provide('myglobals', globals);
 app.mount('#app')
+
+
+// events
+export const OnCowIDChanged = 'OnCowIDChanged';

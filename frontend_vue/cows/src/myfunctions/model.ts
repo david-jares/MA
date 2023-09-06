@@ -24,7 +24,7 @@
 // }
 
 
-class CanvasCoordinate{
+export class CanvasCoordinate{
     x: number;
     y: number;
 
@@ -34,7 +34,7 @@ class CanvasCoordinate{
     }
 }
 
-class GeoCoordinate{
+export class GeoCoordinate{
     lat: number;
     lon: number;
 
@@ -44,7 +44,7 @@ class GeoCoordinate{
     }
 }
 
-class Space {
+export class Space {
     id: number;
     description: string;
     sensorType: string;
@@ -70,7 +70,7 @@ class Space {
     }
 }
 
-class Sensor {
+export class Sensor {
     id: number;
     metasensorId: number;
     sensorType: string;
@@ -88,7 +88,7 @@ class Sensor {
     }
 }
 
-class SMARTEvent {
+export class SMARTEvent {
     id: number;
     description: string;
     metaeventId: number;

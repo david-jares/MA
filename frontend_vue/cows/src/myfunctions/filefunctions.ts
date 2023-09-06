@@ -1,11 +1,11 @@
 import { useGlobalsStore } from "@/stores/globals";
 
-function helloDave(): void {
+export function helloDave(): void {
   console.log("Hello Dave");
   console.log(document);
 }
 
-function readFile(file: File): Promise<string> {
+export function readFile(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = event => {
@@ -20,7 +20,7 @@ function readFile(file: File): Promise<string> {
   });
 }
 
-function downloadCombinedCSV(content: string): void {
+export function downloadCombinedCSV(content: string): void {
   const blob = new Blob([content], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -32,7 +32,7 @@ function downloadCombinedCSV(content: string): void {
   URL.revokeObjectURL(url);
 }
 
-async function combineFiles(): Promise<void> {
+export async function combineFiles(): Promise<void> {
   const fileInput = document.getElementById('csvFiles') as HTMLInputElement;
   const files = Array.from(fileInput.files!).sort((a, b) => a.name.localeCompare(b.name));
 
@@ -48,7 +48,7 @@ async function combineFiles(): Promise<void> {
     }
   }
 }
-function saveAsCsv(data: object[]): void {
+export function saveAsCsv(data: object[]): void {
   const csv = convertToCsv(data);
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
@@ -61,17 +61,17 @@ function saveAsCsv(data: object[]): void {
   document.body.removeChild(link);
 }
 
-function convertToCsv(data: object[]): string {
+export function convertToCsv(data: object[]): string {
   const header = Object.keys(data[0]).join(',');
   const rows = data.map(obj => Object.values(obj).join(','));
   return `${header}\n${rows.join('\n')}`;
 }
 
-function selectFiles(): void {
+export function selectFiles(): void {
   (document.getElementById("csvFiles") as HTMLInputElement).click();
 }
 
-function exportSensorsAndSpaces(): void {
+export function exportSensorsAndSpaces(): void {
   const gs = useGlobalsStore();
 
   const data = {

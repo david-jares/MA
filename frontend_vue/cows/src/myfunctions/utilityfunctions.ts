@@ -1,16 +1,17 @@
-const consoleOutput: HTMLTextAreaElement = document.getElementById('consoleOutput') as HTMLTextAreaElement;
 
-function writeToConsoleOutput(content: string): void {
+export function writeToConsoleOutput(content: string): void {
+    let consoleOutput: HTMLTextAreaElement = document.getElementById('consoleOutput') as HTMLTextAreaElement;
     consoleOutput.value += content;
     consoleOutput.scrollTop = consoleOutput.scrollHeight;
 }
 
-function clearConsoleOutput(): void {
+export function clearConsoleOutput(): void {
+    let consoleOutput: HTMLTextAreaElement = document.getElementById('consoleOutput') as HTMLTextAreaElement;
     consoleOutput.value = 'cattle_id, timestamp, latitude, longitude\n';
     console.log('cleared console output');
 }
 
-interface Rectangle {
+export interface Rectangle {
     id: number;
     x: number;
     y: number;
@@ -18,7 +19,7 @@ interface Rectangle {
     height: number;
 }
 
-function subdivideCanvas(canvas: HTMLCanvasElement, width: number, height: number): Rectangle[] {
+export function subdivideCanvas(canvas: HTMLCanvasElement, width: number, height: number): Rectangle[] {
     const rectangles: Rectangle[] = [];
     const numCols: number = Math.floor(canvas.width / width);
     const numRows: number = Math.floor(canvas.height / height);

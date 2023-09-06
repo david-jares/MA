@@ -1,5 +1,8 @@
 import { useGlobalsStore } from "@/stores/globals";
 import { ConvertGeoCoordsToCanvasXY, ConvertCanvasXYToGeoCoords } from "./interactionfunctions";
+import { subdivideCanvas } from "./utilityfunctions";
+import { isPointInsideTriangle, type Point, type Triangle } from "./tempfunctions";
+import { Space, Sensor } from "./model";
 
 
 const polygonOutside: { x: number; y: number }[] = [];
@@ -8,7 +11,7 @@ let path: Point[] = [];
 let isDrawing = false;
 
 
-function computePolygon(): void {
+export function computePolygon(): void {
     const gs = useGlobalsStore();
     polygonOutside.length = 0;
     const minLat = Math.min(...gs.coordinatesPasture.map(p => p.lat));
@@ -34,7 +37,7 @@ function computePolygon(): void {
 }
 
 
-function triangulatePolygon(polygon: { x: number, y: number }[]): { x: number, y: number }[][] {
+export function triangulatePolygon(polygon: { x: number, y: number }[]): { x: number, y: number }[][] {
     const triangles: { x: number, y: number }[][] = [];
     const n = polygon.length;
 
@@ -92,7 +95,7 @@ function triangulatePolygon(polygon: { x: number, y: number }[]): { x: number, y
     return triangles;
 }
 
-function getArea(polygon: { x: number, y: number }[]): number {
+export function getArea(polygon: { x: number, y: number }[]): number {
     let area = 0;
     const n = polygon.length;
     for (let p = n - 1, q = 0; q < n; p = q++) {
@@ -101,7 +104,7 @@ function getArea(polygon: { x: number, y: number }[]): number {
     return area / 2;
 }
 
-function snip(polygon: { x: number, y: number }[], u: number, v: number, w: number, n: number, V: number[]): boolean {
+export function snip(polygon: { x: number, y: number }[], u: number, v: number, w: number, n: number, V: number[]): boolean {
     const Ax = polygon[V[u]].x;
     const Ay = polygon[V[u]].y;
     const Bx = polygon[V[v]].x;
@@ -129,7 +132,7 @@ function snip(polygon: { x: number, y: number }[], u: number, v: number, w: numb
     return true;
 }
 
-function insideTriangle(Ax: number, Ay: number, Bx: number, By: number, Cx: number, Cy: number, Px: number, Py: number): boolean {
+export function insideTriangle(Ax: number, Ay: number, Bx: number, By: number, Cx: number, Cy: number, Px: number, Py: number): boolean {
     const ax = Cx - Bx;
     const ay = Cy - By;
     const bx = Ax - Cx;
@@ -150,7 +153,7 @@ function insideTriangle(Ax: number, Ay: number, Bx: number, By: number, Cx: numb
     return ((aCROSSbp >= 0) && (bCROSScp >= 0) && (cCROSSap >= 0));
 }
 
-function isPointInTriangle(point: [number, number], triangle: [[number, number], [number, number], [number, number]]): boolean {
+export function isPointInTriangle(point: [number, number], triangle: [[number, number], [number, number], [number, number]]): boolean {
     const [p1, p2, p3] = triangle;
     const [x, y] = point;
 
@@ -162,7 +165,7 @@ function isPointInTriangle(point: [number, number], triangle: [[number, number],
 }
 
 
-function drawPolygon(ctx: CanvasRenderingContext2D): void {
+export function drawPolygon(ctx: CanvasRenderingContext2D): void {
     const gs = useGlobalsStore();
     if (polygonOutside.length === 0 || polygonBarn.length === 0) computePolygon();
     // Clear the canvas
@@ -199,7 +202,7 @@ function drawPolygon(ctx: CanvasRenderingContext2D): void {
 }
 
 
-function drawTriangle(ctx: CanvasRenderingContext2D, triangle: { x: number, y: number }[]): void {
+export function drawTriangle(ctx: CanvasRenderingContext2D, triangle: { x: number, y: number }[]): void {
     ctx.beginPath();
     ctx.moveTo(triangle[0].x, triangle[0].y);
     ctx.lineTo(triangle[1].x, triangle[1].y);
@@ -241,7 +244,7 @@ If the horizontal line intersects with the edge, the function toggles the inside
 
 After looping through all the edges of the polygon, the function returns the value of the inside variable, which indicates whether the point is inside the polygon.} point 
  */
-function isInsidePolygon(point: { x: number, y: number }, scaledCoordinates: { x: number, y: number }[]): boolean {
+export function isInsidePolygon(point: { x: number, y: number }, scaledCoordinates: { x: number, y: number }[]): boolean {
     let x = point.x, y = point.y;
 
     let inside = false;
@@ -259,7 +262,7 @@ function isInsidePolygon(point: { x: number, y: number }, scaledCoordinates: { x
 
 
 
-function isInsidePasturePolygon(point: { lat: number, lon: number }): boolean {
+export function isInsidePasturePolygon(point: { lat: number, lon: number }): boolean {
     const gs = useGlobalsStore();
 
     let pastureCoords = gs.coordinatesPasture.map(p => {
@@ -269,7 +272,7 @@ function isInsidePasturePolygon(point: { lat: number, lon: number }): boolean {
     return inside;
 }
 
-function isInsideBarnPolygon(point: { lat: number, lon: number }): boolean {
+export function isInsideBarnPolygon(point: { lat: number, lon: number }): boolean {
     const gs = useGlobalsStore();
     let barnCoords = gs.coordinatesBarn.map(p => {
         return ConvertGeoCoordsToCanvasXY(p.lat, p.lon)
@@ -278,7 +281,7 @@ function isInsideBarnPolygon(point: { lat: number, lon: number }): boolean {
     return inside;
 }
 
-function closestPointOnSegment(point: { x: number, y: number }, segmentStart: { x: number, y: number }, segmentEnd: { x: number, y: number }): { x: number, y: number } {
+export function closestPointOnSegment(point: { x: number, y: number }, segmentStart: { x: number, y: number }, segmentEnd: { x: number, y: number }): { x: number, y: number } {
     const dx = segmentEnd.x - segmentStart.x;
     const dy = segmentEnd.y - segmentStart.y;
     const t = ((point.x - segmentStart.x) * dx + (point.y - segmentStart.y) * dy) / (dx * dx + dy * dy);
@@ -292,7 +295,7 @@ function closestPointOnSegment(point: { x: number, y: number }, segmentStart: { 
     };
 }
 
-function closestPointOnPolygon(point: { x: number, y: number }, scaledCoordinates: { x: number, y: number }[]): { x: number, y: number } | null {
+export function closestPointOnPolygon(point: { x: number, y: number }, scaledCoordinates: { x: number, y: number }[]): { x: number, y: number } | null {
     let closestPoint = null;
     let smallestDistance = Infinity;
 
@@ -316,7 +319,7 @@ function closestPointOnPolygon(point: { x: number, y: number }, scaledCoordinate
 
 
 
-function drawRectangle(canvas: HTMLCanvasElement, x: number, y: number, width: number, height: number, id: number = -1, fillColor: string = 'rgba(255, 0, 0, 0.25)'): void {
+export function drawRectangle(canvas: HTMLCanvasElement, id: number = -1, x: number, y: number, width: number, height: number, fillColor: string = 'rgba(255, 0, 0, 0.25)'): void {
     const ctx = canvas.getContext('2d');
     if (ctx === null) return;
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
@@ -330,7 +333,7 @@ function drawRectangle(canvas: HTMLCanvasElement, x: number, y: number, width: n
         ctx.fillText(id.toString(), x + 3, y + 14);
     }
 }
-function calculateSpaces(canvas: HTMLCanvasElement, width: number, height: number): void {
+export function calculateSpaces(canvas: HTMLCanvasElement, width: number, height: number): void {
     const gs = useGlobalsStore();
 
     gs.spaces.length = 0;
@@ -367,15 +370,13 @@ function calculateSpaces(canvas: HTMLCanvasElement, width: number, height: numbe
             }
         }
         if (foundRectangle) {
-
             // create spaces
             let centerX = rectangle.x + (rectangle.width / 2);
             let centerY = rectangle.y + (rectangle.height / 2);
-            let geoCoords = ConvertCanvasXYToGeoCoords(centerX, centerY); // we use the center of the rectangel as the geooords for the space and for its sensor
+            let geoCoords = ConvertCanvasXYToGeoCoords(centerX, centerY); // we use the center of the rectangle as the geooords for the space and for its sensor
             let space = new Space(spaceId + 1, "myspace", sensorType, -1, geoCoords.longitude, geoCoords.latitude, [geoCoords.latitude, geoCoords.longitude, 1], [rectangle.x, rectangle.y, 1], [rectangle.x, rectangle.y], [])
             gs.spaces.push(space);
             spaceId++;
-
             drawRectangle(canvas, spaceId, rectangle.x, rectangle.y, rectangle.width, rectangle.height, sensorType === "Mioty" ? 'rgba(255, 0, 0, 0.20)' : 'rgba(0, 0, 255, 0.20)');
         }
     }
@@ -433,7 +434,7 @@ function calculateSpaces(canvas: HTMLCanvasElement, width: number, height: numbe
     gs.spaces.push(outsideSpace);
 
 }
-function findAndAssignLogicalNeighbors(spaceCollection: Space[]): void {
+export function findAndAssignLogicalNeighbors(spaceCollection: Space[]): void {
     // Sort the spaces by x-geocoordinate
     spaceCollection.sort((a, b) => a.coordinates[0] - b.coordinates[0]);
 
@@ -484,11 +485,12 @@ function findAndAssignLogicalNeighbors(spaceCollection: Space[]): void {
     }
 }
 
-function drawSpaces() {
+export function drawSpaces() {
 
 }
 
-function drawScene(): void {
+export function drawScene(): void {
+    console.log('drawScene');
     // Redraw the entire scene
     const gs = useGlobalsStore();
     // const ctx = gs.ctx;
@@ -508,7 +510,8 @@ function drawScene(): void {
     drawSMARTEvents();
 }
 
-function toggleDrawing(event: MouseEvent): void {
+export function toggleDrawing(event: MouseEvent): void {
+    console.log('toggleDrawing');
     const gs = useGlobalsStore();
     isDrawing = !isDrawing;
 
@@ -531,14 +534,12 @@ function toggleDrawing(event: MouseEvent): void {
 
     } else {
         // Draw the final path
-
         gs.ctx?.beginPath();
         path.forEach((point, index) => {
             if (index === 0) gs.ctx?.moveTo(point.x, point.y);
             else gs.ctx?.lineTo(point.x, point.y);
         });
         if (gs.ctx != null) {
-
             gs.ctx.strokeStyle = 'black';
             gs.ctx.lineWidth = 1;
             gs.ctx.stroke();
@@ -548,11 +549,13 @@ function toggleDrawing(event: MouseEvent): void {
 }
 
 
-function updateDrawings(event: MouseEvent): void {
+export function updateDrawings(event: MouseEvent): void {
+    console.log('updateDrawings');
     const gs = useGlobalsStore();
 
     let rect = gs.canvasRef.getBoundingClientRect();
     if (isDrawing) {
+        // debugger;
         let x = event.clientX - rect.left;
         let y = event.clientY - rect.top;
 
@@ -579,11 +582,11 @@ function updateDrawings(event: MouseEvent): void {
 
 
 
-function drawSMARTEvents(): void {
+export function drawSMARTEvents(): void {
     const gs = useGlobalsStore();
 
     gs.smartEvents.forEach(smartEvent => {
-        console.log(smartEvent.spaceIds);
+        // console.log(smartEvent.spaceIds);
         let spaceIds = smartEvent.spaceIds.split(',').map(Number);
         for (let i = 0; i < spaceIds.length; i++) {
             const spaceId = spaceIds[i];

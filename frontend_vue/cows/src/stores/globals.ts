@@ -1,3 +1,5 @@
+import type { CanvasCoordinate, GeoCoordinate, SMARTEvent, Sensor, Space } from '@/myfunctions/model';
+import type { Point } from '@/myfunctions/tempfunctions';
 import { defineStore } from 'pinia';
 import type { ref } from 'vue';
 
@@ -15,14 +17,15 @@ interface GlobalsState {
     recordDurationInDays: number;
     timeSpeedMultiplier: number;
     sensorWidthInMeters: number;
-
+    recordedData: any[];
     sensors: Sensor[];
     spaces: Space[];
-
+    loops: number;
     isCowInBarn: boolean;
     isCowInPasture: boolean;
 
     nextEventID: number;
+    nextUtilityId: number;
     smartEvents: SMARTEvent[];
 
     coordinatesPasture: GeoCoordinate[];
@@ -39,12 +42,24 @@ interface GlobalsState {
     scaleY: number;
     scaledCoordinatesCombined: CanvasCoordinate[];
 
+    tipEventDescription: string;
+    tipEventId: string;
+    tipEventMetaeventId: string;
+    tipEventProfileIndex: string;
+    tipEventSpaceIds: string;
+    tipEventCapacity: string;
+
 }
 
 export const useGlobalsStore = defineStore({
     id: 'globals',  // unique id of the store
     state: (): GlobalsState => ({
         mousePosition: { x: 0, y: 0 },
+        sensors: [],
+        spaces: [],
+        recordedData: [],
+
+
         ctx: null,
         canvasRef: null,
         canvasWidth: 800,
@@ -55,15 +70,48 @@ export const useGlobalsStore = defineStore({
         recordDurationInDays: 2,
         timeSpeedMultiplier: 600,
         sensorWidthInMeters: 40,
-
-        sensors: [],
-        spaces: [],
+        loops: 0,
 
         isCowInBarn: false,
         isCowInPasture: false,
 
         nextEventID: 1,
-        smartEvents: [],
+        nextUtilityId: 1,
+        smartEvents: [{
+            id: 1,
+            description: "watering",
+            metaeventId: 1,
+            profileIndex: 1,
+            spaceIds: '1,2,3',
+            capacityMetaPersonId: 1,
+            capacityRangeMin: 1,
+            capacityRangeMax: 10000,
+            startDate: "2021-01-01",
+            endDate: "2021-02-01",
+            period: 'day',
+            periodInterval: 1,
+            startTime: "00:00",
+            endTime: "23:59",
+            requiredAttendance: '02:00',
+            color: "blue"
+        }, {
+            id: 2,
+            description: "feeding",
+            metaeventId: 1,
+            profileIndex: 1,
+            spaceIds: '11,12,13',
+            capacityMetaPersonId: 1,
+            capacityRangeMin: 1,
+            capacityRangeMax: 10000,
+            startDate: "2021-01-01",
+            endDate: "2021-02-01",
+            period: 'day',
+            periodInterval: 1,
+            startTime: "12:00",
+            endTime: "14:00",
+            requiredAttendance: '02:00',
+            color: "orange"
+        }],
         coordinatesPasture: [
             { lat: 49.68101400333333, lon: 12.20009942 },
             { lat: 49.68115214666667, lon: 12.200764548333334 },
@@ -113,7 +161,13 @@ export const useGlobalsStore = defineStore({
             { lat: 49.68131979333333, lon: 12.199891363333334 },
             { lat: 49.68111546833333, lon: 12.200051731666667 }
         ],
-
+        tipEventDescription: "a human understandable description of this event",
+        tipEventId: "The id property should uniquely identify an event",
+        tipEventMetaeventId: "The metaevent-id property determines the metaevent group to which the event belongs.",
+        tipEventProfileIndex: "The profile-index property denotes the time profile index to use in the associated metaevent entry.",
+        tipEventSpaceIds: "The space-ids property denotes the spaces in which the event can take place",
+        tipEventCapacity: "The capacity property denotes the number of people of each type of metaperson. The range property specifies bounds ([lo, high]) on the number of people in attendance.",
+        
         get minLat(): number { return Math.min(...this.coordinatesCombined.map(p => p.lat)) },
         get maxLat(): number { return Math.max(...this.coordinatesCombined.map(p => p.lat)) },
         get minLon(): number { return Math.min(...this.coordinatesCombined.map(p => p.lon)) },
@@ -140,7 +194,12 @@ export const useGlobalsStore = defineStore({
     },
     actions: {
         getNextEventID(): number {
-            return this.nextEventID++;
+            if (this.smartEvents.length == 0) {
+                return 1;
+            } else {
+                return Math.max(...this.smartEvents.map(e => e.id)) + 1;
+            }
+            // return this.nextEventID++;
         },
         addDefaultEvent(): number {
             console.log("addEvent");
@@ -167,11 +226,17 @@ export const useGlobalsStore = defineStore({
             this.smartEvents.push(event);
             return event.id;
         },
-        updateSmartEvent(eventid:number, property:string, value:any){
+        updateSmartEvent(eventid: number, property: string, value: any) {
             let event = this.smartEvents.find(e => e.id == eventid);
-            if(event){
+            if (event) {
                 // @ts-ignore
                 event[property] = value;
+            }
+        },
+        removeSmartEvent(eventid: number) {
+            const index = this.smartEvents.findIndex(event => event.id === eventid);
+            if (index !== -1) {
+                this.smartEvents.splice(index, 1);
             }
         }
     }
