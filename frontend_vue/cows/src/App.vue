@@ -17,7 +17,7 @@ import { exportSensorsAndSpaces, saveAsCsv, selectFiles } from './myfunctions/fi
 import { EventBus, OnCowIDChanged } from './main';
 import { clearConsoleOutput } from './myfunctions/utilityfunctions';
 import { drawScene } from './myfunctions/drawingfunctions';
-
+import CanvasScalable from './components/CanvasScalable.vue';
 const gs = useGlobalsStore();
 const testevent = ref();
 
@@ -76,11 +76,9 @@ const handleCowIDChanged = (cowId: string) => {
   <header>
     <div class="wrapper">
       <h1>Weideinsight Setup</h1>
-      <!-- <Test>  </Test> -->
-      <!-- <Test>  </Test> -->
       <div style="display: flex;">
-
-        <div class="leftside" style=" flex: 1; flex-direction: column;">
+        <CanvasScalable></CanvasScalable>
+        <!-- <div class="leftside" style=" flex: 1; flex-direction: column;">
           <CanvasMap> </CanvasMap>
           <Console></Console>
         </div>
@@ -125,7 +123,7 @@ const handleCowIDChanged = (cowId: string) => {
 
             <SmartEventList></SmartEventList>
           </div>
-        </div>
+        </div> -->
       </div>
       <!-- <nav>
         <RouterLink to="/">Home</RouterLink>
