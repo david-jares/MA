@@ -26,7 +26,7 @@ onMounted(() => {
     handleKeyDown(ev);
   })
 
-  watch([gs.smartEvents,gs.sensorWidthInMeters], (newValue, oldValue) => {
+  watch([gs.smartEvents, gs.sensorWidthInMeters], (newValue, oldValue) => {
     console.log("gs.smartEvents changed from " + oldValue + " to " + newValue);
     // updateScene();
     drawScene();
@@ -87,34 +87,42 @@ const handleCowIDChanged = (cowId: string) => {
         <div class="rightside" style=" flex: 1;  flex-direction: column;">
 
           <div class=" form-container" style="display: flex;flex-direction: column;">
+
             <LabeledInput :label-text='"cowId : "' :default-value="'1'" input-type="number" :min-value="1"
               @on-input="(n) => handleCowIDChanged(n)"></LabeledInput>
+
             <LabeledInput :label-text='"recordIntervalInSeconds : "' :default-value="'60'" input-type="number"
               :min-value="1" @on-input="(n) => gs.recordIntervalInSeconds = n"></LabeledInput>
+
             <LabeledInput :label-text='"recordDurationInDays : "' :default-value="'2'" input-type="number" :min-value="1"
               @on-input="(n) => gs.recordDurationInDays = n"></LabeledInput>
+
             <LabeledInput :label-text='"timeSpeedMultiplier : "' :default-value="'600'" input-type="number" :min-value="1"
               @on-input="(n) => gs.timeSpeedMultiplier = n"></LabeledInput>
+
             <SeparationLine></SeparationLine>
-            <LabeledInputWithSlider :label-text="'Sensor Width in Meters'" :default-value="40" :min-value="30"
-              :max-value="100" @on-input="(n)=>gs.sensorWidthInMeters = n"></LabeledInputWithSlider>
+
+            <LabeledInput :label-text="'Sensor Width in Meters'" :default-value="'40'" input-type="number" :min-value="30"
+              :max-value="100" @on-input="(n) => gs.sensorWidthInMeters = n"></LabeledInput>
+
             <SeparationLine></SeparationLine>
+
             <div class="rowequal">
               <button @click="handleResetTimer" class="mybutton" style="height: 30px;">Reset Timer</button>
-              <!-- <button>test</button> -->
               <button @click="handleClearRecords" class="mybutton" style="height: 30px;"> Clear Records</button>
             </div>
+
             <div class="rowequal">
               <button @click="handleExportSpacesAndSensorsToJSON" class="mybutton">Export Spaces and Sensors to
                 JSON</button>
               <button @click="handleExportRecordingAsCSV" class="mybutton">Export Recording to CSV</button>
-              <!-- <MyButton @click="console.log('TODO: Choose Files')">Choose Files</MyButton> -->
               <button @click="selectFiles()" class="mybutton">Select and Combine CSV-Files</button>
             </div>
+
             <SeparationLine></SeparationLine>
+
             <h2>Configuration</h2>
-            <!-- <MyButton @click="console.log('TODO: Add Event')">Add new Event</MyButton> -->
-            <!-- <SmartEvent ref="testevent"></SmartEvent> -->
+
             <SmartEventList></SmartEventList>
           </div>
         </div>

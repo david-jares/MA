@@ -29,9 +29,6 @@ canvas.value.addEventListener('mousedown', (e: MouseEvent) => {
     canvas.value.addEventListener('mousemove', (e: MouseEvent) => {
         HandleMouseMove(e);
     });
-    // canvas.value.addEventListener('onmouseout', (e: MouseEvent) => {
-    //     coordinatesLabel.value.innerText = "Coordinates: ";
-    // })
 
     document.addEventListener('keydown', (event) => {
         if (event.code === 'KeyR') {

@@ -93,7 +93,8 @@ export const useGlobalsStore = defineStore({
             startTime: "00:00",
             endTime: "23:59",
             requiredAttendance: '02:00',
-            color: "blue"
+            colorRGB: "#00FFFF",
+            colorAlpha:0.5
         }, {
             id: 2,
             description: "feeding",
@@ -110,7 +111,8 @@ export const useGlobalsStore = defineStore({
             startTime: "12:00",
             endTime: "14:00",
             requiredAttendance: '02:00',
-            color: "orange"
+            colorRGB: "#0000FF",
+            colorAlpha:0.5
         }],
         coordinatesPasture: [
             { lat: 49.68101400333333, lon: 12.20009942 },
@@ -221,7 +223,8 @@ export const useGlobalsStore = defineStore({
                 startTime: "00:00",
                 endTime: "23:59",
                 requiredAttendance: '02:00',
-                color: "red"
+                colorRGB: "#FF0000",
+                colorAlpha:0.5
             }
             this.smartEvents.push(event);
             return event.id;

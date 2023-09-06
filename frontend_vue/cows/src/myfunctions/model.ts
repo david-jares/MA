@@ -104,9 +104,10 @@ export class SMARTEvent {
     startTime: string;
     endTime: string;
     requiredAttendance: string;
-    color: string;
+    colorRGB: string;
+    colorAlpha: number;
 
-    constructor(id: number, description: string, metaeventId: number, profileIndex: number, spaceIds: string, capacityMetaPersonId: number, capacityRangeMin: number, capacityRangeMax: number, startDate: string, endDate: string, period: string, periodInterval: number, startTime: string, endTime: string, requiredAttendance: string, color: string) {
+    constructor(id: number, description: string, metaeventId: number, profileIndex: number, spaceIds: string, capacityMetaPersonId: number, capacityRangeMin: number, capacityRangeMax: number, startDate: string, endDate: string, period: string, periodInterval: number, startTime: string, endTime: string, requiredAttendance: string, colorRGB: string, colorAlpha:number) {
         this.id = id;
         this.description = description;
         this.metaeventId = metaeventId;
@@ -122,6 +123,7 @@ export class SMARTEvent {
         this.startTime = startTime;
         this.endTime = endTime;
         this.requiredAttendance = requiredAttendance;
-        this.color = color;
+        this.colorRGB = colorRGB;
+        this.colorAlpha = colorAlpha;
     }
 }

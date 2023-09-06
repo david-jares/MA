@@ -25,7 +25,8 @@ const props = defineProps<{
     startTime: string;
     endTime: string;
     requiredAttendance: string;
-    color: string;
+    colorRGB: string;
+    colorAlpha: number;
 }>();
 
 const description = ref();
@@ -43,7 +44,8 @@ const periodInterval = ref();
 const startTime = ref();
 const endTime = ref();
 const requiredAttendance = ref();
-const color = ref();
+const colorRGB = ref();
+const colorAlpha = ref();
 
 
 description.value = props.description;
@@ -61,7 +63,8 @@ periodInterval.value = props.periodInterval;
 startTime.value = props.startTime;
 endTime.value = props.endTime;
 requiredAttendance.value = props.requiredAttendance;
-color.value = props.color;
+colorRGB.value = props.colorRGB;
+colorAlpha.value = props.colorAlpha;
 
 function updateGS(property: string, value: any) {
     console.log("updateGS");
@@ -83,12 +86,21 @@ function removeEvent() {
     gs.removeSmartEvent(props.id);
 }
 
+// let colorRGB: string = "rgba(255,255,0,255)";
+// let colorAlpha: number = 0.2;
+
+function handleColorChange() {
+    console.log("handleColorChange");
+    updateGS('color', color.value);
+}
+
 </script>
 
 <template>
     <div>
         <SeparationLine></SeparationLine>
-        <button @click="toggleFolding" style="width: 40px;" class="mybutton"> {{ isFolded == true ? "&rarr;" : "&darr;" }} </button>
+        <button @click="toggleFolding" style="width: 40px;" class="mybutton"> {{ isFolded == true ? "&rarr;" : "&darr;" }}
+        </button>
         <button @click="removeEvent" class="mybutton"> Delete </button>
         <!-- <div v-if="isFolded">{{ description }}</div> -->
         <div v-show="!isFolded">
@@ -97,7 +109,8 @@ function removeEvent() {
             </LabeledInput>
 
             <LabeledInput ref="eventid" :label-text="'id'" :input-type="'number'" :default-value="id.toString()"
-                :min-value="1" :max-value="10000" @onInput="(val) => updateGS('id', val)" :tooltip="gs.tipEventId"></LabeledInput>
+                :min-value="1" :max-value="10000" @onInput="(val) => updateGS('id', val)" :tooltip="gs.tipEventId">
+            </LabeledInput>
 
             <LabeledInput ref="metaeventId" :label-text="'metaevent-id'" :input-type="'number'" :default-value="metaeventId"
                 :min-value="1" :max-value="10000" @onInput="(val) => updateGS(
@@ -108,10 +121,12 @@ function removeEvent() {
                 @onInput="(val) => updateGS('profileIndex', val)" :tooltip="gs.tipEventProfileIndex"></LabeledInput>
 
             <LabeledInput ref="spaceIds" :label-text="'space-ids (commaseperated)'" :input-type="'text'"
-                :default-value="spaceIds" @onInput="(val) => updateGS('spaceIds', val)" :tooltip="gs.tipEventSpaceIds"></LabeledInput>
+                :default-value="spaceIds" @onInput="(val) => updateGS('spaceIds', val)" :tooltip="gs.tipEventSpaceIds">
+            </LabeledInput>
 
             <LabeledInput ref="capacityMetaPersonId" :label-text="'capacity Metaperson-id'" :input-type="'number'"
-                :default-value="capacityMetaPersonId" @onInput="(val) => updateGS('capacityMetaPersonId', val)" :tooltip="gs.tipEventCapacity">
+                :default-value="capacityMetaPersonId" @onInput="(val) => updateGS('capacityMetaPersonId', val)"
+                :tooltip="gs.tipEventCapacity">
             </LabeledInput>
 
             <LabeledInput ref="capacityRangeMin" :label-text="'capacity range min'" :input-type="'number'"
@@ -147,9 +162,14 @@ function removeEvent() {
             <LabeledInput ref="requiredAttendance" :label-text="'required attendance'" :input-type="'time'"
                 :default-value="requiredAttendance" @onInput="(val) => updateGS('requiredAttendance', val)"></LabeledInput>
 
-            <LabeledInput ref="color" :label-text="'color'" :input-type="'color'" :default-value="color"
-                @onInput="(val) => updateGS('color', val)">
-            </LabeledInput>
+            <div style="display: flex;">
+                <LabeledInput ref="colorRGB" :label-text="'color'" :input-type="'color'" :default-value="colorRGB"
+                    @onInput="(val) => updateGS('colorRGB', val)">
+                </LabeledInput>
+                <input type="number" ref="colorAlpha" style="flex: 0 1 70px; width: 70px;" min="0" max="1" step="0.1"
+                    value="0.5" @input="(ev) => updateGS('colorAlpha', ev.target.value)" />
+            </div>
         </div>
     </div>
 </template>
+    <!-- min="0" max="1" step="0.1" value="0.5" @input="(ev)=>{if(ev.target && ev.target.value) {updateGS('colorAlpha',ev.target.value)}}"/> -->

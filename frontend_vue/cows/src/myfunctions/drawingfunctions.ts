@@ -1,6 +1,6 @@
 import { useGlobalsStore } from "@/stores/globals";
 import { ConvertGeoCoordsToCanvasXY, ConvertCanvasXYToGeoCoords } from "./interactionfunctions";
-import { subdivideCanvas } from "./utilityfunctions";
+import { colorToRgba, subdivideCanvas } from "./utilityfunctions";
 import { isPointInsideTriangle, type Point, type Triangle } from "./tempfunctions";
 import { Space, Sensor } from "./model";
 
@@ -210,7 +210,7 @@ export function drawTriangle(ctx: CanvasRenderingContext2D, triangle: { x: numbe
     ctx.closePath();
     ctx.strokeStyle = 'red';
     ctx.stroke();
-    ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.0)';
     ctx.fill();
 }
 
@@ -344,7 +344,7 @@ export function calculateSpaces(canvas: HTMLCanvasElement, width: number, height
     const triangles = trianglesOutside.concat(trianglesBarn);
 
 
-
+    console.log("rect spaces");
     for (let i = 0, spaceId = 0; i < rectangles.length; i++) {
         const rectangle = rectangles[i];
         let x1 = rectangle.x;
@@ -362,7 +362,7 @@ export function calculateSpaces(canvas: HTMLCanvasElement, width: number, height
         for (let j = 0; j < triangles.length; j++) {
             // const triangle: Triangle = triangles[j];
             const triangle: Triangle = [triangles[j][0], triangles[j][1], triangles[j][2]];
-
+            // if (gs.ctx) drawTriangle(gs.ctx, triangle);
             if (isPointInsideTriangle(p1, triangle) || isPointInsideTriangle(p2, triangle) || isPointInsideTriangle(p3, triangle) || isPointInsideTriangle(p4, triangle)) {
                 foundRectangle = true;
                 sensorType = j >= trianglesOutside.length ? "Beacon" : "Mioty";
@@ -378,6 +378,7 @@ export function calculateSpaces(canvas: HTMLCanvasElement, width: number, height
             gs.spaces.push(space);
             spaceId++;
             drawRectangle(canvas, spaceId, rectangle.x, rectangle.y, rectangle.width, rectangle.height, sensorType === "Mioty" ? 'rgba(255, 0, 0, 0.20)' : 'rgba(0, 0, 255, 0.20)');
+            // console.log(space.id);
         }
     }
 
@@ -596,10 +597,11 @@ export function drawSMARTEvents(): void {
             let x = space.canvasCoordinates[0];
             let y = space.canvasCoordinates[1];
 
-            let padding = 10;
-            drawRectangle(gs.canvasRef, -1, x + padding, y + padding, gs.sensorWidthInMeters - 2 * padding, gs.sensorWidthInMeters - 2 * padding, smartEvent.color)
+            let padding = 0;
+            let color = colorToRgba(smartEvent.colorRGB, smartEvent.colorAlpha);
+            drawRectangle(gs.canvasRef, -1, x + padding, y + padding, gs.sensorWidthInMeters - 2 * padding, gs.sensorWidthInMeters - 2 * padding, color)
             // ctx.fillStyle = 'rgba(255, 0, 0, 1)';
-            if(gs.ctx === null) continue;
+            if (gs.ctx === null) continue;
             gs.ctx.fillStyle = 'rgba(255, 0, 0, 1)';
             gs.ctx.font = '14px Arial';
             gs.ctx.fillText(smartEvent.id.toString(), x + 0.5 * gs.sensorWidthInMeters, y + 0.5 * gs.sensorWidthInMeters);
