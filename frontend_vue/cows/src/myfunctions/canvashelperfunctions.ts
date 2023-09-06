@@ -19,9 +19,35 @@ function setFillColor(ctx: CanvasRenderingContext2D, fillColor: string): void {
 //STYLING-------------------------------------------------------------------------
 
 // export let coordinateOrigin = { x: 0, y: 0 };
-export let coordinateOrigin = { x: 100, y: 100 };
+export let origin = { x: 100, y: 100 };
 export let scale = 1;
-export function drawCoordinateSystem(ctx: CanvasRenderingContext2D, origin: { x: number, y: number }): void {
+
+export function moveOrigin(x: number, y: number): void {
+  origin.x += x;
+  origin.y += y;
+}
+export function setOrigin(x: number, y: number): void {
+  origin.x = x;
+  origin.y = y;
+}
+
+export function setScale(s: number): void {
+  if (s < 0.1) {
+    scale = 0.1;
+  }else{
+    scale = s;
+  }
+}
+
+export function addToScale(s: number): void {
+  if (scale + s < 0.1) {
+    scale = 0.1;
+  }else{
+    scale += s;
+  }
+}
+
+export function drawCoordinateSystem(ctx: CanvasRenderingContext2D): void {
 
   let spacing = 100;
   // Set the line color to black
@@ -42,7 +68,7 @@ export function drawCoordinateSystem(ctx: CanvasRenderingContext2D, origin: { x:
   // Draw the text
   setFontProperties(ctx, "black", 12, "Arial");
   // Draw the tick marks and labels on the x-axis
-  for (let i = 0; i < ctx.canvas.width / (spacing); i++) {
+  for (let i = 0; i < ctx.canvas.width / spacing; i++) {
     ctx.beginPath();
     ctx.moveTo(origin.x + i * spacing * scale, origin.y - 5);
     ctx.lineTo(origin.x + i * spacing * scale, origin.y + 5);
@@ -54,7 +80,7 @@ export function drawCoordinateSystem(ctx: CanvasRenderingContext2D, origin: { x:
   for (let i = 0; i < ctx.canvas.height / spacing; i++) {
     ctx.beginPath();
     ctx.moveTo(origin.x - 5, origin.y + i * spacing * scale);
-    ctx.lineTo(origin.y + 5, origin.y + i * spacing * scale);
+    ctx.lineTo(origin.x + 5, origin.y + i * spacing * scale);
     ctx.stroke();
     ctx.fillText((i * spacing).toString(), origin.x + 20, origin.y + i * spacing * scale);
   }
@@ -90,7 +116,7 @@ export function drawPolygonToCanvasScaled(ctx: CanvasRenderingContext2D, polygon
     let transformedPoint: Point = { x: point.x, y: point.y };
     transformedPoint.x *= scale;
     transformedPoint.y *= scale;
-    transformedPoint = { x: transformedPoint.x + coordinateOrigin.x, y: transformedPoint.y + coordinateOrigin.y };
+    transformedPoint = { x: transformedPoint.x + origin.x, y: transformedPoint.y + origin.y };
     if (index === 0) ctx.moveTo(transformedPoint.x, transformedPoint.y);
     else ctx.lineTo(transformedPoint.x, transformedPoint.y);
 
@@ -119,8 +145,8 @@ export function drawRectangle(ctx: CanvasRenderingContext2D, x: number, y: numbe
 export function drawRectangleScaled(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, fillColor: string): void {
   ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
   ctx.lineWidth = 2;
-  let x1 = coordinateOrigin.x + x * scale;
-  let y1 = coordinateOrigin.y + y * scale;
+  let x1 = origin.x + x * scale;
+  let y1 = origin.y + y * scale;
   let w = width * scale;
   let h = height * scale;
   ctx.strokeRect(x1, y1, w, h);
