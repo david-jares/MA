@@ -12,16 +12,18 @@ const canvas = ref();
 const coordinatesLabel = ref();
 const gs = useGlobalsStore();
 let isrecording = false;
-const now = new Date('2021-01-01T01:00:00');
 let recordingID: any;
-
+let redrawID:any;
+// let isPanning = false;
+const now = new Date('2021-01-01T01:00:00');
+let panOffset = 20;
 onMounted(() => {
     globalsStore.canvasRef = canvas;
     globalsStore.ctx = canvas.value.getContext("2d");
     canvas.value.width = globalsStore.canvasWidth;
     canvas.value.height = globalsStore.canvasHeight;
 
-canvas.value.addEventListener('mousedown', (e: MouseEvent) => {
+    canvas.value.addEventListener('mousedown', (e: MouseEvent) => {
         toggleDrawing(e);
         // console.log("mouse down");
     });
@@ -37,7 +39,27 @@ canvas.value.addEventListener('mousedown', (e: MouseEvent) => {
         if (event.code == 'KeyP') {
             printUserData();
         }
+        if(event.code == 'ArrowLeft'){
+            gs.canvasPanOffsetX -= panOffset;
+        }
+        if(event.code == 'ArrowRight'){
+            gs.canvasPanOffsetX += panOffset;
+        }
+        if(event.code == 'ArrowDown'){
+            gs.canvasPanOffsetY += panOffset;
+        }
+        if(event.code == 'ArrowUp'){
+            gs.canvasPanOffsetY -= panOffset;
+        }
+        // if (event.code === 'KeyX') {
+        //     isPanning = true;
+        // }
     });
+    // document.addEventListener('keyup', (event) => {
+    //     if (event.code === 'KeyX') {
+    //         isPanning = false;
+    //     }
+    // });
 
     watch(
         () => [gs.cowId, gs.recordIntervalInSeconds, gs.recordDurationInDays, gs.timeSpeedMultiplier, gs.sensorWidthInMeters],
@@ -48,10 +70,15 @@ canvas.value.addEventListener('mousedown', (e: MouseEvent) => {
 
     drawScene();
 
+    redrawID = setInterval(() => {
+        drawScene();
+    }, 16);
+
 })
 
 
 function HandleMouseMove(event: MouseEvent) {
+
     const geoCoords = GetGeoocordinatesUnderMouse(event);
     const mouseCoords = ConvertGeoCoordsToCanvasXY(geoCoords.latitude, geoCoords.longitude)
     coordinatesLabel.value.innerText = `MouseCoordinates: lat: ${geoCoords.latitude.toFixed(6)}, long: ${geoCoords.longitude.toFixed(6)} , ( x: ${mouseCoords.x} , y:  ${mouseCoords.y})`;

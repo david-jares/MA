@@ -175,11 +175,16 @@ export function drawPolygon(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath();
 
     polygonOutside.forEach((point, index) => {
+        let translatedPoint = { x: point.x + gs.canvasPanOffsetX, y: point.y + gs.canvasPanOffsetY };
+   
+        if (index === 0) ctx.moveTo(translatedPoint.x, translatedPoint.y);
+        else ctx.lineTo(translatedPoint.x, translatedPoint.y);
 
-        if (index === 0) ctx.moveTo(point.x, point.y);
-        else ctx.lineTo(point.x, point.y);
+        ctx.fillText(index.toString(), translatedPoint.x + 5, translatedPoint.y - 5);
+        // if (index === 0) ctx.moveTo(point.x, point.y);
+        // else ctx.lineTo(point.x, point.y);
 
-        ctx.fillText(index.toString(), point.x + 5, point.y - 5);
+        // ctx.fillText(index.toString(), point.x + 5, point.y - 5);
     });
     ctx.closePath();
     ctx.fillStyle = gs.isCowInPasture ? 'rgba(0, 255, 0, 0.75)' : 'rgba(0, 255, 0, 0.45)';
@@ -190,7 +195,8 @@ export function drawPolygon(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath();
 
     polygonBarn.forEach((point, index) => {
-
+        point.x += gs.canvasPanOffsetX;
+        point.y += gs.canvasPanOffsetY;
         if (index === 0) ctx.moveTo(point.x, point.y);
         else ctx.lineTo(point.x, point.y);
 

@@ -11,6 +11,9 @@ interface GlobalsState {
     ctx: CanvasRenderingContext2D | null;
     canvasWidth: number;
     canvasHeight: number;
+    canvasPanOffsetX: number;
+    canvasPanOffsetY: number;
+
 
     cowId: string;
     recordIntervalInSeconds: number;
@@ -64,7 +67,8 @@ export const useGlobalsStore = defineStore({
         canvasRef: null,
         canvasWidth: 800,
         canvasHeight: 600,
-
+        canvasPanOffsetX: 0,
+        canvasPanOffsetY: 0,
         cowId: '1',
         recordIntervalInSeconds: 60,
         recordDurationInDays: 2,
