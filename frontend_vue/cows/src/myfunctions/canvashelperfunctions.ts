@@ -1,10 +1,19 @@
+import { ref } from "vue";
 import type { Point } from "./tempfunctions";
+import type { GeoCoordinate } from "./model";
 
 // export let coordinateOrigin = { x: 0, y: 0 };
-export let origin = { x: 0, y: 0 };
-export let scale = 3;
+export let origin = ref({ x: 0, y: 0 });
+export let scale = ref(3);
 export const degreeLongitudeToMeters = 72186; // in Nürnberg Germany
 export const degreeLatitideToMeters = 110000; // in Nürnberg Germany
+
+export function canvasPointToGeoCoordinate(ctx: CanvasRenderingContext2D, p: Point): GeoCoordinate {
+  let geoCoordinate = { lat: 0, lon: 0 };
+  geoCoordinate.lat = (p.y - origin.value.y) / scale.value / degreeLatitideToMeters;
+  // geoCoordinate.lon = (p.x - origin.value.x) / scale.value / degreeLongitudeToMeters;
+  return geoCoordinate;
+}
 
 //STYLING-------------------------------------------------------------------------
 export function setStrokeProperties(ctx: CanvasRenderingContext2D, borderColor: string, borderThickness: number = 1): void {
@@ -24,27 +33,27 @@ export function setFillColor(ctx: CanvasRenderingContext2D, fillColor: string): 
 
 
 export function moveOrigin(x: number, y: number): void {
-  origin.x += x;
-  origin.y += y;
+  origin.value.x += x;
+  origin.value.y += y;
 }
 export function setOrigin(x: number, y: number): void {
-  origin.x = x;
-  origin.y = y;
+  origin.value.x = x;
+  origin.value.y = y;
 }
 
 export function setScale(s: number): void {
   if (s < 0.1) {
-    scale = 0.1;
+    scale.value = 0.1;
   } else {
-    scale = s;
+    scale.value = s;
   }
 }
 
 export function addToScale(s: number): void {
-  if (scale + s < 0.1) {
-    scale = 0.1;
+  if (scale.value + s < 0.1) {
+    scale.value = 0.1;
   } else {
-    scale += s;
+    scale.value += s;
   }
 }
 
@@ -65,9 +74,9 @@ export function getPointsYInv(ctx: CanvasRenderingContext2D, points: Point[]): P
 
 export function getPointScaled(ctx: CanvasRenderingContext2D, p: Point): Point {
   let p2: Point = { x: p.x, y: p.y };
-  p2.x *= scale;
-  p2.y *= scale;
-  p2 = { x: p2.x + origin.x, y: p2.y + origin.y };
+  p2.x *= scale.value;
+  p2.y *= scale.value;
+  p2 = { x: p2.x + origin.value.x, y: p2.y + origin.value.y };
   return p2;
 }
 export function getPointsScaled(ctx: CanvasRenderingContext2D, points: Point[]): Point[] {
@@ -114,23 +123,23 @@ export function drawCoordinateSystem(ctx: CanvasRenderingContext2D): void {
   setStrokeProperties(ctx, "black", 1);
 
   // Draw the x-axis
-  drawLine(ctx, { x: origin.x, y: origin.y }, { x: origin.x + ctx.canvas.width * scale, y: origin.y });
+  drawLine(ctx, { x: origin.value.x, y: origin.value.y }, { x: origin.value.x + ctx.canvas.width * scale.value, y: origin.value.y });
 
   // Draw the y-axis
-  drawLine(ctx, { x: origin.x, y: origin.y }, { x: origin.x, y: origin.y + ctx.canvas.height * scale });
+  drawLine(ctx, { x: origin.value.x, y: origin.value.y }, { x: origin.value.x, y: origin.value.y + ctx.canvas.height * scale.value });
 
   // Draw the text
   setFontProperties(ctx, "black", 12, "Arial");
   // Draw the tick marks and labels on the x-axis
   for (let i = 0; i < ctx.canvas.width / spacing; i++) {
-    drawLine(ctx, { x: origin.x + i * spacing * scale, y: origin.y - 5 }, { x: origin.x + i * spacing * scale, y: origin.y + 5 });
-    drawText(ctx, (i * spacing).toString(), origin.x + i * spacing * scale, origin.y + 20);
+    drawLine(ctx, { x: origin.value.x + i * spacing * scale.value, y: origin.value.y - 5 }, { x: origin.value.x + i * spacing * scale.value, y: origin.value.y + 5 });
+    drawText(ctx, (i * spacing).toString(), origin.value.x + i * spacing * scale.value, origin.value.y + 20);
   }
 
   // Draw the tick marks and labels on the y-axis
   for (let i = 0; i < ctx.canvas.height / spacing; i++) {
-    drawLine(ctx, { x: origin.x - 5, y: origin.y + i * spacing * scale }, { x: origin.x + 5, y: origin.y + i * spacing * scale });
-    drawText(ctx, (i * spacing).toString(), origin.x + 20, origin.y + i * spacing * scale);
+    drawLine(ctx, { x: origin.value.x - 5, y: origin.value.y + i * spacing * scale.value }, { x: origin.value.x + 5, y: origin.value.y + i * spacing * scale.value });
+    drawText(ctx, (i * spacing).toString(), origin.value.x + 20, origin.value.y + i * spacing * scale.value);
   }
 }
 
@@ -142,23 +151,23 @@ export function drawCoordinateSystemYInv(ctx: CanvasRenderingContext2D): void {
   setStrokeProperties(ctx, "black", 1);
 
   // Draw the x-axis
-  drawLineYInv(ctx, { x: origin.x, y: origin.y }, { x: origin.x + ctx.canvas.width * scale, y: origin.y });
+  drawLineYInv(ctx, { x: origin.value.x, y: origin.value.y }, { x: origin.value.x + ctx.canvas.width * scale.value, y: origin.value.y });
 
   // Draw the y-axis
-  drawLineYInv(ctx, { x: origin.x, y: origin.y }, { x: origin.x, y: origin.y + ctx.canvas.height * scale });
+  drawLineYInv(ctx, { x: origin.value.x, y: origin.value.y }, { x: origin.value.x, y: origin.value.y + ctx.canvas.height * scale.value });
 
   // Draw the text
   setFontProperties(ctx, "black", 12, "Arial");
   // Draw the tick marks and labels on the x-axis
   for (let i = 0; i < ctx.canvas.width / spacing; i++) {
-    drawLineYInv(ctx, { x: origin.x + i * spacing * scale, y: origin.y - 5 }, { x: origin.x + i * spacing * scale, y: origin.y + 5 });
-    drawTextYInv(ctx, (i * spacing).toString(), origin.x + i * spacing * scale, origin.y + 20);
+    drawLineYInv(ctx, { x: origin.value.x + i * spacing * scale.value, y: origin.value.y - 5 }, { x: origin.value.x + i * spacing * scale.value, y: origin.value.y + 5 });
+    drawTextYInv(ctx, (i * spacing).toString(), origin.value.x + i * spacing * scale.value, origin.value.y + 20);
   }
 
   // Draw the tick marks and labels on the y-axis
   for (let i = 0; i < ctx.canvas.height / spacing; i++) {
-    drawLineYInv(ctx, { x: origin.x - 5, y: origin.y + i * spacing * scale }, { x: origin.x + 5, y: origin.y + i * spacing * scale });
-    drawTextYInv(ctx, (i * spacing).toString(), origin.x + 20, origin.y + i * spacing * scale);
+    drawLineYInv(ctx, { x: origin.value.x - 5, y: origin.value.y + i * spacing * scale.value }, { x: origin.value.x + 5, y: origin.value.y + i * spacing * scale.value });
+    drawTextYInv(ctx, (i * spacing).toString(), origin.value.x + 20, origin.value.y + i * spacing * scale.value);
   }
 }
 
