@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { degreeLongitudeToMeters, degreeLatitideToMeters, drawCoordinateSystemYInv, setFillColor, drawPath, getPointsScaledYInv, addToScale, moveOrigin, getYInv, origin, scale, canvasPointToGeoCoordinate, drawRectangleDefault, getPointYInv, subtractOrigin, addOrigin, scalePointMultiply, setStrokeProperties, drawPoint, drawText, setFontProperties, drawRectangleYInv, drawRectangle, getRectYInv } from '@/myfunctions/canvashelperfunctions';
+import { degreeLongitudeToMeters, degreeLatitideToMeters, drawCoordinateSystemYInv, setFillColor, drawPath, getPointsScaledYInv, addToScale, moveOrigin, getYInv, origin, scale, canvasPointToGeoCoordinate, drawRectangleDefault, getPointYInv, subtractOrigin, addOrigin, scalePointMultiply, setStrokeProperties, drawPoint, drawText, setFontProperties, drawRectangleYInv, drawRectangle, getRectYInv, getTriangleYInv, getPointScaledAndOrigin, getTriangleScaledAndOrigin } from '@/myfunctions/canvashelperfunctions';
 import { drawTriangle, isInsidePolygon, isPointInTriangle, triangulatePolygon } from '@/myfunctions/drawingfunctions';
 import type { GeoCoordinate } from '@/myfunctions/model';
-import { isPointInOrOnTriangle, isPointInsideRectangle as isPointInsideOrOnRectangle, isPointInsideTriangle, Triangle, type Point } from '@/myfunctions/tempfunctions';
+import { isPointInOrOnTriangle, isPointInsideRectangle as isPointInsideOrOnRectangle, isPointInsideTriangle, Triangle, type Point, isRectOverlappingTriangle } from '@/myfunctions/tempfunctions';
 import { subdivideCanvas, Rectangle } from '@/myfunctions/utilityfunctions';
 import { useGlobalsStore } from '@/stores/globals';
 import { useDebugsStore } from '@/stores/debugs';
@@ -22,50 +22,36 @@ let geoCoords_m = geoCoords.map((coord) => {
     return GeoCoordToMeters(coord);
 });
 
-let geoCoordsBarn = gs.coordinatesBarn;
-let geoCoordsBarn_shifteback_m = shiftBackGeoCoords_to_m(geoCoordsBarn);
-
 const minX_m = Math.min(...geoCoords_m.map(coord => coord.x));
 const maxX_m = Math.max(...geoCoords_m.map(coord => coord.x));
 const minY_m = Math.min(...geoCoords_m.map(coord => coord.y));
 const maxY_m = Math.max(...geoCoords_m.map(coord => coord.y));
-console.log("minX_m: " + minX_m);
-console.log("maxX_m: " + maxX_m);
-console.log("minY_m: " + minY_m);
-console.log("maxY_m: " + maxY_m);
-
-
-
-
-
-
 let coordHeight_m = maxY_m - minY_m;
 let coordWidth_m = maxX_m - minX_m;
 coordShiftFromOrigin.value = { x: minX_m, y: minY_m };
 
-function shiftBackGeoCoords_to_m(geoCoords: GeoCoordinate[]) {
+
+let geoCoordsAllShiftedBack_m = shiftBackGeoCoords_to_m(geoCoords, coordShiftFromOrigin.value);
+
+let geoCoordsBarn = gs.coordinatesBarn;
+let geoCoordsBarn_shifteback_m = shiftBackGeoCoords_to_m(geoCoordsBarn, coordShiftFromOrigin.value);
+console.log("geoCoordsBarn_shifteback_m: ");
+console.log(geoCoordsBarn_shifteback_m);
+
+
+
+function shiftBackGeoCoords_to_m(geoCoords: GeoCoordinate[], coordShiftFromOrigin: Point) {
     let geoCoords_m = geoCoords.map((coord) => {
         return GeoCoordToMeters(coord);
     });
 
-    const minX_m = Math.min(...geoCoords_m.map(coord => coord.x));
-    const maxX_m = Math.max(...geoCoords_m.map(coord => coord.x));
-    const minY_m = Math.min(...geoCoords_m.map(coord => coord.y));
-    const maxY_m = Math.max(...geoCoords_m.map(coord => coord.y));
-    let coordOffsetFromOriginMin = { x: minX_m, y: minY_m };
-
     let geoCoordsShiftedBackToCanvasSpace_m = geoCoords_m.map((coord) => {
-        return { x: coord.x - coordOffsetFromOriginMin.x, y: coord.y - coordOffsetFromOriginMin.y };
+        return { x: coord.x - coordShiftFromOrigin.x, y: coord.y - coordShiftFromOrigin.y };
     });
     return geoCoordsShiftedBackToCanvasSpace_m;
 }
 
-// let geoCoordsShiftedBack_m = geoCoords_m.map((coord) => {
-//     return { x: coord.x - coordShiftFromOrigin.value.x, y: coord.y - coordShiftFromOrigin.value.y };
-// });
-let geoCoordsShiftedBack_m = shiftBackGeoCoords_to_m(geoCoords);
-console.log("geoCoordsShiftedBack_m: ");
-console.log(geoCoordsShiftedBack_m)
+
 onMounted(() => {
     canvas = document.getElementById("mycanvas") as HTMLCanvasElement;
     ctx = canvas.getContext("2d");
@@ -76,10 +62,9 @@ onMounted(() => {
 
         drawCoordinateSystemYInv(ctx);
         setFillColor(ctx, "rgba(255,0,255,0.65)");
-        drawPath(ctx, getPointsScaledYInv(ctx, geoCoordsShiftedBack_m));
+        drawPath(ctx, getPointsScaledYInv(ctx, geoCoordsAllShiftedBack_m));
         testRaster();
     }, 50);
-    // testRaster();
 
 
     document.addEventListener("keydown", (e) => {
@@ -132,7 +117,7 @@ function canvasPointToGeoCoord(p: Point) {
 function testRaster() {
 
     let rectangles: Rectangle[] = [];
-    let padding = 20;
+    let padding = 20 * scale.value;
     let rasterSize = 20 * scale.value;
     let topLeft = ShiftGeoCoordPointInMetersBackToCanvasSpace({ x: minX_m - padding, y: maxY_m + padding });
     let bottomRight = ShiftGeoCoordPointInMetersBackToCanvasSpace({ x: maxX_m + padding, y: minY_m - padding });
@@ -150,66 +135,89 @@ function testRaster() {
             id++;
         }
     }
-    let triangles = triangulatePolygon(geoCoordsShiftedBack_m)
 
-    setStrokeProperties(ctx!, "black", 1);
-    let trianglesTransformed = triangles.map((triangle) => {
-        let p1 = getPointYInv(ctx!, addOrigin(scalePointMultiply(triangle.p1)));
-        let p2 = getPointYInv(ctx!, addOrigin(scalePointMultiply(triangle.p2)));
-        let p3 = getPointYInv(ctx!, addOrigin(scalePointMultiply(triangle.p3)));
-        return new Triangle(p1, p2, p3);
+    let trianglesAll = triangulatePolygon(geoCoordsAllShiftedBack_m)
+
+    let trianglesAllTransformed = trianglesAll.map((triangle) => {
+        return getTriangleScaledAndOrigin(ctx!, triangle);
     });
 
-    // let trianglesTransformedYInv = trianglesTransformed.map((triangle) => {
-    //     return new Triangle(getPointYInv(ctx!, triangle.p1), getPointYInv(ctx!, triangle.p2), getPointYInv(ctx!, triangle.p3));
+
+    let trianglesBarn = triangulatePolygon(geoCoordsBarn_shifteback_m)
+    let trianglesBarnTransformed = trianglesBarn.map((triangle) => {
+        return getTriangleScaledAndOrigin(ctx!, triangle);
+    });
+    // let trianglesBarnTransformedYInv = trianglesBarnTransformed.map((triangle) => {
+    //     return getTriangleYInv(ctx!, triangle);
     // });
 
 
 
     setStrokeProperties(ctx!, "black", 0.75);
     setFillColor(ctx!, "black");
-
-    ds.drawnPoints.length = 0;
-    geoCoordsBarn_shifteback_m.forEach((coord) => {
-        drawPoint(ctx!, getPointYInv(ctx!, coord), 3);
-        ds.drawnPoints.push(coord);
-    });
-
     setStrokeProperties(ctx!, "red", 0.75);
+
     ds.drawnRects.length = 0;
     for (let i = 0; i < rectangles.length; i++) {
         const rectangle = rectangles[i];
-
-        let doDraw = false;
-        for (let i = 0; i < geoCoordsBarn_shifteback_m.length; i++) {
-            const coord = geoCoordsBarn_shifteback_m[i];
-            if (isPointInsideOrOnRectangle(coord, rectangle)) {
-                doDraw = true;
+        for (let j = 0; j < trianglesAllTransformed.length; j++) {
+            const triangle = trianglesAllTransformed[j];
+            if (isRectOverlappingTriangle(rectangle, triangle)) {
+                ds.drawnRects.push(rectangle);
+                // drawSpaceRectangle(rectangle);
                 break;
             }
         }
-
-        setFillColor(ctx!, "rgba(255,0,0,0.2)");
-        if (doDraw) {
-            ds.drawnRects.push(rectangle);
-            setFillColor(ctx!, "rgba(0,0,255,0.2)");
-        }
-        drawRectangle(ctx!, getRectYInv(ctx!, rectangle), true);
-        // drawRectangleYInv(ctx!, rectangle.x, rectangle.y, rectangle.width, rectangle.height, true);
-        setFontProperties(ctx!, "green", 12, "Arial");
-        drawText(ctx!, rectangle.id.toString(), rectangle.x + 3, getYInv(ctx!, rectangle.y - 12));
-        // drawRectangle(ctx!, rectangle.x, getYInv(ctx!, rectangle.y), rectangle.width, rectangle.height, true);
     };
 
-    trianglesTransformed.forEach((triangle) => {
-        drawTriangle(ctx!, triangle);
+    let drawRectIndicesToSkip: number[] = [];
+    ds.drawnTriangles = trianglesBarnTransformed;
+    for (let i = 0; i < ds.drawnRects.length; i++) {
+        const rectangle = ds.drawnRects[i];
+        for (let j = 0; j < trianglesBarnTransformed.length; j++) {
+            const triangle = trianglesBarnTransformed[j];
+            setStrokeProperties(ctx!, "black", 0.75);
+            // drawTriangle(ctx!, getTriangleYInv(ctx!, triangle));
+            // drawTriangle(ctx!,  triangle);
+            if (isRectOverlappingTriangle(rectangle, triangle)) {
+                // drawSpaceRectangle(rectangle);
+                drawRectIndicesToSkip.push(i);
+                // ds.drawnRects.splice(i, 1);
+                break;
+            }
+        }
+    }
+    for (let i = 0; i < ds.drawnRects.length; i++) {
+        const rectangle = ds.drawnRects[i];
+        if (!drawRectIndicesToSkip.includes(i)) {
+            drawSpaceRectangle(rectangle);
+        }
+    }
+    trianglesAllTransformed.forEach((triangle) => {
+        drawTriangle(ctx!, getTriangleYInv(ctx!, triangle));
     });
+    // ds.drawnRects.forEach((rectangle) => {
+    //     drawSpaceRectangle(rectangle);
+    // });
+
+    setStrokeProperties(ctx!, "red", 0.75);
+    setFillColor(ctx!, "rgba(255,0,0,0.2)");
+    // trianglesAllTransformedYInv.forEach((triangle) => {
+    //     drawTriangle(ctx!, triangle);
+    // });
 
 
 
 
 }
+function drawSpaceRectangle(rectangle: Rectangle) {
+    let transformedRect = getRectYInv(ctx!, rectangle);
+    setFillColor(ctx!, "rgba(255,0,0,0.2)");
+    drawRectangleDefault(ctx!, transformedRect, true);
+    setFontProperties(ctx!, "rgba(0,0,255,0.4)", 5 * scale.value, "Arial");
+    drawText(ctx!, rectangle.id.toString(), transformedRect.x + 2 * scale.value, transformedRect.y + 6 * scale.value);
 
+}
 
 
 </script>

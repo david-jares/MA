@@ -1,11 +1,11 @@
 import { ref } from "vue";
-import type { Point } from "./tempfunctions";
+import { Triangle, type Point } from "./tempfunctions";
 import type { GeoCoordinate } from "./model";
 import { Rectangle } from "./utilityfunctions";
 
 // export let coordinateOrigin = { x: 0, y: 0 };
 export let origin = ref({ x: 0, y: 0 });
-export let scale = ref(1);
+export let scale = ref(3);
 export const degreeLongitudeToMeters = 72186; // in Nürnberg Germany
 export const degreeLatitideToMeters = 110000; // in Nürnberg Germany
 
@@ -66,6 +66,27 @@ export function addToScale(s: number): void {
   }
 }
 
+export function getPointScaledAndOrigin(ctx: CanvasRenderingContext2D, p: Point): Point {
+  return addOrigin(scalePointMultiply(p));
+}
+export function getPointsScaledAndOrigin(ctx: CanvasRenderingContext2D, points: Point[]): Point[] {
+  return points.map((p) => getPointScaledAndOrigin(ctx, p));
+}
+export function getTriangleScaledAndOrigin(ctx: CanvasRenderingContext2D, triangle:Triangle): Triangle {
+  // return points.map((p) => getPointScaledAndOrigin(ctx, p));
+  return new Triangle(getPointScaledAndOrigin(ctx, triangle.p1), getPointScaledAndOrigin(ctx, triangle.p2), getPointScaledAndOrigin(ctx, triangle.p3));
+}
+
+// export function getRectScaledAndOrigin(ctx: CanvasRenderingContext2D, rectangle: Rectangle): Rectangle {
+//   return new Rectangle(
+//     rectangle.id,
+//     getPointScaledAndOrigin(ctx, rectangle.p1),
+//     getPointScaledAndOrigin(ctx, rectangle.p1),
+//     getPointScaledAndOrigin(ctx, rectangle.p1),
+//     getPointScaledAndOrigin(ctx, rectangle.p1),
+//     )
+// }
+
 export function getYInv(ctx: CanvasRenderingContext2D, y: number): number {
   let h = ctx.canvas.height;
   return h - y;
@@ -76,6 +97,11 @@ export function getPointYInv(ctx: CanvasRenderingContext2D, p: Point): Point {
   let pYInv = { x: p.x, y: getYInv(ctx, p.y) };
   return { x: pYInv.x, y: pYInv.y };
 }
+
+export function getTriangleYInv(ctx: CanvasRenderingContext2D, t: Triangle): Triangle {
+  return new Triangle(getPointYInv(ctx, t.p1), getPointYInv(ctx, t.p2), getPointYInv(ctx, t.p3));
+}
+
 export function getRectYInv(ctx: CanvasRenderingContext2D, r: Rectangle): Rectangle {
   let h = ctx.canvas.height;
   return new Rectangle(r.id, r.x, getYInv(ctx, r.y) - r.height, r.width, r.height);
@@ -215,44 +241,17 @@ export function drawPath(ctx: CanvasRenderingContext2D, path: Point[], closePath
     ctx.stroke();
   }
 }
-// export function drawPathToCanvasScaled(ctx: CanvasRenderingContext2D, path: Point[]): void {
-//   // ctx.strokeStyle = "black";
 
-//   ctx.beginPath();
 
-//   path.forEach((point, index) => {
-//     let transformedPoint: Point = { x: point.x, y: point.y };
-//     transformedPoint.x *= scale;
-//     transformedPoint.y *= scale;
-//     transformedPoint = { x: transformedPoint.x + origin.x, y: transformedPoint.y + origin.y };
-//     if (index === 0) ctx.moveTo(transformedPoint.x, transformedPoint.y);
-//     else ctx.lineTo(transformedPoint.x, transformedPoint.y);
-//     drawText(ctx, index.toString(), transformedPoint.x + 5, transformedPoint.y - 5);
-
-//     if (index === 0) ctx.moveTo(transformedPoint.x, transformedPoint.y);
-//     else ctx.lineTo(transformedPoint.x, transformedPoint.y);
-//     drawText(ctx, index.toString(), transformedPoint.x + 5, transformedPoint.y - 5);
-//   });
-//   ctx.closePath();
-//   ctx.fill();
-// }
-export function drawRectangle(ctx: CanvasRenderingContext2D, rectangle: Rectangle, fillArea: boolean = true): void {
-  drawPath(ctx, [rectangle.p1, rectangle.p2, rectangle.p3, rectangle.p4], true, fillArea);
-
-  // ctx.strokeRect(x, y, width, height);
-  // if (fillArea) {
-  //   // ctx.fillStyle = fillColor;
-  //   ctx.fillRect(x + 2, y + 2, width - 4, height - 4);
-  // }
-}
-
-export function drawRectangleDefault(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, fillArea: boolean = true): void {
+export function drawRectangleDefault(ctx: CanvasRenderingContext2D, rectangle: Rectangle, fillArea: boolean = true): void {
+  const { x, y, width, height } = rectangle;
   ctx.strokeRect(x, y, width, height);
   if (fillArea) {
     // ctx.fillStyle = fillColor;
     ctx.fillRect(x + 2, y + 2, width - 4, height - 4);
   }
 }
+
 export function drawRectangleYInv(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, fillArea: boolean = true): void {
   y = getYInv(ctx, y + height);
   setStrokeProperties(ctx, "black", 1);
@@ -262,15 +261,3 @@ export function drawRectangleYInv(ctx: CanvasRenderingContext2D, x: number, y: n
     ctx.fillRect(x + 2, y + 2, width - 4, height - 4);
   }
 }
-// export function drawRectangleScaled(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, fillColor: string): void {
-//   let x1 = origin.x + x * scale;
-//   let y1 = origin.y + y * scale;
-//   let w = width * scale;
-//   let h = height * scale;
-//   ctx.strokeRect(x1, y1, w, h);
-//   if (fillColor) {
-//     ctx.fillStyle = fillColor;
-//     ctx.fillRect(x1 + 2, y1 + 2, w - 4, h - 4);
-//   }
-
-// }
