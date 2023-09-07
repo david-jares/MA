@@ -4,7 +4,7 @@ import type { GeoCoordinate } from "./model";
 
 // export let coordinateOrigin = { x: 0, y: 0 };
 export let origin = ref({ x: 0, y: 0 });
-export let scale = ref(3);
+export let scale = ref(1);
 export const degreeLongitudeToMeters = 72186; // in Nürnberg Germany
 export const degreeLatitideToMeters = 110000; // in Nürnberg Germany
 
@@ -30,8 +30,16 @@ export function setFillColor(ctx: CanvasRenderingContext2D, fillColor: string): 
   ctx.fillStyle = fillColor;
 }
 //STYLING-------------------------------------------------------------------------
+export function scalePointMultiply(point:Point){
+  return {x:point.x*scale.value, y:point.y*scale.value};
+}
 
-
+export function subtractOrigin(point: Point): Point {
+  return { x: point.x - origin.value.x, y: point.y - origin.value.y };
+}
+export function addOrigin(point: Point): Point {
+  return { x: point.x + origin.value.x, y: point.y + origin.value.y };
+}
 export function moveOrigin(x: number, y: number): void {
   origin.value.x += x;
   origin.value.y += y;

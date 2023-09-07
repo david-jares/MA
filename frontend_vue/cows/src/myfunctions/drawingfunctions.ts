@@ -37,8 +37,8 @@ export function computePolygon(): void {
 }
 
 
-export function triangulatePolygon(polygon: { x: number, y: number }[]): { x: number, y: number }[][] {
-    const triangles: { x: number, y: number }[][] = [];
+export function triangulatePolygon(polygon: { x: number, y: number }[]): Triangle[] {
+    const triangles: Triangle[] = [];
     const n = polygon.length;
 
     if (n < 3) {
@@ -82,7 +82,7 @@ export function triangulatePolygon(polygon: { x: number, y: number }[]): { x: nu
             a = V[u];
             b = V[v];
             c = V[w];
-            triangles.push([polygon[a], polygon[b], polygon[c]]);
+            triangles.push({p1:polygon[a], p2:polygon[b], p3:polygon[c]});
 
             for (s = v, t = v + 1; t < nv; s++, t++) {
                 V[s] = V[t];
@@ -94,7 +94,63 @@ export function triangulatePolygon(polygon: { x: number, y: number }[]): { x: nu
 
     return triangles;
 }
+// export function triangulatePolygon(polygon: { x: number, y: number }[]): { x: number, y: number }[][] {
+//     const triangles: { x: number, y: number }[][] = [];
+//     const n = polygon.length;
 
+//     if (n < 3) {
+//         return triangles;
+//     }
+
+//     const V = new Array(n);
+//     if (0 < getArea(polygon)) {
+//         for (let v = 0; v < n; v++) {
+//             V[v] = v;
+//         }
+//     } else {
+//         for (let v = 0; v < n; v++) {
+//             V[v] = (n - 1) - v;
+//         }
+//     }
+
+//     let nv = n;
+//     let count = 2 * nv;
+//     for (let m = 0, v = nv - 1; nv > 2;) {
+//         if (0 >= (count--)) {
+//             return triangles;
+//         }
+
+//         let u = v;
+//         if (nv <= u) {
+//             u = 0;
+//         }
+//         v = u + 1;
+//         if (nv <= v) {
+//             v = 0;
+//         }
+//         let w = v + 1;
+//         if (nv <= w) {
+//             w = 0;
+//         }
+
+//         if (snip(polygon, u, v, w, nv, V)) {
+//             let a, b, c, s, t;
+
+//             a = V[u];
+//             b = V[v];
+//             c = V[w];
+//             triangles.push([polygon[a], polygon[b], polygon[c]]);
+
+//             for (s = v, t = v + 1; t < nv; s++, t++) {
+//                 V[s] = V[t];
+//             }
+//             nv--;
+//             count = 2 * nv;
+//         }
+//     }
+
+//     return triangles;
+// }
 export function getArea(polygon: { x: number, y: number }[]): number {
     let area = 0;
     const n = polygon.length;
@@ -153,13 +209,14 @@ export function insideTriangle(Ax: number, Ay: number, Bx: number, By: number, C
     return ((aCROSSbp >= 0) && (bCROSScp >= 0) && (cCROSSap >= 0));
 }
 
+// THIS ONW WORKS AS EXPECTED
 export function isPointInTriangle(point: [number, number], triangle: [[number, number], [number, number], [number, number]]): boolean {
     const [p1, p2, p3] = triangle;
     const [x, y] = point;
 
-    const b1 = (x - p2[0]) * (p1[1] - p2[1]) - (y - p2[1]) * (p1[0] - p2[0]) < 0;
-    const b2 = (x - p3[0]) * (p2[1] - p3[1]) - (y - p3[1]) * (p2[0] - p3[0]) < 0;
-    const b3 = (x - p1[0]) * (p3[1] - p1[1]) - (y - p1[1]) * (p3[0] - p1[0]) < 0;
+    const b1 = (x - p2[0]) * (p1[1] - p2[1]) - (y - p2[1]) * (p1[0] - p2[0]) <= 0;
+    const b2 = (x - p3[0]) * (p2[1] - p3[1]) - (y - p3[1]) * (p2[0] - p3[0]) <= 0;
+    const b3 = (x - p1[0]) * (p3[1] - p1[1]) - (y - p1[1]) * (p3[0] - p1[0]) <= 0;
 
     return ((b1 === b2) && (b2 === b3));
 }
@@ -214,9 +271,9 @@ export function drawTriangle(ctx: CanvasRenderingContext2D, triangle: { x: numbe
     ctx.lineTo(triangle[1].x, triangle[1].y);
     ctx.lineTo(triangle[2].x, triangle[2].y);
     ctx.closePath();
-    ctx.strokeStyle = 'red';
+    // ctx.strokeStyle = 'red';
     ctx.stroke();
-    ctx.fillStyle = 'rgba(255, 0, 0, 0.0)';
+    // ctx.fillStyle = 'rgba(255, 0, 0, 0.0)';
     ctx.fill();
 }
 
@@ -367,7 +424,8 @@ export function calculateSpaces(canvas: HTMLCanvasElement, width: number, height
         let sensorType = "";
         for (let j = 0; j < triangles.length; j++) {
             // const triangle: Triangle = triangles[j];
-            const triangle: Triangle = [triangles[j][0], triangles[j][1], triangles[j][2]];
+            // const triangle: Triangle = {p1:triangles[j][0], p2:triangles[j][1], p3:triangles[j][2]};
+            const triangle: Triangle = triangles[j];
             // if (gs.ctx) drawTriangle(gs.ctx, triangle);
             if (isPointInsideTriangle(p1, triangle) || isPointInsideTriangle(p2, triangle) || isPointInsideTriangle(p3, triangle) || isPointInsideTriangle(p4, triangle)) {
                 foundRectangle = true;
@@ -441,6 +499,108 @@ export function calculateSpaces(canvas: HTMLCanvasElement, width: number, height
     gs.spaces.push(outsideSpace);
 
 }
+// export function calculateSpaces(canvas: HTMLCanvasElement, width: number, height: number): void {
+//     const gs = useGlobalsStore();
+
+//     gs.spaces.length = 0;
+
+//     const rectangles = subdivideCanvas(canvas, width, height);
+//     const trianglesOutside = triangulatePolygon(polygonOutside);
+//     const trianglesBarn = triangulatePolygon(polygonBarn);
+//     const triangles = trianglesOutside.concat(trianglesBarn);
+
+
+//     console.log("rect spaces");
+//     for (let i = 0, spaceId = 0; i < rectangles.length; i++) {
+//         const rectangle = rectangles[i];
+//         let x1 = rectangle.x;
+//         let x2 = rectangle.x + rectangle.width;
+//         let y1 = rectangle.y;
+//         let y2 = rectangle.y + height;
+
+//         let p1 = { x: x1, y: y1 }
+//         let p2 = { x: x1, y: y2 }
+//         let p3 = { x: x2, y: y1 }
+//         let p4 = { x: x2, y: y2 }
+
+//         let foundRectangle = false
+//         let sensorType = "";
+//         for (let j = 0; j < triangles.length; j++) {
+//             // const triangle: Triangle = triangles[j];
+//             const triangle: Triangle = {p1:triangles[j][0], p2:triangles[j][1], p3:triangles[j][2]};
+//             // if (gs.ctx) drawTriangle(gs.ctx, triangle);
+//             if (isPointInsideTriangle(p1, triangle) || isPointInsideTriangle(p2, triangle) || isPointInsideTriangle(p3, triangle) || isPointInsideTriangle(p4, triangle)) {
+//                 foundRectangle = true;
+//                 sensorType = j >= trianglesOutside.length ? "Beacon" : "Mioty";
+//                 break;
+//             }
+//         }
+//         if (foundRectangle) {
+//             // create spaces
+//             let centerX = rectangle.x + (rectangle.width / 2);
+//             let centerY = rectangle.y + (rectangle.height / 2);
+//             let geoCoords = ConvertCanvasXYToGeoCoords(centerX, centerY); // we use the center of the rectangle as the geooords for the space and for its sensor
+//             let space = new Space(spaceId + 1, "myspace", sensorType, -1, geoCoords.longitude, geoCoords.latitude, [geoCoords.latitude, geoCoords.longitude, 1], [rectangle.x, rectangle.y, 1], [rectangle.x, rectangle.y], [])
+//             gs.spaces.push(space);
+//             spaceId++;
+//             drawRectangle(canvas, spaceId, rectangle.x, rectangle.y, rectangle.width, rectangle.height, sensorType === "Mioty" ? 'rgba(255, 0, 0, 0.20)' : 'rgba(0, 0, 255, 0.20)');
+//             // console.log(space.id);
+//         }
+//     }
+
+//     // sort spaces by x first and reassign coords[0] to be in simple ascending 
+//     gs.spaces.sort((a, b) => a.coordinates[0] - b.coordinates[0]);
+//     let newSpaceX = 0;
+//     let prevSpaceCoord0 = 0;
+//     for (let i = 0; i < gs.spaces.length; i++) {
+//         const space = gs.spaces[i];
+//         if (i == 0) prevSpaceCoord0 = space.coordinates[0];
+
+//         if (prevSpaceCoord0 < space.coordinates[0]) {
+//             newSpaceX++;
+//             prevSpaceCoord0 = space.coordinates[0];
+//         }
+//         space.coordinates[0] = newSpaceX;
+//     }
+
+//     // sort spaces by y first and reassign coords[1] to be in simple ascending 
+//     gs.spaces.sort((a, b) => a.coordinates[1] - b.coordinates[1]);
+//     let newSpaceY = 0;
+//     let prevSpaceCoord1 = 0;
+//     for (let i = 0; i < gs.spaces.length; i++) {
+//         const space = gs.spaces[i];
+//         if (i == 0) prevSpaceCoord1 = space.coordinates[1];
+
+//         if (prevSpaceCoord1 < space.coordinates[1]) {
+//             newSpaceY++;
+//             prevSpaceCoord1 = space.coordinates[1];
+//         }
+//         space.coordinates[1] = newSpaceY;
+//     }
+
+//     findAndAssignLogicalNeighbors(gs.spaces);
+
+//     // sort by y primary and by x secondary
+//     gs.spaces.sort((a, b) => {
+//         if (a.coordinates[1] === b.coordinates[1]) {
+//             return a.coordinates[0] - b.coordinates[0];
+//         }
+//         return a.coordinates[1] - b.coordinates[1];
+//     });
+
+//     // create Sensors
+//     gs.sensors.length = 0;
+//     for (let i = 0; i < gs.spaces.length; i++) {
+//         const space = gs.spaces[i];
+//         let sensor = new Sensor(space.id, 1, space.sensorType, [space.id], [space.coordinates[0], space.coordinates[1], 1], space.geoCoordinates);
+//         gs.sensors.push(sensor);
+//     }
+
+
+//     let outsideSpace = new Space(0, "outside", "Mioty", -1, gs.spaces[0].longitude, gs.spaces[0].latitude, gs.spaces[0].geoCoordinates, [-1, -1, 1], [-1, -1], [1]);
+//     gs.spaces.push(outsideSpace);
+
+// }
 export function findAndAssignLogicalNeighbors(spaceCollection: Space[]): void {
     // Sort the spaces by x-geocoordinate
     spaceCollection.sort((a, b) => a.coordinates[0] - b.coordinates[0]);
