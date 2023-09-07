@@ -89,10 +89,10 @@ function removeEvent() {
 // let colorRGB: string = "rgba(255,255,0,255)";
 // let colorAlpha: number = 0.2;
 
-function handleColorChange() {
-    console.log("handleColorChange");
-    updateGS('color', color.value);
-}
+// function handleColorChange() {
+//     console.log("handleColorChange");
+//     updateGS('color', color.value);
+// }
 
 </script>
 
@@ -167,7 +167,7 @@ function handleColorChange() {
                     @onInput="(val) => updateGS('colorRGB', val)">
                 </LabeledInput>
                 <input type="number" ref="colorAlpha" style="flex: 0 1 70px; width: 70px;" min="0" max="1" step="0.1"
-                    value="0.5" @input="(ev) => updateGS('colorAlpha', ev.target.value)" />
+                    value="0.5" @input="(ev) => updateGS('colorAlpha', ev.target!.value)" />
             </div>
         </div>
     </div>

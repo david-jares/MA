@@ -1,7 +1,7 @@
 import { useGlobalsStore } from "@/stores/globals";
 import { ConvertGeoCoordsToCanvasXY, ConvertCanvasXYToGeoCoords } from "./interactionfunctions";
 import { colorToRgba, subdivideCanvas } from "./utilityfunctions";
-import { isPointInsideTriangle, type Point, type Triangle } from "./tempfunctions";
+import { isPointInsideTriangle, Triangle, type Point } from "./tempfunctions";
 import { Space, Sensor } from "./model";
 
 
@@ -82,7 +82,7 @@ export function triangulatePolygon(polygon: { x: number, y: number }[]): Triangl
             a = V[u];
             b = V[v];
             c = V[w];
-            triangles.push({p1:polygon[a], p2:polygon[b], p3:polygon[c]});
+            triangles.push(new Triangle(polygon[a], polygon[b], polygon[c]));
 
             for (s = v, t = v + 1; t < nv; s++, t++) {
                 V[s] = V[t];
@@ -265,11 +265,12 @@ export function drawPolygon(ctx: CanvasRenderingContext2D): void {
 }
 
 
-export function drawTriangle(ctx: CanvasRenderingContext2D, triangle: { x: number, y: number }[]): void {
+export function drawTriangle(ctx: CanvasRenderingContext2D, triangle: Triangle): void {
+    // debugger;
     ctx.beginPath();
-    ctx.moveTo(triangle[0].x, triangle[0].y);
-    ctx.lineTo(triangle[1].x, triangle[1].y);
-    ctx.lineTo(triangle[2].x, triangle[2].y);
+    ctx.moveTo(triangle.p1.x, triangle.p1.y);
+    ctx.lineTo(triangle.p2.x, triangle.p2.y);
+    ctx.lineTo(triangle.p3.x, triangle.p3.y);
     ctx.closePath();
     // ctx.strokeStyle = 'red';
     ctx.stroke();

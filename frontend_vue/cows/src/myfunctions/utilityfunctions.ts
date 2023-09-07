@@ -1,3 +1,4 @@
+import type { Point } from "./tempfunctions";
 
 export function writeToConsoleOutput(content: string): void {
     let consoleOutput: HTMLTextAreaElement = document.getElementById('consoleOutput') as HTMLTextAreaElement;
@@ -11,12 +12,45 @@ export function clearConsoleOutput(): void {
     console.log('cleared console output');
 }
 
-export interface Rectangle {
-    id: number;
-    x: number;
-    y: number;
-    width: number;
-    height: number;
+export class Rectangle {
+    constructor(public id: number, public x: number, public y: number, public width: number, public height: number) {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+    get x1(): number {
+        return this.x;
+    }
+    get y1(): number {
+        return this.y;
+    }
+    get x2(): number {
+        return this.x + this.width;
+    }
+    get y2(): number {
+        return this.y + this.height;
+    }
+    get p1(): Point {
+        return { x: this.x1, y: this.y1 };
+    }
+    get p2(): Point {
+        return { x: this.x2, y: this.y1 };
+    }
+    get p3(): Point {
+        return { x: this.x2, y: this.y2 };
+    }
+    get p4(): Point {
+        return { x: this.x1, y: this.y2 };
+    }
+
+
+
+
+    containsPoint(point: Point): boolean {
+        return (point.x >= this.x1 && point.x <= this.x2 && point.y >= this.y1 && point.y <= this.y2);
+    }
 }
 
 export function subdivideCanvas(canvas: HTMLCanvasElement, width: number, height: number): Rectangle[] {
@@ -28,7 +62,7 @@ export function subdivideCanvas(canvas: HTMLCanvasElement, width: number, height
         for (let col = 0; col < numCols; col++) {
             const x: number = col * width;
             const y: number = row * height;
-            rectangles.push({ id, x, y, width, height });
+            rectangles.push(new Rectangle( id, x, y, width, height ));
             id++;
         }
     }

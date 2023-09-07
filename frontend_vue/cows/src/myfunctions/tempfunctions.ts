@@ -5,7 +5,14 @@ export type Point = {
   y: number;
 };
 
-export type Triangle = { p1: Point, p2: Point, p3: Point };
+// export type Triangle = { p1: Point, p2: Point, p3: Point };
+export class Triangle {
+  constructor(public p1: Point, public p2: Point, public p3: Point) {
+    this.p1 = p1;
+    this.p2 = p2;
+    this.p3 = p3;
+  }
+};
 
 
 // WARNING - DOESNT WORK RELIABLY !!!!
@@ -51,10 +58,22 @@ export function isPointInOrOnTriangle(p: Point, tr: Triangle): boolean {
   return (u >= 0 && u <= 1) && (v >= 0 && v <= 1) && (w >= 0 && w <= 1);
 }
 
+export function isRectOverlappingTriangle(rect: Rectangle, triangle: Triangle): boolean {
+  if (isPointInOrOnTriangle(rect.p1, triangle)) return true;
+  if (isPointInOrOnTriangle(rect.p2, triangle)) return true;
+  if (isPointInOrOnTriangle(rect.p3, triangle)) return true;
+  if (isPointInOrOnTriangle(rect.p4, triangle)) return true;
+  if (isPointInsideRectangle(triangle.p1, rect)) return true;
+  if (isPointInsideRectangle(triangle.p2, rect)) return true;
+  if (isPointInsideRectangle(triangle.p3, rect)) return true;
+  return false;
+}
+
+
 
 
 class Point2 {
-  constructor(public x: number, public y: number) {}
+  constructor(public x: number, public y: number) { }
 
   distanceTo(other: Point2): number {
     const dx = this.x - other.x;

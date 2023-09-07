@@ -1,5 +1,6 @@
 import type { CanvasCoordinate, GeoCoordinate, SMARTEvent, Sensor, Space } from '@/myfunctions/model';
 import type { Point } from '@/myfunctions/tempfunctions';
+import { Rectangle } from '@/myfunctions/utilityfunctions';
 import { defineStore } from 'pinia';
 import type { ref } from 'vue';
 
@@ -52,11 +53,17 @@ interface GlobalsState {
     tipEventSpaceIds: string;
     tipEventCapacity: string;
 
+
+
+
+
 }
 
 export const useGlobalsStore = defineStore({
     id: 'globals',  // unique id of the store
     state: (): GlobalsState => ({
+
+       
         mousePosition: { x: 0, y: 0 },
         sensors: [],
         spaces: [],

@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import type { Point } from "./tempfunctions";
 import type { GeoCoordinate } from "./model";
+import { Rectangle } from "./utilityfunctions";
 
 // export let coordinateOrigin = { x: 0, y: 0 };
 export let origin = ref({ x: 0, y: 0 });
@@ -30,8 +31,8 @@ export function setFillColor(ctx: CanvasRenderingContext2D, fillColor: string): 
   ctx.fillStyle = fillColor;
 }
 //STYLING-------------------------------------------------------------------------
-export function scalePointMultiply(point:Point){
-  return {x:point.x*scale.value, y:point.y*scale.value};
+export function scalePointMultiply(point: Point) {
+  return { x: point.x * scale.value, y: point.y * scale.value };
 }
 
 export function subtractOrigin(point: Point): Point {
@@ -75,6 +76,10 @@ export function getPointYInv(ctx: CanvasRenderingContext2D, p: Point): Point {
   let pYInv = { x: p.x, y: getYInv(ctx, p.y) };
   return { x: pYInv.x, y: pYInv.y };
 }
+export function getRectYInv(ctx: CanvasRenderingContext2D, r: Rectangle): Rectangle {
+  let h = ctx.canvas.height;
+  return new Rectangle(r.id, r.x, getYInv(ctx, r.y) - r.height, r.width, r.height);
+}
 
 export function getPointsYInv(ctx: CanvasRenderingContext2D, points: Point[]): Point[] {
   return points.map(p => getPointYInv(ctx, p));
@@ -99,6 +104,14 @@ export function getPointsScaledYInv(ctx: CanvasRenderingContext2D, points: Point
   return points.map(p => getPointScaledYInv(ctx, p));
 }
 
+export function drawPoint(ctx: CanvasRenderingContext2D, p: Point, radius = 3, fill = true): void {
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, radius, 0, 2 * Math.PI);
+  ctx.stroke();
+  if (fill) {
+    ctx.fill();
+  }
+}
 
 export function drawLine(ctx: CanvasRenderingContext2D, p1: Point, p2: Point): void {
   ctx.beginPath();
@@ -188,11 +201,11 @@ export function drawPath(ctx: CanvasRenderingContext2D, path: Point[], closePath
     let transformedPoint: Point = { x: point.x + offset.x, y: point.y + offset.y };
     if (index === 0) ctx.moveTo(transformedPoint.x, transformedPoint.y);
     else ctx.lineTo(transformedPoint.x, transformedPoint.y);
-    drawText(ctx, index.toString(), transformedPoint.x + 5, transformedPoint.y - 5);
+    // drawText(ctx, index.toString(), transformedPoint.x + 5, transformedPoint.y - 5);
 
     if (index === 0) ctx.moveTo(transformedPoint.x, transformedPoint.y);
     else ctx.lineTo(transformedPoint.x, transformedPoint.y);
-    drawText(ctx, index.toString(), transformedPoint.x + 5, transformedPoint.y - 5);
+    // drawText(ctx, index.toString(), transformedPoint.x + 5, transformedPoint.y - 5);
   });
   if (closePath) ctx.closePath();
   if (fillArea) {
@@ -223,16 +236,32 @@ export function drawPath(ctx: CanvasRenderingContext2D, path: Point[], closePath
 //   ctx.closePath();
 //   ctx.fill();
 // }
+export function drawRectangle(ctx: CanvasRenderingContext2D, rectangle: Rectangle, fillArea: boolean = true): void {
+  drawPath(ctx, [rectangle.p1, rectangle.p2, rectangle.p3, rectangle.p4], true, fillArea);
 
+  // ctx.strokeRect(x, y, width, height);
+  // if (fillArea) {
+  //   // ctx.fillStyle = fillColor;
+  //   ctx.fillRect(x + 2, y + 2, width - 4, height - 4);
+  // }
+}
 
-export function drawRectangle(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, fillColor: string): void {
+export function drawRectangleDefault(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, fillArea: boolean = true): void {
   ctx.strokeRect(x, y, width, height);
-  if (fillColor) {
-    ctx.fillStyle = fillColor;
+  if (fillArea) {
+    // ctx.fillStyle = fillColor;
     ctx.fillRect(x + 2, y + 2, width - 4, height - 4);
   }
 }
-
+export function drawRectangleYInv(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, fillArea: boolean = true): void {
+  y = getYInv(ctx, y + height);
+  setStrokeProperties(ctx, "black", 1);
+  ctx.strokeRect(x, y, width, height);
+  if (fillArea) {
+    // ctx.fillStyle = fillColor;
+    ctx.fillRect(x + 2, y + 2, width - 4, height - 4);
+  }
+}
 // export function drawRectangleScaled(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, fillColor: string): void {
 //   let x1 = origin.x + x * scale;
 //   let y1 = origin.y + y * scale;
