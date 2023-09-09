@@ -5,7 +5,7 @@ import { Rectangle } from "./utilityfunctions";
 
 // export let coordinateOrigin = { x: 0, y: 0 };
 export let origin = ref({ x: 0, y: 0 });
-export let scale = ref(1);
+export let scale = ref(3);
 export const degreeLongitudeToMeters = 72186; // in Nürnberg Germany
 export const degreeLatitideToMeters = 110000; // in Nürnberg Germany
 
@@ -72,7 +72,7 @@ export function getPointScaledAndOrigin(ctx: CanvasRenderingContext2D, p: Point)
 export function getPointsScaledAndOrigin(ctx: CanvasRenderingContext2D, points: Point[]): Point[] {
   return points.map((p) => getPointScaledAndOrigin(ctx, p));
 }
-export function getTriangleScaledAndOrigin(ctx: CanvasRenderingContext2D, triangle:Triangle): Triangle {
+export function getTriangleScaledAndOrigin(ctx: CanvasRenderingContext2D, triangle: Triangle): Triangle {
   // return points.map((p) => getPointScaledAndOrigin(ctx, p));
   return new Triangle(getPointScaledAndOrigin(ctx, triangle.p1), getPointScaledAndOrigin(ctx, triangle.p2), getPointScaledAndOrigin(ctx, triangle.p3));
 }
@@ -260,4 +260,38 @@ export function drawRectangleYInv(ctx: CanvasRenderingContext2D, x: number, y: n
     // ctx.fillStyle = fillColor;
     ctx.fillRect(x + 2, y + 2, width - 4, height - 4);
   }
+}
+
+export function drawSpaceRectangle(ctx: CanvasRenderingContext2D, rectangle: Rectangle) {
+  let transformedRect = getRectYInv(ctx!, rectangle);
+  setFillColor(ctx!, "rgba(255,0,0,0.2)");
+  drawRectangleDefault(ctx!, transformedRect, true);
+  setFontProperties(ctx!, "rgba(0,0,255,0.4)", 5 * scale.value, "Arial");
+  drawText(ctx!, rectangle.id.toString(), transformedRect.x + 2 * scale.value, transformedRect.y + 6 * scale.value);
+
+}
+
+export function drawRotatedImage(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  x: number,
+  y: number,
+  angleDeg: number,
+  width?: number,
+  height?: number,
+  alpha?: number
+) {
+  const angleRad = angleDeg * Math.PI / 180;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angleRad);
+  if (alpha) {
+    ctx.globalAlpha = alpha;
+  }
+  if (width && height) {
+    ctx.drawImage(img, -width / 2, -height / 2, width, height);
+  } else {
+    ctx.drawImage(img, -img.width / 2, -img.height / 2);
+  }
+  ctx.restore();
 }
