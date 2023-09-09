@@ -108,11 +108,19 @@ function ShiftGeoCoordPointInMetersBackToCanvasSpace(coordinate: Point) {
     return { x: coordinate.x - coordShiftFromOrigin.value.x, y: coordinate.y - coordShiftFromOrigin.value.y };
 }
 
-function canvasPointToGeoCoord(p: Point) {
-    let lon = (((p.x - origin.value.x) / scale.value) + coordShiftFromOrigin.value.x) / degreeLongitudeToMeters;
-    let lat = (((p.y - origin.value.y) / scale.value) + coordShiftFromOrigin.value.y) / degreeLatitideToMeters;
+function GeoCoordToCanvasPoint(geoCoord: GeoCoordinate) {
+    let canvasPointX = (((degreeLongitudeToMeters * geoCoord.lon) - coordShiftFromOrigin.value.x) * scale.value) + origin.value.x;
+    let canvasPointY = (((degreeLatitideToMeters * geoCoord.lat) - coordShiftFromOrigin.value.y) * scale.value) + origin.value.y;
+    return { x: canvasPointX, y: canvasPointY };
+}
+
+function canvasPointToGeoCoord(canvasPoint: Point) {
+    let lon = (((canvasPoint.x - origin.value.x) / scale.value) + coordShiftFromOrigin.value.x) / degreeLongitudeToMeters;
+    let lat = (((canvasPoint.y - origin.value.y) / scale.value) + coordShiftFromOrigin.value.y) / degreeLatitideToMeters;
     return { lon: lon, lat: lat };
 }
+
+
 
 function testRaster() {
 

@@ -5,7 +5,7 @@ import { Rectangle } from "./utilityfunctions";
 
 // export let coordinateOrigin = { x: 0, y: 0 };
 export let origin = ref({ x: 0, y: 0 });
-export let scale = ref(3);
+export let scale = ref(1);
 export const degreeLongitudeToMeters = 72186; // in Nürnberg Germany
 export const degreeLatitideToMeters = 110000; // in Nürnberg Germany
 
