@@ -1,3 +1,4 @@
+import type { GeoCoordinate } from "./model";
 import type { Rectangle } from "./utilityfunctions";
 
 export type Point = {
@@ -80,5 +81,22 @@ class Point2 {
     const dy = this.y - other.y;
     return Math.sqrt(dx * dx + dy * dy);
   }
+}
+
+
+export class RasterizedRectangle {
+
+  constructor(public id: number, public topLeftCornerGeoCoord: GeoCoordinate, public width: number, public height: number, public angleDeg: number, public rows: number, public columns: number) {
+    this.id = id;
+    this.topLeftCornerGeoCoord = topLeftCornerGeoCoord;
+    this.width = width;
+    this.height = height;
+    this.angleDeg = angleDeg;
+    this.rows = rows;
+    this.columns = columns;
+  }
+
+
+
 }
 

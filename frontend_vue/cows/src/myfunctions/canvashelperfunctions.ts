@@ -1,13 +1,25 @@
 import { ref } from "vue";
-import { Triangle, type Point } from "./tempfunctions";
+import { Triangle, type Point, RasterizedRectangle } from "./tempfunctions";
 import type { GeoCoordinate } from "./model";
 import { Rectangle } from "./utilityfunctions";
+import { useGlobalsStore } from "@/stores/globals";
+
+// let gs = useGlobalsStore();
 
 // export let coordinateOrigin = { x: 0, y: 0 };
 export let origin = ref({ x: 0, y: 0 });
-export let scale = ref(3);
+export let scale = ref(1);
+// export let origin = ref({ x: -1000, y: 0 });
+// export let scale = ref(10);
 export const degreeLongitudeToMeters = 72186; // in Nürnberg Germany
 export const degreeLatitideToMeters = 110000; // in Nürnberg Germany
+
+export const barnRasterRectangle = new RasterizedRectangle(
+  1,
+  { lon: 12.198769833855735, lat: 49.68159673060605 },
+  200, 100, 0, 5, 10
+)
+
 
 export function canvasPointToGeoCoordinate(ctx: CanvasRenderingContext2D, p: Point): GeoCoordinate {
   let geoCoordinate = { lat: 0, lon: 0 };
@@ -77,15 +89,7 @@ export function getTriangleScaledAndOrigin(ctx: CanvasRenderingContext2D, triang
   return new Triangle(getPointScaledAndOrigin(ctx, triangle.p1), getPointScaledAndOrigin(ctx, triangle.p2), getPointScaledAndOrigin(ctx, triangle.p3));
 }
 
-// export function getRectScaledAndOrigin(ctx: CanvasRenderingContext2D, rectangle: Rectangle): Rectangle {
-//   return new Rectangle(
-//     rectangle.id,
-//     getPointScaledAndOrigin(ctx, rectangle.p1),
-//     getPointScaledAndOrigin(ctx, rectangle.p1),
-//     getPointScaledAndOrigin(ctx, rectangle.p1),
-//     getPointScaledAndOrigin(ctx, rectangle.p1),
-//     )
-// }
+
 
 export function getYInv(ctx: CanvasRenderingContext2D, y: number): number {
   let h = ctx.canvas.height;
@@ -252,6 +256,16 @@ export function drawRectangleDefault(ctx: CanvasRenderingContext2D, rectangle: R
   }
 }
 
+export function drawRotatedRectangle(ctx: CanvasRenderingContext2D, rectangle: Rectangle, fillArea: boolean = true, degrees: number = 0): void {
+  const { x, y, width, height } = rectangle;
+  ctx.save();
+  ctx.translate(x + width / 2, y + height / 2);
+  ctx.rotate(degrees * Math.PI / 180);
+  // ctx.strokeRect(x, y, width, height);
+  if (fillArea) { ctx.fillRect(-width / 2, -height / 2, width, height) };
+  ctx.restore();
+}
+
 export function drawRectangleYInv(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, fillArea: boolean = true): void {
   y = getYInv(ctx, y + height);
   setStrokeProperties(ctx, "black", 1);
@@ -266,7 +280,7 @@ export function drawSpaceRectangle(ctx: CanvasRenderingContext2D, rectangle: Rec
   let transformedRect = getRectYInv(ctx!, rectangle);
   setFillColor(ctx!, "rgba(255,0,0,0.2)");
   drawRectangleDefault(ctx!, transformedRect, true);
-  setFontProperties(ctx!, "rgba(0,0,255,0.4)", 5 * scale.value, "Arial");
+  setFontProperties(ctx!, "rgba(0,0,255,0.4)", 1 * scale.value, "Arial");
   drawText(ctx!, rectangle.id.toString(), transformedRect.x + 2 * scale.value, transformedRect.y + 6 * scale.value);
 
 }
@@ -295,3 +309,167 @@ export function drawRotatedImage(
   }
   ctx.restore();
 }
+
+
+export function getSubdividedRectangles(rect: Rectangle, rows: number, cols: number, angle: number): Rectangle[] {
+  let nextRectID = 1000;
+  const rectangles: Rectangle[] = [];
+  const { x, y, width, height } = rect;
+  const radians = angle * Math.PI / 180;
+  const cos = Math.cos(radians);
+  const sin = Math.sin(radians);
+  const rotatedWidth = Math.abs(width * cos) + Math.abs(height * sin);
+  const rotatedHeight = Math.abs(width * sin) + Math.abs(height * cos);
+  const cellWidth = rotatedWidth / cols;
+  const cellHeight = rotatedHeight / rows;
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      const cellX = x + j * cellWidth * cos - i * cellHeight * sin;
+      const cellY = y + j * cellWidth * sin + i * cellHeight * cos;
+      rectangles.push(new Rectangle(nextRectID++, cellX, cellY, cellWidth, cellHeight));
+    }
+  }
+  return rectangles;
+}
+
+interface Point {
+  x: number;
+  y: number;
+}
+
+export function generatePoints(
+  point1: Point,
+  point2: Point,
+  subdivision: number,
+  columnAmount: number,
+  columnWidth: number
+): Point[] {
+  const points: Point[] = [];
+
+  // Compute unit direction vector of the line
+  const dx = point2.x - point1.x;
+  const dy = point2.y - point1.y;
+  const length = Math.sqrt(dx * dx + dy * dy);
+  const ux = dx / length;
+  const uy = dy / length;
+
+  // Compute unit normal vector (perpendicular) to the line
+  const nx = -uy;
+  const ny = ux;
+
+  // Generate points on the subdivided line and parallel lines
+  for (let i = 0; i <= subdivision; i++) {
+    const ratio = i / subdivision;
+
+    // Point on the main line
+    const mx = point1.x + ratio * dx;
+    const my = point1.y + ratio * dy;
+
+    for (let j = 0; j < columnAmount; j++) {
+      // Point on the parallel line
+      const px = mx + j * columnWidth * nx;
+      const py = my + j * columnWidth * ny;
+
+      points.push({ x: px, y: py });
+    }
+  }
+
+  return points;
+}
+
+
+function generatePointsAndRectangles(
+  point1: Point,
+  point2: Point,
+  subdivision: number,
+  columnAmount: number,
+  columnWidth: number
+): { points: Point[], rectangles: Rectangle[] } {
+  const points: Point[] = [];
+  const rectangles: Rectangle[] = [];
+
+  // Compute unit direction vector of the line
+  const dx = point2.x - point1.x;
+  const dy = point2.y - point1.y;
+  const length = Math.sqrt(dx * dx + dy * dy);
+  const ux = dx / length;
+  const uy = dy / length;
+
+  // Compute unit normal vector (perpendicular) to the line
+  const nx = -uy;
+  const ny = ux;
+
+  // Generate points on the subdivided line and parallel lines
+  let pointIndex = 0;
+  for (let i = 0; i <= subdivision; i++) {
+    const ratio = i / subdivision;
+
+    // Point on the main line
+    const mx = point1.x + ratio * dx;
+    const my = point1.y + ratio * dy;
+
+    for (let j = 0; j < columnAmount; j++) {
+      // Point on the parallel line
+      const px = mx + j * columnWidth * nx;
+      const py = my + j * columnWidth * ny;
+
+      points.push({ x: px, y: py });
+
+      // Create rectangles
+      if (i > 0 && j > 0) {
+        rectangles.push({
+          topLeft: pointIndex - columnAmount - 1,
+          topRight: pointIndex - columnAmount,
+          bottomLeft: pointIndex - 1,
+          bottomRight: pointIndex
+        });
+      }
+
+      pointIndex++;
+    }
+  }
+
+  return { points, rectangles };
+}
+
+// // user drawn rectangles
+// export function drawRectangleOnCanvas(canvas: HTMLCanvasElement) {
+//   const ctx = canvas.getContext('2d');
+//   let isDrawing = false;
+//   let startX = 0;
+//   let startY = 0;
+//   let endX = 0;
+//   let endY = 0;
+
+//   function draw() {
+//     // ctx!.clearRect(0, 0, canvas.width, canvas.height);
+//     ctx!.beginPath();
+//     ctx!.rect(startX, startY, endX - startX, endY - startY);
+//     ctx!.stroke();
+//   }
+
+//   canvas.addEventListener('mousedown', (event) => {
+//     // if (event.key === 'd') {
+//       isDrawing = true;
+//       startX = event.offsetX;
+//       startY = event.offsetY;
+//     // }
+//   });
+
+//   canvas.addEventListener('mousemove', (event) => {
+//     if (isDrawing) {
+//       endX = event.offsetX;
+//       endY = event.offsetY;
+//       draw();
+//     }
+//   });
+
+//   canvas.addEventListener('mouseup', (event) => {
+//     // if (event.key === 'd') {
+//       isDrawing = false;
+//       endX = event.offsetX;
+//       endY = event.offsetY;
+//       draw();
+//     // }
+//   });
+// }

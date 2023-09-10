@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { degreeLongitudeToMeters, degreeLatitideToMeters, drawCoordinateSystemYInv, setFillColor, drawPath, getPointsScaledYInv, addToScale, moveOrigin, getYInv, origin, scale, canvasPointToGeoCoordinate, drawRectangleDefault, getPointYInv, subtractOrigin, addOrigin, scalePointMultiply, setStrokeProperties, drawPoint, drawText, setFontProperties, drawRectangleYInv, drawRectangle, getRectYInv, getTriangleYInv, getPointScaledAndOrigin, getTriangleScaledAndOrigin, drawSpaceRectangle, drawRotatedImage } from '@/myfunctions/canvashelperfunctions';
+import { degreeLongitudeToMeters, degreeLatitideToMeters, drawCoordinateSystemYInv, setFillColor, drawPath, getPointsScaledYInv, addToScale, moveOrigin, getYInv, origin, scale, canvasPointToGeoCoordinate, drawRectangleDefault, getPointYInv, subtractOrigin, addOrigin, scalePointMultiply, setStrokeProperties, drawPoint, drawText, setFontProperties, drawRectangleYInv, drawRectangle, getRectYInv, getTriangleYInv, getPointScaledAndOrigin, getTriangleScaledAndOrigin, drawSpaceRectangle, drawRotatedImage, setScale, setOrigin, drawRectangleOnCanvas, barnRasterRectangle, getSubdividedRectangles, drawRotatedRectangle, getRasterPoints, generatePoints } from '@/myfunctions/canvashelperfunctions';
 import { drawTriangle, isInsidePolygon, isPointInTriangle, triangulatePolygon } from '@/myfunctions/drawingfunctions';
 import type { GeoCoordinate } from '@/myfunctions/model';
 import { isPointInOrOnTriangle, isPointInsideRectangle as isPointInsideOrOnRectangle, isPointInsideTriangle, Triangle, type Point, isRectOverlappingTriangle } from '@/myfunctions/tempfunctions';
@@ -8,6 +8,7 @@ import { useGlobalsStore } from '@/stores/globals';
 import { useDebugsStore } from '@/stores/debugs';
 import { onMounted, ref } from 'vue';
 import almersbachBarn from '@/assets/Almersbach_Barn_01.png';
+import almersbachBarn2 from '@/assets/Almesbach_Stallplan_1_rotated-01.png';
 
 let canvas: HTMLCanvasElement | null;
 let ctx: CanvasRenderingContext2D | null;
@@ -31,6 +32,7 @@ let coordHeight_m = maxY_m - minY_m;
 let coordWidth_m = maxX_m - minX_m;
 coordShiftFromOrigin.value = { x: minX_m, y: minY_m };
 
+let latestMousePosYInv = ref({ x: 0, y: 0 });
 
 let geoCoordsAllShiftedBack_m = shiftBackGeoCoords_to_m(geoCoords, coordShiftFromOrigin.value);
 
@@ -40,9 +42,23 @@ console.log("geoCoordsBarn_shifteback_m: ");
 console.log(geoCoordsBarn_shifteback_m);
 
 const img = new Image();
+const img2 = new Image();
 
 img.src = almersbachBarn;
+img2.src = almersbachBarn2;
 
+
+function increaseZoom() {
+    // if (zoomelevel == 1) {
+    let zoomSpeed = 1;
+    let deltOriginToScreenCenter = { x: origin.value.x - canvas!.width! / 2, y: origin.value.y - canvas!.height! / 2 };
+    console.log("deltOriginToScreenCenter: ");
+    console.log(deltOriginToScreenCenter);
+    addToScale(zoomSpeed);
+    setOrigin(origin.value.x + (deltOriginToScreenCenter.x) * zoomSpeed, origin.value.y + (deltOriginToScreenCenter.y) * zoomSpeed);
+
+
+}
 
 function shiftBackGeoCoords_to_m(geoCoords: GeoCoordinate[], coordShiftFromOrigin: Point) {
     let geoCoords_m = geoCoords.map((coord) => {
@@ -60,6 +76,8 @@ onMounted(() => {
     canvas = document.getElementById("mycanvas") as HTMLCanvasElement;
     ctx = canvas.getContext("2d");
 
+    // drawRectangleOnCanvas(canvas);
+
     let interval = setInterval(() => {
         if (ctx == null || canvas == null) { return; }
         ctx?.clearRect(0, 0, canvas.width, canvas.height);
@@ -73,22 +91,27 @@ onMounted(() => {
 
     document.addEventListener("keydown", (e) => {
         if (e.key == "ArrowUp" && e.shiftKey) {
-            addToScale(0.1);
+            increaseZoom();
         }
         else if (e.key == "ArrowDown" && e.shiftKey) {
-            addToScale(-0.1);
+            // setOrigin(origin.value.x + 200, origin.value.y + 200);
+            // setScale(scale.value / 2);
         }
         else if (e.key == "ArrowUp") {
-            moveOrigin(0, 50);
-        }
-        else if (e.key == "ArrowDown") {
             moveOrigin(0, -50);
         }
+        else if (e.key == "ArrowDown") {
+            moveOrigin(0, 50);
+        }
         else if (e.key == "ArrowLeft") {
-            moveOrigin(-50, 0);
+            moveOrigin(50, 0);
         }
         else if (e.key == "ArrowRight") {
-            moveOrigin(50, 0);
+            moveOrigin(-50, 0);
+        }
+        else if (e.key == "p") {
+            console.log(getMouseGeoCoords());
+            console.log(latestMousePosYInv.value);
         }
 
 
@@ -99,7 +122,7 @@ onMounted(() => {
         let mousePosGeoCoordsYInv = canvasPointToGeoCoord({ x: mousePosYInv.x, y: mousePosYInv.y });
         labelText.value = "mousecoordinates: " + mousePosYInv.x + ", " + mousePosYInv.y + " | lon:" + mousePosGeoCoordsYInv.lon + ", lat:" + mousePosGeoCoordsYInv.lat;
 
-
+        latestMousePosYInv.value = mousePosYInv;
 
     });
 
@@ -107,6 +130,19 @@ onMounted(() => {
         // ctx!.drawImage(img, 0, 0);
     };
 });
+
+
+
+
+// function getMouseGeoCoords(ctx: CanvasRenderingContext2D, mouseX: number, mouseY: number) {
+function getMouseGeoCoords() {
+    return canvasPointToGeoCoord(latestMousePosYInv.value);
+}
+
+
+
+
+
 
 function GeoCoordToMeters(coord: GeoCoordinate) {
     return { x: coord.lon * degreeLongitudeToMeters, y: coord.lat * degreeLatitideToMeters };
@@ -133,7 +169,8 @@ function canvasPointToGeoCoord(canvasPoint: Point) {
 function UpdateDrawings() {
 
     let imageCorner = GeoCoordToCanvasPoint({ lon: 12.198746, lat: 49.681592 });
-    drawRotatedImage(ctx!, img, (imageCorner.x +25*scale.value ) , getYInv(ctx!, imageCorner.y - 22*scale.value), -29, 40 * scale.value, 80 * scale.value,0.75);
+    // drawRotatedImage(ctx!, img, (imageCorner.x +25*scale.value ) , getYInv(ctx!, imageCorner.y - 22*scale.value), -29, 40 * scale.value, 80 * scale.value,0.75);
+    drawRotatedImage(ctx!, img2, (imageCorner.x + 20 * scale.value), getYInv(ctx!, imageCorner.y - 25 * scale.value), 0, 80 * scale.value, 80 * scale.value, 1);
 
 
 
@@ -156,7 +193,7 @@ function UpdateDrawings() {
             id++;
         }
     }
-
+    // you mentioned that you do some meditation technique to redirect or transform your sexual energy into something. Is this something complicated or how does that work?
     let trianglesAll = triangulatePolygon(geoCoordsAllShiftedBack_m)
 
     let trianglesAllTransformed = trianglesAll.map((triangle) => {
@@ -208,14 +245,45 @@ function UpdateDrawings() {
         }
     }
     trianglesAllTransformed.forEach((triangle) => {
-        drawTriangle(ctx!, getTriangleYInv(ctx!, triangle));
+        // drawTriangle(ctx!, getTriangleYInv(ctx!, triangle));
     });
 
     setStrokeProperties(ctx!, "red", 0.75);
     setFillColor(ctx!, "rgba(255,0,0,0.2)");
 
+    // make Barn rectangles
 
-    
+
+    let p1 = GeoCoordToCanvasPoint(barnRasterRectangle.topLeftCornerGeoCoord);
+    let p2 = GeoCoordToCanvasPoint({ lon: 12.199247765864712, lat: 49.68108400333333 });
+    setStrokeProperties(ctx!, "blue", 0.75);
+    setFillColor(ctx!, "rgba(0,255,0,0.82)");
+    let points = generatePoints(p1, p2, 10, 4, 50);
+
+    // drawPoint(ctx!, getPointYInv(ctx!, p1), 15,true);
+    // drawPoint(ctx!, getPointYInv(ctx!, p2), 15,true);
+    points.forEach((point) => {
+        drawPoint(ctx!, getPointYInv(ctx!, point), 7, true);
+        let rect = new Rectangle(0, point.x, point.y, 50, 50);
+        // drawRectangleDefault(ctx!, getRectYInv(ctx!, rect),true);
+        drawRotatedRectangle(ctx!, getRectYInv(ctx!, rect), true, 0);
+        // drawRectangleDefault(ctx!, rect, true);
+    });
+
+
+    // let angle = 0;
+    // // let barnRectangles = getSubdividedRectangles(new Rectangle(10000, barnTopLeftCanvasPoint.x, barnTopLeftCanvasPoint.y, barnRasterRectangle.width, barnRasterRectangle.height), barnRasterRectangle.columns, barnRasterRectangle.rows, angle);
+    // let barnRectangles = getSubdividedRectangles(getRectYInv(ctx!, new Rectangle(10000, barnTopLeftCanvasPoint.x, barnTopLeftCanvasPoint.y, barnRasterRectangle.width, barnRasterRectangle.height)), barnRasterRectangle.columns, barnRasterRectangle.rows, angle);
+    // barnRectangles.forEach((rectangle) => {
+    //     // drawSpaceRectangle(ctx!, getRectYInv(ctx!,rectangle));
+    //     // drawSpaceRectangle(ctx!, rectangle);
+    //     drawRotatedRectangle(ctx!, rectangle, true, -angle);
+    //     // drawRotatedRectangle(ctx!, getRectYInv(ctx!,rectangle), true, -angle);
+    //     // drawRectangleDefault(ctx!, rectangle, true);
+    //     // drawRectangleDefault(ctx!, getRectYInv(ctx!,rectangle), true);
+    // });
+
+
 }
 
 
@@ -229,7 +297,7 @@ function UpdateDrawings() {
         <canvas id="mycanvas" ref=canvas width="800" height="800" style="border:1px solid #000000;">
         </canvas>
         <label style="display: block; font-family: monospace;">{{ labelText }}</label>
-        <label style="display: block; font-family: monospace;">origin: {{ origin }} | scale: {{ scale.toFixed(1) }} (1 pixel
+        <label style="display: block; font-family: monospace;">origin: {{ origin }} | scale: {{ scale.toFixed(3) }} (1 pixel
             = {{ (1 / scale).toFixed(2) }} Meter )</label>
     </div>
 </template>
