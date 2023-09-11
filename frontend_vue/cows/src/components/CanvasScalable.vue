@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { degreeLongitudeToMeters, degreeLatitideToMeters, drawCoordinateSystemYInv, setFillColor, drawPath, getPointsScaledYInv, addToScale, moveOrigin, getYInv, origin, scale, canvasPointToGeoCoordinate, drawRectangleDefault, getPointYInv, subtractOrigin, addOrigin, scalePointMultiply, setStrokeProperties, drawPoint, drawText, setFontProperties, drawRectangleYInv, drawRectangle, getRectYInv, getTriangleYInv, getPointScaledAndOrigin, getTriangleScaledAndOrigin, drawSpaceRectangle, drawRotatedImage, setScale, setOrigin, drawRectangleOnCanvas, barnRasterRectangle, getSubdividedRectangles, drawRotatedRectangle, getRasterPoints, generatePoints, generatePointsAndRectangles, storedCanvasProperties, saveCanvasProperties as storeCanvasProperties, restoreCanvasProperties, getPolygonCenterPoint, coordShiftFromOrigin, canvasPointToGeoCoord, GeoCoordToCanvasPoint } from '@/myfunctions/canvashelperfunctions';
+import { degreeLongitudeToMeters, degreeLatitideToMeters, drawCoordinateSystemYInv, setFillColor, drawPath, getPointsScaledYInv, addToScale, moveOrigin, getYInv, origin, scale, canvasPointToGeoCoordinate, drawRectangleDefault, getPointYInv, subtractOrigin, addOrigin, scalePointMultiply, setStrokeProperties, drawPoint, drawText, setFontProperties, drawRectangleYInv, getRectYInv, getTriangleYInv, getPointScaledAndOrigin, getTriangleScaledAndOrigin, drawSpaceRectangle, drawRotatedImage, setScale, setOrigin, barnRasterRectangle, getSubdividedRectangles, drawRotatedRectangle, generatePoints, generatePointsAndRectangles, storedCanvasProperties, saveCanvasProperties as storeCanvasProperties, restoreCanvasProperties, getPolygonCenterPoint, coordShiftFromOrigin, canvasPointToGeoCoord, GeoCoordToCanvasPoint, barnSensorRows, barnSensorColumnWidth, barnSensorColumns, barnTopLeftGeoCoord, barnBottomLeftGeoCoord, drawLine, barnUnitDirectionX, barnUnitDirectionY, barnUnitNormalX, barnUnitNormalY, barnSensorColumnHeight } from '@/myfunctions/canvashelperfunctions';
 import { drawPolygon, drawTriangle, isInsidePolygon, isPointInTriangle, triangulatePolygon } from '@/myfunctions/drawingfunctions';
 import { Space, type GeoCoordinate, Sensor } from '@/myfunctions/model';
 import { isPointInOrOnTriangle, isPointInsideRectangle as isPointInsideOrOnRectangle, isPointInsideTriangle, Triangle, type Point, isRectOverlappingTriangle, isRectOverlappingPolygon, isPointInsidePolygon } from '@/myfunctions/tempfunctions';
@@ -43,15 +43,19 @@ console.log(geoCoordsBarn_shifteback_m);
 
 
 let debugDrawBarnRects = true;
+let debugDrawPastureRects = true;
 
 let previousScale = 1;
 let previousOrigin = { x: 0, y: 0 };
 
-let hoverablePastureRects: Rectangle[] = [];
+// let hoverablePastureRects: Rectangle[] = [];
 let isRecording = false;
 let hoveredPastureRectId = -1;
 let hoveredBarnPathId = -1;
-let forbiddenRectIds = [2, 3, 8, 9, 16, 17, 23, 24, 25];
+let forbiddenSpaceIds = [2, 3, 8, 9, 16, 17, 23, 24, 25];
+let bridgeSpaceIds = [10];
+let highlightedSpace = ref();
+
 function increaseZoom() {
     // if (zoomelevel == 1) {
     let zoomSpeed = 1;
@@ -115,7 +119,9 @@ onMounted(() => {
         }
         else if (e.key == "p") {
             console.log(getMouseGeoCoords());
-            console.log(latestMousePosYInv.value);
+            console.log("MousePos " + latestMousePosYInv.value.x + ", " + latestMousePosYInv.value.y);
+            console.log(highlightedSpace.value);
+            // console.log
         } else if (e.key == "q") {
             if (scale.value != 10) {
                 previousScale = scale.value;
@@ -129,6 +135,8 @@ onMounted(() => {
         }
         else if (e.key == "w") {
             debugDrawBarnRects = !debugDrawBarnRects;
+        } else if (e.key == "e") {
+            debugDrawPastureRects = !debugDrawPastureRects;
         } else if (e.key == "r") {
             isRecording = !isRecording;
         }
@@ -146,19 +154,19 @@ onMounted(() => {
 });
 
 function highlightHoveredSpace() {
-    let space = getSpaceUnderMouse();
+    // let space = getSpaceUnderMouse();
 
-    setFontProperties(ctx!, "rgba(255,0,0,1)", 20 * scale.value);
-    if (space) drawText(ctx!, space.id.toString(), 100, 100);
-    
+    // setFontProperties(ctx!, "rgba(255,0,0,1)", 20 * scale.value);
+    // if (space) drawText(ctx!, space.id.toString(), 100, 100);
+
 
     let closestSpaceToMousePosition: Space | null = null;
-    let allowedSpaces = gs.spaces.filter(space => !forbiddenRectIds.includes(space.id));
+    let allowedSpaces = gs.spaces.filter(space => !forbiddenSpaceIds.includes(space.id));
     let spaceUnderMouse = getSpaceUnderMouse();
     if (spaceUnderMouse && spaceUnderMouse.sensorType == "Beacon") {
         closestSpaceToMousePosition = spaceUnderMouse;
 
-    } else if (spaceUnderMouse && spaceUnderMouse.sensorType == "Mioty" && !forbiddenRectIds.includes(spaceUnderMouse.id)) {
+    } else if (spaceUnderMouse && spaceUnderMouse.sensorType == "Mioty" && !forbiddenSpaceIds.includes(spaceUnderMouse.id)) {
 
         closestSpaceToMousePosition = spaceUnderMouse;
     }
@@ -171,7 +179,7 @@ function highlightHoveredSpace() {
     }
     if (closestSpaceToMousePosition == null) return;
 
-
+    highlightedSpace.value = closestSpaceToMousePosition;
 
     if (closestSpaceToMousePosition.sensorType == "Mioty") {
         drawPastureSpace(closestSpaceToMousePosition.id);
@@ -181,7 +189,7 @@ function highlightHoveredSpace() {
         drawBarnSpace(closestSpaceToMousePosition.id);
     }
     setFontProperties(ctx!, "rgba(0,255,0,1)", 20 * scale.value);
-    drawText(ctx!, closestSpaceToMousePosition.id.toString(), 500, 100);
+    // drawText(ctx!, closestSpaceToMousePosition.id.toString(), 500, 100);
     // console.log("closestSpaceToMousePosition: " + closestSpaceToMousePosition.id);
 
 }
@@ -193,6 +201,113 @@ function isMouseInBarn(): boolean {
     return isMouseInBarn;
 }
 
+function getCloseNeighbourSpacesOfCanvasPoint(point: Point): Space[] {
+    let result: Space[] = [];
+    let space = GetSpaceUnderCanvasPoint(point);
+
+    if (space && space.sensorType == "Beacon") {
+        let offsetRow = { x: (barnSensorColumnHeight()) * barnUnitDirectionX.value, y: (barnSensorColumnHeight()) * barnUnitDirectionY.value };
+        let offsetCol = { x: (barnSensorColumnWidth * scale.value) * barnUnitNormalX.value, y: (barnSensorColumnWidth * scale.value) * barnUnitNormalY.value };
+        let pR = { x: point.x + offsetCol.x, y: point.y + offsetCol.y };
+        let pL = { x: point.x - offsetCol.x, y: point.y - offsetCol.y };
+        let pT = { x: point.x - offsetRow.x, y: point.y - offsetRow.y };
+        let pB = { x: point.x + offsetRow.x, y: point.y + offsetRow.y };
+        let pTR = { x: point.x + offsetCol.x - offsetRow.x, y: point.y + offsetCol.y - offsetRow.y };
+        let pTL = { x: point.x - offsetCol.x - offsetRow.x, y: point.y - offsetCol.y - offsetRow.y };
+        let pBR = { x: point.x + offsetCol.x + offsetRow.x, y: point.y + offsetCol.y + offsetRow.y };
+        let pBL = { x: point.x - offsetCol.x + offsetRow.x, y: point.y - offsetCol.y + offsetRow.y };
+        let nR = GetSpaceUnderCanvasPoint(pR);
+        let nL = GetSpaceUnderCanvasPoint(pL);
+        let nT = GetSpaceUnderCanvasPoint(pT);
+        let nB = GetSpaceUnderCanvasPoint(pB);
+        let nTR = GetSpaceUnderCanvasPoint(pTR);
+        let nTL = GetSpaceUnderCanvasPoint(pTL);
+        let nBR = GetSpaceUnderCanvasPoint(pBR);
+        let nBL = GetSpaceUnderCanvasPoint(pBL);
+        let potentialNeighbours = [nR, nL, nT, nB, nTR, nTL, nBR, nBL];
+        potentialNeighbours.forEach((neighbour) => {
+            if (neighbour &&
+                !forbiddenSpaceIds.includes(neighbour.id) &&
+                (neighbour.sensorType == "Beacon" || (neighbour.sensorType == "Mioty" && bridgeSpaceIds.includes(neighbour.id)))) {
+                if (!result.includes(neighbour)) result.push(neighbour);
+                if(neighbour.sensorType == "Mioty") drawPastureSpace(neighbour.id);
+                if(neighbour.sensorType == "Beacon") drawBarnSpace(neighbour.id);
+            }
+        });
+        // drawPoint(ctx!, getPointYInv(ctx!, pR), 5, true);
+        // drawPoint(ctx!, getPointYInv(ctx!, pL), 5, true);
+        // drawPoint(ctx!, getPointYInv(ctx!, pT), 5, true);
+        // drawPoint(ctx!, getPointYInv(ctx!, pB), 5, true);
+        // drawPoint(ctx!, getPointYInv(ctx!, pTR), 5, true);
+        // drawPoint(ctx!, getPointYInv(ctx!, pTL), 5, true);
+        // drawPoint(ctx!, getPointYInv(ctx!, pBR), 5, true);
+        // drawPoint(ctx!, getPointYInv(ctx!, pBL), 5, true);
+    }
+    //TODO - übergang nur in Neighbourspaces möglich
+    // TODO -  Mioty-Bridge Neighbours auffüllen mit BarnSpaces die den MiotySpace als Nachbarn haben.
+
+    // add Neighbours for BarnSpaces
+    if (space && !forbiddenSpaceIds.includes(space.id) && space.sensorType == "Mioty") {
+        let offset = gs.sensorWidthInMeters * scale.value;
+        let nL = GetSpaceUnderCanvasPoint({ x: point.x - offset, y: point.y });
+        let nR = GetSpaceUnderCanvasPoint({ x: point.x + offset, y: point.y });
+        let nT = GetSpaceUnderCanvasPoint({ x: point.x, y: point.y + offset });
+        let nB = GetSpaceUnderCanvasPoint({ x: point.x, y: point.y - offset });
+        let nTL = GetSpaceUnderCanvasPoint({ x: point.x - offset, y: point.y + offset });
+        let nBL = GetSpaceUnderCanvasPoint({ x: point.x - offset, y: point.y - offset });
+        let nTR = GetSpaceUnderCanvasPoint({ x: point.x + offset, y: point.y + offset });
+        let nBR = GetSpaceUnderCanvasPoint({ x: point.x + offset, y: point.y - offset });
+        let potentialNeighbours = [nL, nR, nT, nB, nTL, nBL, nTR, nBR];
+        potentialNeighbours.forEach((neighbour) => {
+            if (neighbour && !forbiddenSpaceIds.includes(neighbour.id) && neighbour.sensorType == "Mioty") {
+                if (!result.includes(neighbour)) result.push(neighbour);
+                drawPastureSpace(neighbour.id);
+            }
+        });
+        // if (nL && !forbiddenSpaceIds.includes(nL.id) && nL.sensorType == "Mioty") result.push(nL);
+        // if (nR && !forbiddenSpaceIds.includes(nR.id) && nR.sensorType == "Mioty") result.push(nR);
+        // if (nT && !forbiddenSpaceIds.includes(nT.id) && nT.sensorType == "Mioty") result.push(nT);
+        // if (nB && !forbiddenSpaceIds.includes(nB.id) && nB.sensorType == "Mioty") result.push(nB);
+        // if (nTL && !forbiddenSpaceIds.includes(nTL.id) && nTL.sensorType == "Mioty") result.push(nTL);
+        // if (nBL && !forbiddenSpaceIds.includes(nBL.id) && nBL.sensorType == "Mioty") result.push(nBL);
+        // if (nTR && !forbiddenSpaceIds.includes(nTR.id) && nTR.sensorType == "Mioty") result.push(nTR);
+        // if (nBR && !forbiddenSpaceIds.includes(nBR.id) && nBR.sensorType == "Mioty") result.push(nBR);
+    }
+    result.sort((a, b) => a.id - b.id);
+    return result;
+}
+
+function GetSpaceUnderCanvasPoint(point: Point): Space | null {
+    let resultSpace: Space | null = null;
+    for (let i = 0; i < gs.spacesBarn.length; i++) {
+        const space = gs.spacesBarn[i];
+        if (space.sensorType == "Beacon") {
+            let spacePath = space.pathGeoCoords.map(x => GeoCoordToCanvasPoint(x));
+            spacePath = spacePath.map(x => getPointYInv(ctx!, x));
+            if (isInsidePolygon(getPointYInv(ctx!, point), spacePath)) {
+                // drawDebugGreenRectangle();
+                resultSpace = space;
+                break;
+            }
+        }
+    }
+    if (!resultSpace) {
+        for (let i = 0; i < gs.spacesPasture.length; i++) {
+            const space = gs.spacesPasture[i];
+            if (space.sensorType == "Mioty") {
+                let spaceRect = space.getCanvasRectangle();
+                if (isPointInsideOrOnRectangle(point, spaceRect)) {
+                    // drawDebugGreenRectangle();
+                    resultSpace = space;
+                    break;
+                }
+            }
+        }
+    }
+
+    return resultSpace;
+}
+
 function getSpaceUnderMouse(): Space | null {
     let resultSpace: Space | null = null;
     for (let i = 0; i < gs.spacesBarn.length; i++) {
@@ -201,7 +316,7 @@ function getSpaceUnderMouse(): Space | null {
             let spacePath = space.pathGeoCoords.map(x => GeoCoordToCanvasPoint(x));
             spacePath = spacePath.map(x => getPointYInv(ctx!, x));
             if (isInsidePolygon(getPointYInv(ctx!, latestMousePosYInv.value), spacePath)) {
-                drawDebugGreenRectangle();
+                // drawDebugGreenRectangle();
                 resultSpace = space;
                 break;
             }
@@ -213,7 +328,7 @@ function getSpaceUnderMouse(): Space | null {
             if (space.sensorType == "Mioty") {
                 let spaceRect = space.getCanvasRectangle();
                 if (isPointInsideOrOnRectangle(latestMousePosYInv.value, spaceRect)) {
-                    drawDebugGreenRectangle();
+                    // drawDebugGreenRectangle();
                     resultSpace = space;
                     break;
                 }
@@ -338,10 +453,10 @@ function getMainRectsFiltered(): Rectangle[] {
 
 function getBarnRectPaths(): Point[][] {
     let result = [];
-    let p1 = GeoCoordToCanvasPoint({ lon: 12.198725503930264, lat: 49.6816003669697 });
-    let p2 = GeoCoordToCanvasPoint({ lon: 12.199207591869754, lat: 49.68104582151515 });
+    let p1 = GeoCoordToCanvasPoint(barnTopLeftGeoCoord);
+    let p2 = GeoCoordToCanvasPoint(barnBottomLeftGeoCoord);
 
-    let pointsAndBarnRects = generatePointsAndRectangles(p1, p2, 10, 4, 7);
+    let pointsAndBarnRects = generatePointsAndRectangles(p1, p2, barnSensorRows, barnSensorColumns, barnSensorColumnWidth);
 
     for (let i = 0; i < pointsAndBarnRects.rectangles.length; i++) {
         const rectangle = pointsAndBarnRects.rectangles[i];
@@ -398,9 +513,44 @@ function UpdateDrawings() {
 
 
     drawBarnImage();
+    // drawTriangles();    
+    createSpacesAndSensors();
 
-    let mainRectsFiltered = getMainRectsFiltered();
+    drawSpaces();
+
+    highlightHoveredSpace();
+
+    // let n0 = getSpaceUnderMouse();
+    // let n1 = GetSpaceUnderCanvasPoint(latestMousePosYInv.value);
+    // console.log("ux:")
+    let lineLength = 100;
+    let s = 200;
+    let p1 = { x: s, y: s };
+    let p2 = { x: s + barnUnitDirectionX.value * lineLength, y: s + barnUnitDirectionY.value * lineLength };
+    setStrokeProperties(ctx!, "rgba(0,255,0,1)", 1 * scale.value);
+    drawLine(ctx!, getPointYInv(ctx!, p1), getPointYInv(ctx!, p2));
+
+    let p3 = { x: s, y: s };
+    let p4 = { x: s + barnUnitNormalX.value * lineLength, y: s + barnUnitNormalY.value * lineLength };
+    setStrokeProperties(ctx!, "rgba(0,0,255,1)", 1 * scale.value);
+    drawLine(ctx!, getPointYInv(ctx!, p3), getPointYInv(ctx!, p4));
+
+
+    let neighbours = getCloseNeighbourSpacesOfCanvasPoint(latestMousePosYInv.value);
+    console.log(neighbours.map(x => x.id).join(", "));
+
+}
+
+function drawTriangles() {
     let mainTriangles = getMainTriangles();
+
+    mainTriangles.forEach((triangle) => {
+        drawTriangle(ctx!, getTriangleYInv(ctx!, triangle));
+    });
+}
+
+function createSpacesAndSensors() {
+    let mainRectsFiltered = getMainRectsFiltered();
     let barnRectPaths = getBarnRectPaths();
     let barnCorners = getBarnCorners(barnRectPaths);
 
@@ -408,34 +558,43 @@ function UpdateDrawings() {
         drawPoint(ctx!, getPointYInv(ctx!, { x: corner.x, y: corner.y }), 5, true);
     });
 
-    mainTriangles.forEach((triangle) => {
-        // drawTriangle(ctx!, getTriangleYInv(ctx!, triangle));
-    });
+
 
     gs.spaces.length = 0;
     gs.spacesBarn.length = 0;
     gs.spacesPasture.length = 0;
     let spaceID = 1;
+
     mainRectsFiltered.forEach((rectangle) => {
         let isRectOverlappinBarn = isRectOverlappingPolygon(rectangle, barnCorners);
         rectangle.id = spaceID;
 
         let space = createSpace(spaceID++, "Mioty", rectangle.center, 1, [], isRectOverlappinBarn);
-        drawPastureSpace(space.id);
+        createSensor(space);
+        // drawPastureSpace(space.id);
     });
 
     barnRectPaths.forEach((path) => {
         let center = getPolygonCenterPoint(path);
         let space = createSpace(spaceID++, "Beacon", center, 2, path.map(x => canvasPointToGeoCoord(x)));
-        if (debugDrawBarnRects) drawBarnSpace(space.id);
+        createSensor(space);
+        // if (debugDrawBarnRects) drawBarnSpace(space.id);
     });
-
-
-    hoverablePastureRects = mainRectsFiltered;
-    highlightHoveredSpace();
+    createOutsideSpace();
+    // hoverablePastureRects = mainRectsFiltered;
 
 }
 
+function drawSpaces() {
+    gs.spaces.forEach((space) => {
+        if (space.sensorType == "Mioty") {
+            if (debugDrawPastureRects) drawPastureSpace(space.id);
+        } else if (space.sensorType == "Beacon") {
+
+            if (debugDrawBarnRects) drawBarnSpace(space.id);
+        }
+    });
+}
 
 function drawPastureSpace(id: number) {
     let space = gs.spaces.filter(x => x.id == id)[0];
@@ -446,8 +605,13 @@ function drawPastureSpace(id: number) {
     setFillColor(ctx!, "rgba(255,0,0,0.2)");
 
     if (space.isRectOverlappinBarn) {
+        storeCanvasProperties(ctx!);
+        setStrokeProperties(ctx!, "rgba(0,0,0,0.15)", 0.5 * scale.value);
         setFillColor(ctx!, "rgba(255,0,0,0.05)");
+        // setFontProperties(ctx!, "rgba(0,0,255,0.7)", 4 * scale.value, "Arial");
+
         drawSpaceRectangle(ctx!, rectangle);
+        restoreCanvasProperties(ctx!);
     } else {
 
         setFillColor(ctx!, "rgba(255,0,0,0.25)");

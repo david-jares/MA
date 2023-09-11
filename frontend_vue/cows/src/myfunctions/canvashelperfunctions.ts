@@ -16,12 +16,24 @@ export const degreeLatitideToMeters = 110000; // in Nürnberg Germany
 
 export let coordShiftFromOrigin = ref({ x: 0, y: 0 });
 
+export const barnTopLeftGeoCoord = { lon: 12.198725503930264, lat: 49.6816003669697 };
+export const barnBottomLeftGeoCoord = { lon: 12.199207591869754, lat: 49.68104582151515 };
 
-export const barnRasterRectangle = new RasterizedRectangle(
-  1,
-  { lon: 12.198769833855735, lat: 49.68159673060605 },
-  200, 100, 0, 5, 10
-)
+export const barnSensorColumns = 5; // default 4
+export const barnSensorRows = 10; // default 10
+export const barnSensorColumnWidth = 5.27; // default 7
+export function barnSensorColumnHeight(): number {
+  let p1 = GeoCoordToCanvasPoint(barnTopLeftGeoCoord);
+  let p2 = GeoCoordToCanvasPoint(barnBottomLeftGeoCoord);
+  return getVectorLength(p1, p2) / barnSensorRows;
+}
+
+export let barnUnitDirectionX = ref(0);
+export let barnUnitDirectionY = ref(0);
+export let barnUnitNormalX = ref(0);
+export let barnUnitNormalY = ref(0);
+
+
 
 export let storedCanvasProperties: CanvasProperties | null = null;
 
@@ -31,7 +43,17 @@ export function canvasPointToGeoCoordinate(ctx: CanvasRenderingContext2D, p: Poi
   // geoCoordinate.lon = (p.x - origin.value.x) / scale.value / degreeLongitudeToMeters;
   return geoCoordinate;
 }
-
+function getUnitVector(p1: Point, p2: Point): Point {
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  const length = Math.sqrt(dx * dx + dy * dy);
+  return { x: dx / length, y: dy / length };
+}
+function getVectorLength(p1: Point, p2: Point): number {
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
 //STYLING-------------------------------------------------------------------------
 export function setStrokeProperties(ctx: CanvasRenderingContext2D, borderColor: string, borderThickness: number = 1): void {
   ctx.strokeStyle = borderColor;
@@ -348,7 +370,7 @@ export function drawSpaceRectangle(ctx: CanvasRenderingContext2D, rectangle: Rec
   let transformedRect = getRectYInv(ctx!, rectangle);
   // setFillColor(ctx!, "rgba(255,0,0,0.2)");
   drawRectangleDefault(ctx!, transformedRect, true);
-  setFontProperties(ctx!, "rgba(0,0,255,0.7)", 4 * scale.value, "Arial");
+  setFontProperties(ctx!, "rgba(0,0,255,0.5)", 4 * scale.value, "Arial");
   let text = rectangle.id.toString();
   drawText(ctx!, text, transformedRect.x + 1.5 * scale.value, transformedRect.y + 4 * scale.value);
 
@@ -464,11 +486,13 @@ export function generatePointsAndRectangles(
   const length = Math.sqrt(dx * dx + dy * dy);
   const ux = dx / length;
   const uy = dy / length;
-
+  barnUnitDirectionX.value = ux;
+  barnUnitDirectionY.value = uy;
   // Compute unit normal vector (perpendicular) to the line
   const nx = -uy;
   const ny = ux;
-
+  barnUnitNormalX.value = nx;
+  barnUnitNormalY.value = ny;
   // Generate points on the subdivided line and parallel lines
   let pointIndex = 0;
   for (let i = 0; i <= subdivision; i++) {
