@@ -653,9 +653,7 @@ export function findAndAssignLogicalNeighbors(spaceCollection: Space[]): void {
     }
 }
 
-export function drawSpaces() {
 
-}
 
 export function drawScene(): void {
     console.log('drawScene');

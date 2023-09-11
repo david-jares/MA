@@ -35,6 +35,7 @@ interface GlobalsState {
     coordinatesPasture: GeoCoordinate[];
     coordinatesBarn: GeoCoordinate[];
     coordinatesCombined: GeoCoordinate[];
+    coordinatesBridgeBarnToPasture: GeoCoordinate[];
 
 
     minLat: number;
@@ -63,7 +64,7 @@ export const useGlobalsStore = defineStore({
     id: 'globals',  // unique id of the store
     state: (): GlobalsState => ({
 
-       
+
         mousePosition: { x: 0, y: 0 },
         sensors: [],
         spaces: [],
@@ -105,7 +106,7 @@ export const useGlobalsStore = defineStore({
             endTime: "23:59",
             requiredAttendance: '02:00',
             colorRGB: "#00FFFF",
-            colorAlpha:0.5
+            colorAlpha: 0.5
         }, {
             id: 2,
             description: "feeding",
@@ -123,7 +124,7 @@ export const useGlobalsStore = defineStore({
             endTime: "14:00",
             requiredAttendance: '02:00',
             colorRGB: "#0000FF",
-            colorAlpha:0.5
+            colorAlpha: 0.5
         }],
         coordinatesPasture: [
             { lat: 49.68101400333333, lon: 12.20009942 },
@@ -145,10 +146,16 @@ export const useGlobalsStore = defineStore({
             { lat: 49.68111546833333, lon: 12.200051731666667 }
         ],
         coordinatesBarn: [
-            { lat: 49.681676, lon: 12.199107 },//B
-            { lat: 49.681592, lon: 12.198746 },//C
-            { lat: 49.681077, lon: 12.199190 },//D
-            { lat: 49.681172, lon: 12.199589 },//E
+            { lon: 12.198977630381377, lat: 49.681693094242426 }, //C
+            { lon: 12.198725503930264, lat: 49.6816012760606 },// D
+            { lon: 12.199206206559584, lat: 49.68104582151515 },// E
+            { lon: 12.199459718320865, lat: 49.681139457878785 },// F
+        ],
+        coordinatesBridgeBarnToPasture: [
+            { lat: 49.681470, lon: 12.199744 },// A
+            { lat: 49.681314, lon: 12.199313 },// B
+            { lon: 12.199357205368216, lat: 49.681257639696966 },// G
+            { lat: 49.681418, lon: 12.199800 },// H
         ],
         //    coordinatesBarn: [
         //     { lat: 49.681714, lon: 12.199252 },
@@ -168,66 +175,27 @@ export const useGlobalsStore = defineStore({
 
             { lat: 49.681470, lon: 12.199744 },// A
             { lat: 49.681314, lon: 12.199313 },// B
-            { lat: 49.681666, lon: 12.198979 },// C
-            { lat: 49.681598, lon: 12.198772 },// D
-            { lat: 49.681086, lon: 12.199248 },// E
-            { lat: 49.681153, lon: 12.199456 },// F
-            { lat: 49.681267, lon: 12.199351 },// G
+            { lon: 12.198977630381377, lat: 49.681693094242426 }, //C
+            { lon: 12.198725503930264, lat: 49.6816012760606 },// D
+            { lon: 12.199206206559584, lat: 49.68104582151515 },// E
+            { lon: 12.199459718320865, lat: 49.681139457878785 },// F
+            { lon: 12.199357205368216, lat: 49.681257639696966 },// G
             { lat: 49.681418, lon: 12.199800 },// H
 
-            // { lat: 49.681460, lon: 12.199756 }, //H
-            // // { lat: 49.681411, lon: 12.199547 },
-            // { lat: 49.681379, lon: 12.199409 },//A
-
-
-            // { lat: 49.681676, lon: 12.199107 },//B
-            // { lat: 49.681592, lon: 12.198746 },//C
-            // { lat: 49.681077, lon: 12.199190 },//D
-            // { lat: 49.681172, lon: 12.199589 },//E
-
-
-            // { lat: 49.681317, lon: 12.199459 },//F
-            // { lat: 49.681411, lon: 12.199809 },//G
+            
 
 
             { lat: 49.68131979333333, lon: 12.199891363333334 },
             { lat: 49.68111546833333, lon: 12.200051731666667 }
         ],
-        // coordinatesCombined: [
-        //     { lat: 49.68101400333333, lon: 12.20009942 },
-        //     { lat: 49.68115214666667, lon: 12.200764548333334 },
-        //     { lat: 49.682404365, lon: 12.199464525 },
-        //     { lat: 49.68266766333333, lon: 12.197345735 },
-        //     { lat: 49.68249247666667, lon: 12.197450201666667 },
-        //     // { lat: 49.68194168, lon: 12.198492973333334 },
-        //     { lat: 49.681985108333336, lon: 12.198418175 },
-        //     { lat: 49.68204832833333, lon: 12.199110575 },
-
-
-        //     { lat: 49.681460, lon: 12.199756 },
-        //     { lat: 49.681411, lon: 12.199547 },
-
-
-        //     { lat: 49.681714, lon: 12.199252 },
-        //     { lat: 49.681642, lon: 12.198957 },
-        //     { lat: 49.681133, lon: 12.199435 },
-        //     { lat: 49.681212, lon: 12.199739 },
-
-
-        //     { lat: 49.681353, lon: 12.199602 },
-        //     { lat: 49.681414, lon: 12.199807 },
-
-
-        //     { lat: 49.68131979333333, lon: 12.199891363333334 },
-        //     { lat: 49.68111546833333, lon: 12.200051731666667 }
-        // ],
+      
         tipEventDescription: "a human understandable description of this event",
         tipEventId: "The id property should uniquely identify an event",
         tipEventMetaeventId: "The metaevent-id property determines the metaevent group to which the event belongs.",
         tipEventProfileIndex: "The profile-index property denotes the time profile index to use in the associated metaevent entry.",
         tipEventSpaceIds: "The space-ids property denotes the spaces in which the event can take place",
         tipEventCapacity: "The capacity property denotes the number of people of each type of metaperson. The range property specifies bounds ([lo, high]) on the number of people in attendance.",
-        
+
         get minLat(): number { return Math.min(...this.coordinatesCombined.map(p => p.lat)) },
         get maxLat(): number { return Math.max(...this.coordinatesCombined.map(p => p.lat)) },
         get minLon(): number { return Math.min(...this.coordinatesCombined.map(p => p.lon)) },
@@ -282,7 +250,7 @@ export const useGlobalsStore = defineStore({
                 endTime: "23:59",
                 requiredAttendance: '02:00',
                 colorRGB: "#FF0000",
-                colorAlpha:0.5
+                colorAlpha: 0.5
             }
             this.smartEvents.push(event);
             return event.id;
@@ -301,14 +269,4 @@ export const useGlobalsStore = defineStore({
             }
         }
     }
-    // }
-    // setName(newName: string) {
-    //     this.name = newName;
-    // },
-    // incrementAge() {
-    //     this.age++;
-    // },
-    // },
 });
-
-// console.log("Globals store created");

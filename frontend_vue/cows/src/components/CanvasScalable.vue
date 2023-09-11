@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { degreeLongitudeToMeters, degreeLatitideToMeters, drawCoordinateSystemYInv, setFillColor, drawPath, getPointsScaledYInv, addToScale, moveOrigin, getYInv, origin, scale, canvasPointToGeoCoordinate, drawRectangleDefault, getPointYInv, subtractOrigin, addOrigin, scalePointMultiply, setStrokeProperties, drawPoint, drawText, setFontProperties, drawRectangleYInv, drawRectangle, getRectYInv, getTriangleYInv, getPointScaledAndOrigin, getTriangleScaledAndOrigin, drawSpaceRectangle, drawRotatedImage, setScale, setOrigin, drawRectangleOnCanvas, barnRasterRectangle, getSubdividedRectangles, drawRotatedRectangle, getRasterPoints, generatePoints } from '@/myfunctions/canvashelperfunctions';
+import { degreeLongitudeToMeters, degreeLatitideToMeters, drawCoordinateSystemYInv, setFillColor, drawPath, getPointsScaledYInv, addToScale, moveOrigin, getYInv, origin, scale, canvasPointToGeoCoordinate, drawRectangleDefault, getPointYInv, subtractOrigin, addOrigin, scalePointMultiply, setStrokeProperties, drawPoint, drawText, setFontProperties, drawRectangleYInv, drawRectangle, getRectYInv, getTriangleYInv, getPointScaledAndOrigin, getTriangleScaledAndOrigin, drawSpaceRectangle, drawRotatedImage, setScale, setOrigin, drawRectangleOnCanvas, barnRasterRectangle, getSubdividedRectangles, drawRotatedRectangle, getRasterPoints, generatePoints, generatePointsAndRectangles } from '@/myfunctions/canvashelperfunctions';
 import { drawTriangle, isInsidePolygon, isPointInTriangle, triangulatePolygon } from '@/myfunctions/drawingfunctions';
-import type { GeoCoordinate } from '@/myfunctions/model';
+import { Space, type GeoCoordinate, Sensor } from '@/myfunctions/model';
 import { isPointInOrOnTriangle, isPointInsideRectangle as isPointInsideOrOnRectangle, isPointInsideTriangle, Triangle, type Point, isRectOverlappingTriangle } from '@/myfunctions/tempfunctions';
 import { subdivideCanvas, Rectangle } from '@/myfunctions/utilityfunctions';
 import { useGlobalsStore } from '@/stores/globals';
@@ -41,12 +41,10 @@ let geoCoordsBarn_shifteback_m = shiftBackGeoCoords_to_m(geoCoordsBarn, coordShi
 console.log("geoCoordsBarn_shifteback_m: ");
 console.log(geoCoordsBarn_shifteback_m);
 
-const img = new Image();
-const img2 = new Image();
+// const img2 = new Image();
+// img2.src = almersbachBarn2;
 
-img.src = almersbachBarn;
-img2.src = almersbachBarn2;
-
+let debugDrawBarnRects = true;
 
 function increaseZoom() {
     // if (zoomelevel == 1) {
@@ -84,7 +82,7 @@ onMounted(() => {
 
         drawCoordinateSystemYInv(ctx);
         setFillColor(ctx, "rgba(255,0,255,0.65)");
-        drawPath(ctx, getPointsScaledYInv(ctx, geoCoordsAllShiftedBack_m));
+        drawPath(ctx, getPointsScaledYInv(ctx, geoCoordsAllShiftedBack_m)); // Draw polygons
         UpdateDrawings();
     }, 50);
 
@@ -112,6 +110,17 @@ onMounted(() => {
         else if (e.key == "p") {
             console.log(getMouseGeoCoords());
             console.log(latestMousePosYInv.value);
+        } else if (e.key == "q") {
+            if (scale.value != 10) {
+                scale.value = 10;
+                origin.value = { x: -1000, y: 0 };
+            } else {
+                scale.value = 3;
+                origin.value = { x: 0, y: 0 };
+            }
+        }
+        else if (e.key == "w") {
+            debugDrawBarnRects = !debugDrawBarnRects;
         }
 
 
@@ -125,10 +134,6 @@ onMounted(() => {
         latestMousePosYInv.value = mousePosYInv;
 
     });
-
-    img.onload = function () {
-        // ctx!.drawImage(img, 0, 0);
-    };
 });
 
 
@@ -138,9 +143,6 @@ onMounted(() => {
 function getMouseGeoCoords() {
     return canvasPointToGeoCoord(latestMousePosYInv.value);
 }
-
-
-
 
 
 
@@ -164,13 +166,50 @@ function canvasPointToGeoCoord(canvasPoint: Point) {
     return { lon: lon, lat: lat };
 }
 
+function createSpace(spaceId: number, sensorType: string, rectangle: Rectangle) {
+    let centerX = rectangle.x + (rectangle.width / 2);
+    let centerY = rectangle.y + (rectangle.height / 2);
+    let geoCoords = canvasPointToGeoCoord({ x: centerX, y: centerY }); // we use the center of the rectangle as the geooords for the space and for its sensor
+    let space = new Space(spaceId + 1, "myspace", sensorType, -1, geoCoords.lon, geoCoords.lat, [geoCoords.lat, geoCoords.lon, 1], [rectangle.x, rectangle.y, 1], [rectangle.x, rectangle.y], [])
+    gs.spaces.push(space);
+    // spaceId++;
+}
+function createOutsideSpace() {
+    let outsideSpace = new Space(0, "outside", "Mioty", -1, gs.spaces[0].longitude, gs.spaces[0].latitude, gs.spaces[0].geoCoordinates, [-1, -1, 1], [-1, -1], [1]);
+    gs.spaces.push(outsideSpace);
+}
+function createSensor(space: Space) {
+    let sensor = new Sensor(space.id, 1, space.sensorType, [space.id], [space.coordinates[0], space.coordinates[1], 1], space.geoCoordinates);
+    gs.sensors.push(sensor);
+}
+
+function isPastureRectOverlappingBarnRect(pastureRect: Rectangle, barnRectPath: Point[]) {
+    let barnRectTriangles = triangulatePolygon(barnRectPath);
+    for (let i = 0; i < barnRectTriangles.length; i++) {
+        const triangle = barnRectTriangles[i];
+        if (isRectOverlappingTriangle(pastureRect, triangle)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function drawBarnImage() {
+    const img2 = new Image();
+    img2.src = almersbachBarn2;
+    let imageCorner = GeoCoordToCanvasPoint({ lon: 12.198746, lat: 49.681592 });
+    let imageWidthHeightRatio = 2481 / 2298;
+    let imageDrawWidth = 80 * scale.value;
+    let imageDrawHeight = imageDrawWidth * imageWidthHeightRatio;
+    drawRotatedImage(ctx!, img2, (imageCorner.x + 20 * scale.value), getYInv(ctx!, imageCorner.y - 25 * scale.value), 0, imageDrawWidth, imageDrawHeight, 1);
+
+}
 
 
 function UpdateDrawings() {
 
-    let imageCorner = GeoCoordToCanvasPoint({ lon: 12.198746, lat: 49.681592 });
-    // drawRotatedImage(ctx!, img, (imageCorner.x +25*scale.value ) , getYInv(ctx!, imageCorner.y - 22*scale.value), -29, 40 * scale.value, 80 * scale.value,0.75);
-    drawRotatedImage(ctx!, img2, (imageCorner.x + 20 * scale.value), getYInv(ctx!, imageCorner.y - 25 * scale.value), 0, 80 * scale.value, 80 * scale.value, 1);
+  
+    drawBarnImage();
 
 
 
@@ -193,20 +232,17 @@ function UpdateDrawings() {
             id++;
         }
     }
-    // you mentioned that you do some meditation technique to redirect or transform your sexual energy into something. Is this something complicated or how does that work?
     let trianglesAll = triangulatePolygon(geoCoordsAllShiftedBack_m)
-
     let trianglesAllTransformed = trianglesAll.map((triangle) => {
         return getTriangleScaledAndOrigin(ctx!, triangle);
     });
-
 
     let trianglesBarn = triangulatePolygon(geoCoordsBarn_shifteback_m)
     let trianglesBarnTransformed = trianglesBarn.map((triangle) => {
         return getTriangleScaledAndOrigin(ctx!, triangle);
     });
 
-
+    
 
     setStrokeProperties(ctx!, "black", 0.75);
     setFillColor(ctx!, "black");
@@ -219,7 +255,6 @@ function UpdateDrawings() {
             const triangle = trianglesAllTransformed[j];
             if (isRectOverlappingTriangle(rectangle, triangle)) {
                 ds.drawnRects.push(rectangle);
-                // drawSpaceRectangle(rectangle);
                 break;
             }
         }
@@ -238,12 +273,16 @@ function UpdateDrawings() {
             }
         }
     }
+
+
     for (let i = 0; i < ds.drawnRects.length; i++) {
         const rectangle = ds.drawnRects[i];
-        if (!drawRectIndicesToSkip.includes(i)) {
-            drawSpaceRectangle(ctx!, rectangle);
-        }
+        // if (!drawRectIndicesToSkip.includes(i)) {
+        drawSpaceRectangle(ctx!, rectangle);
+        // }
     }
+
+
     trianglesAllTransformed.forEach((triangle) => {
         // drawTriangle(ctx!, getTriangleYInv(ctx!, triangle));
     });
@@ -251,38 +290,37 @@ function UpdateDrawings() {
     setStrokeProperties(ctx!, "red", 0.75);
     setFillColor(ctx!, "rgba(255,0,0,0.2)");
 
+
+
     // make Barn rectangles
-
-
-    let p1 = GeoCoordToCanvasPoint(barnRasterRectangle.topLeftCornerGeoCoord);
-    let p2 = GeoCoordToCanvasPoint({ lon: 12.199247765864712, lat: 49.68108400333333 });
+    let p1 = GeoCoordToCanvasPoint({ lon: 12.198725503930264, lat: 49.6816003669697 });
+    let p2 = GeoCoordToCanvasPoint({ lon: 12.199207591869754, lat: 49.68104582151515 });
     setStrokeProperties(ctx!, "blue", 0.75);
     setFillColor(ctx!, "rgba(0,255,0,0.82)");
-    let points = generatePoints(p1, p2, 10, 4, 50);
 
-    // drawPoint(ctx!, getPointYInv(ctx!, p1), 15,true);
-    // drawPoint(ctx!, getPointYInv(ctx!, p2), 15,true);
-    points.forEach((point) => {
-        drawPoint(ctx!, getPointYInv(ctx!, point), 7, true);
-        let rect = new Rectangle(0, point.x, point.y, 50, 50);
-        // drawRectangleDefault(ctx!, getRectYInv(ctx!, rect),true);
-        drawRotatedRectangle(ctx!, getRectYInv(ctx!, rect), true, 0);
-        // drawRectangleDefault(ctx!, rect, true);
-    });
+    let pointsAndBarnRects = generatePointsAndRectangles(p1, p2, 10, 4, 7);
 
+    for (let i = 0; i < pointsAndBarnRects.rectangles.length; i++) {
+        const rectangle = pointsAndBarnRects.rectangles[i];
+        let p1 = pointsAndBarnRects.points[rectangle.topLeft];
+        let p2 = pointsAndBarnRects.points[rectangle.topRight];
+        let p3 = pointsAndBarnRects.points[rectangle.bottomRight];
+        let p4 = pointsAndBarnRects.points[rectangle.bottomLeft];
+        let path = [p1, p2, p3, p4];
+        setStrokeProperties(ctx!, "rgba(0,0,0,1)", 1);
+        if (debugDrawBarnRects) {
 
-    // let angle = 0;
-    // // let barnRectangles = getSubdividedRectangles(new Rectangle(10000, barnTopLeftCanvasPoint.x, barnTopLeftCanvasPoint.y, barnRasterRectangle.width, barnRasterRectangle.height), barnRasterRectangle.columns, barnRasterRectangle.rows, angle);
-    // let barnRectangles = getSubdividedRectangles(getRectYInv(ctx!, new Rectangle(10000, barnTopLeftCanvasPoint.x, barnTopLeftCanvasPoint.y, barnRasterRectangle.width, barnRasterRectangle.height)), barnRasterRectangle.columns, barnRasterRectangle.rows, angle);
-    // barnRectangles.forEach((rectangle) => {
-    //     // drawSpaceRectangle(ctx!, getRectYInv(ctx!,rectangle));
-    //     // drawSpaceRectangle(ctx!, rectangle);
-    //     drawRotatedRectangle(ctx!, rectangle, true, -angle);
-    //     // drawRotatedRectangle(ctx!, getRectYInv(ctx!,rectangle), true, -angle);
-    //     // drawRectangleDefault(ctx!, rectangle, true);
-    //     // drawRectangleDefault(ctx!, getRectYInv(ctx!,rectangle), true);
-    // });
+            setFillColor(ctx!, "rgba(0,255,0,0.5)");
+            let pathYInv = path.map(x => getPointYInv(ctx!, x));
+            drawPath(ctx!, pathYInv, true, true);
 
+            setFontProperties(ctx!, "black", 20, "Arial");
+            for (let i = 0; i < pathYInv.length; i++) {
+                const point = pathYInv[i];
+                // drawText(ctx!, i.toString(), point.x, point.y);
+            }
+        }
+    };
 
 }
 

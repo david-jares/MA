@@ -8,7 +8,7 @@ import { useGlobalsStore } from "@/stores/globals";
 
 // export let coordinateOrigin = { x: 0, y: 0 };
 export let origin = ref({ x: 0, y: 0 });
-export let scale = ref(1);
+export let scale = ref(3);
 // export let origin = ref({ x: -1000, y: 0 });
 // export let scale = ref(10);
 export const degreeLongitudeToMeters = 72186; // in Nürnberg Germany
@@ -241,9 +241,9 @@ export function drawPath(ctx: CanvasRenderingContext2D, path: Point[], closePath
   if (fillArea) {
     ctx.fill();
   }
-  else {
-    ctx.stroke();
-  }
+  // else {
+  ctx.stroke();
+  // }
 }
 
 
@@ -332,10 +332,10 @@ export function getSubdividedRectangles(rect: Rectangle, rows: number, cols: num
   return rectangles;
 }
 
-interface Point {
-  x: number;
-  y: number;
-}
+// interface Point {
+//   x: number;
+//   y: number;
+// }
 
 export function generatePoints(
   point1: Point,
@@ -377,16 +377,17 @@ export function generatePoints(
   return points;
 }
 
+type BarnRect = { topLeft: number, topRight: number, bottomLeft: number, bottomRight: number };
 
-function generatePointsAndRectangles(
+export function generatePointsAndRectangles(
   point1: Point,
   point2: Point,
   subdivision: number,
   columnAmount: number,
   columnWidth: number
-): { points: Point[], rectangles: Rectangle[] } {
+): { points: Point[], rectangles: BarnRect[] } {
   const points: Point[] = [];
-  const rectangles: Rectangle[] = [];
+  const rectangles: BarnRect[] = [];
 
   // Compute unit direction vector of the line
   const dx = point2.x - point1.x;
@@ -410,8 +411,8 @@ function generatePointsAndRectangles(
 
     for (let j = 0; j < columnAmount; j++) {
       // Point on the parallel line
-      const px = mx + j * columnWidth * nx;
-      const py = my + j * columnWidth * ny;
+      const px = mx + j * columnWidth * nx * scale.value;
+      const py = my + j * columnWidth * ny * scale.value;
 
       points.push({ x: px, y: py });
 
