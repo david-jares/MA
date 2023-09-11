@@ -9,6 +9,11 @@
 //     Neighbors      []int     `json:"neighbors"`
 // }
 
+import { useGlobalsStore } from "@/stores/globals";
+import { Rectangle } from "./utilityfunctions";
+import { GeoCoordToCanvasPoint, scale } from "./canvashelperfunctions";
+import type { Point } from "./tempfunctions";
+
 //   type Sensor struct {
 // 	//sensor
 // 	// "id": 2,
@@ -55,8 +60,10 @@ export class Space {
     coordinates: number[]; // logical coordinate ( eg [0,1,1])
     canvasCoordinates: number[];
     neighbors: number[];
-
-    constructor(id: number, description: string, sensorType: string, capacity: number, longitude: number, latitude: number, geoCoordinates: number[], coordinates: number[], canvasCoordinates: number[], neighbors: number[]) {
+    priority: number; // drawing priority if we have multiple overlapping spaces, then the one with higher priority will be chose
+    pathGeoCoords: GeoCoordinate[]; // for the barn quads we need the points to draw them as polygons
+    isRectOverlappinBarn: boolean; // when computing the spaces we also remember if they overlap with the barn
+    constructor(id: number, description: string, sensorType: string, capacity: number, longitude: number, latitude: number, geoCoordinates: number[], coordinates: number[], canvasCoordinates: number[], neighbors: number[], priority: number,pathGeoCoords: GeoCoordinate[] = [], isRectOverlappinBarn: boolean = false) {
         this.id = id;
         this.description = description;
         this.sensorType = sensorType;
@@ -67,6 +74,18 @@ export class Space {
         this.coordinates = coordinates;
         this.canvasCoordinates = canvasCoordinates;
         this.neighbors = neighbors;
+        
+        this.priority = priority; 
+        this.pathGeoCoords = pathGeoCoords;
+        this.isRectOverlappinBarn = isRectOverlappinBarn;
+    }
+
+    getCanvasRectangle(): Rectangle{
+        let gs = useGlobalsStore();
+        return new Rectangle(this.id, this.canvasCoordinates[0] - (gs.sensorWidthInMeters * scale.value / 2), this.canvasCoordinates[1] - (gs.sensorWidthInMeters * scale.value / 2), gs.sensorWidthInMeters * scale.value, gs.sensorWidthInMeters * scale.value);
+    }
+    getCanvasPathCoords():Point[]{
+       return this.pathGeoCoords.map(x => GeoCoordToCanvasPoint(x));
     }
 }
 

@@ -24,6 +24,8 @@ interface GlobalsState {
     recordedData: any[];
     sensors: Sensor[];
     spaces: Space[];
+    spacesBarn: Space[];
+    spacesPasture: Space[];
     loops: number;
     isCowInBarn: boolean;
     isCowInPasture: boolean;
@@ -68,6 +70,8 @@ export const useGlobalsStore = defineStore({
         mousePosition: { x: 0, y: 0 },
         sensors: [],
         spaces: [],
+        spacesBarn: [],
+        spacesPasture: [],
         recordedData: [],
 
 
@@ -81,7 +85,7 @@ export const useGlobalsStore = defineStore({
         recordIntervalInSeconds: 60,
         recordDurationInDays: 2,
         timeSpeedMultiplier: 600,
-        sensorWidthInMeters: 40,
+        sensorWidthInMeters: 20,
         loops: 0,
 
         isCowInBarn: false,

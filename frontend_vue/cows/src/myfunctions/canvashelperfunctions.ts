@@ -14,12 +14,16 @@ export let scale = ref(3);
 export const degreeLongitudeToMeters = 72186; // in Nürnberg Germany
 export const degreeLatitideToMeters = 110000; // in Nürnberg Germany
 
+export let coordShiftFromOrigin = ref({ x: 0, y: 0 });
+
+
 export const barnRasterRectangle = new RasterizedRectangle(
   1,
   { lon: 12.198769833855735, lat: 49.68159673060605 },
   200, 100, 0, 5, 10
 )
 
+export let storedCanvasProperties: CanvasProperties | null = null;
 
 export function canvasPointToGeoCoordinate(ctx: CanvasRenderingContext2D, p: Point): GeoCoordinate {
   let geoCoordinate = { lat: 0, lon: 0 };
@@ -42,7 +46,63 @@ export function setFontProperties(ctx: CanvasRenderingContext2D, fontColor: stri
 export function setFillColor(ctx: CanvasRenderingContext2D, fillColor: string): void {
   ctx.fillStyle = fillColor;
 }
+
+interface CanvasProperties {
+  borderColor?: string | CanvasGradient | CanvasPattern;
+  borderThickness?: number;
+  fontColor?: string | CanvasGradient | CanvasPattern;
+  fontSize?: number;
+  fontFamily?: string;
+  fillColor?: string | CanvasGradient | CanvasPattern;
+}
+
+export function setCanvasProperties(ctx: CanvasRenderingContext2D, properties: CanvasProperties = {}): void {
+  if (properties.borderColor) {
+    ctx.strokeStyle = properties.borderColor;
+  }
+  if (properties.borderThickness) {
+    ctx.lineWidth = properties.borderThickness;
+  }
+  if (properties.fontColor || properties.fontSize || properties.fontFamily) {
+    const font = `${properties.fontSize ?? 12}px ${properties.fontFamily ?? "Arial"}`;
+    ctx.font = font;
+    if (properties.fontColor) {
+      ctx.fillStyle = properties.fontColor;
+    }
+  }
+  if (properties.fillColor) {
+    ctx.fillStyle = properties.fillColor;
+  }
+}
+export function saveCanvasProperties(ctx: CanvasRenderingContext2D) {
+  storedCanvasProperties = {
+    borderColor: ctx.strokeStyle,
+    borderThickness: ctx.lineWidth,
+    fontColor: ctx.fillStyle,
+    fontSize: parseInt(ctx.font.split(" ")[0], 10),
+    fontFamily: ctx.font.split(" ")[1],
+    fillColor: ctx.fillStyle,
+  };
+}
+export function restoreCanvasProperties(ctx: CanvasRenderingContext2D): void {
+  if (storedCanvasProperties) setCanvasProperties(ctx, storedCanvasProperties);
+}
+
+
 //STYLING-------------------------------------------------------------------------
+
+export function GeoCoordToCanvasPoint(geoCoord: GeoCoordinate) {
+  let canvasPointX = (((degreeLongitudeToMeters * geoCoord.lon) - coordShiftFromOrigin.value.x) * scale.value) + origin.value.x;
+  let canvasPointY = (((degreeLatitideToMeters * geoCoord.lat) - coordShiftFromOrigin.value.y) * scale.value) + origin.value.y;
+  return { x: canvasPointX, y: canvasPointY };
+}
+
+export function canvasPointToGeoCoord(canvasPoint: Point) {
+  let lon = (((canvasPoint.x - origin.value.x) / scale.value) + coordShiftFromOrigin.value.x) / degreeLongitudeToMeters;
+  let lat = (((canvasPoint.y - origin.value.y) / scale.value) + coordShiftFromOrigin.value.y) / degreeLatitideToMeters;
+  return { lon: lon, lat: lat };
+}
+
 export function scalePointMultiply(point: Point) {
   return { x: point.x * scale.value, y: point.y * scale.value };
 }
@@ -132,6 +192,14 @@ export function getPointScaledYInv(ctx: CanvasRenderingContext2D, p: Point): Poi
 
 export function getPointsScaledYInv(ctx: CanvasRenderingContext2D, points: Point[]): Point[] {
   return points.map(p => getPointScaledYInv(ctx, p));
+}
+
+export function getPolygonCenterPoint(path: Point[]): Point {
+  let centerX = path.reduce((sum, current) => sum + current.x, 0) / path.length;
+  let centerY = path.reduce((sum, current) => sum + current.y, 0) / path.length;
+  let center = { x: centerX, y: centerY };
+  return center;
+
 }
 
 export function drawPoint(ctx: CanvasRenderingContext2D, p: Point, radius = 3, fill = true): void {
@@ -278,10 +346,11 @@ export function drawRectangleYInv(ctx: CanvasRenderingContext2D, x: number, y: n
 
 export function drawSpaceRectangle(ctx: CanvasRenderingContext2D, rectangle: Rectangle) {
   let transformedRect = getRectYInv(ctx!, rectangle);
-  setFillColor(ctx!, "rgba(255,0,0,0.2)");
+  // setFillColor(ctx!, "rgba(255,0,0,0.2)");
   drawRectangleDefault(ctx!, transformedRect, true);
-  setFontProperties(ctx!, "rgba(0,0,255,0.4)", 1 * scale.value, "Arial");
-  drawText(ctx!, rectangle.id.toString(), transformedRect.x + 2 * scale.value, transformedRect.y + 6 * scale.value);
+  setFontProperties(ctx!, "rgba(0,0,255,0.7)", 4 * scale.value, "Arial");
+  let text = rectangle.id.toString();
+  drawText(ctx!, text, transformedRect.x + 1.5 * scale.value, transformedRect.y + 4 * scale.value);
 
 }
 

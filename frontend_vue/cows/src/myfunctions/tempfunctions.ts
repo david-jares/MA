@@ -1,3 +1,4 @@
+import { triangulatePolygon } from "./drawingfunctions";
 import type { GeoCoordinate } from "./model";
 import type { Rectangle } from "./utilityfunctions";
 
@@ -59,6 +60,19 @@ export function isPointInOrOnTriangle(p: Point, tr: Triangle): boolean {
   return (u >= 0 && u <= 1) && (v >= 0 && v <= 1) && (w >= 0 && w <= 1);
 }
 
+export function isPointInsidePolygon(point: Point, polygon: Point[]): boolean {
+  let isInside = false;
+  let triangles = triangulatePolygon(polygon);
+  for (let i = 0; i < triangles.length; i++) {
+    if (isPointInOrOnTriangle(point, triangles[i])) {
+      isInside = true;
+      break;
+    }
+  }
+  return isInside;
+}
+
+
 export function isRectOverlappingTriangle(rect: Rectangle, triangle: Triangle): boolean {
   if (isPointInOrOnTriangle(rect.p1, triangle)) return true;
   if (isPointInOrOnTriangle(rect.p2, triangle)) return true;
@@ -70,6 +84,17 @@ export function isRectOverlappingTriangle(rect: Rectangle, triangle: Triangle): 
   return false;
 }
 
+export function isRectOverlappingPolygon(rect: Rectangle, polygon: Point[]): boolean {
+  let isOverlapping = false;
+  let triangles = triangulatePolygon(polygon);
+  for (let i = 0; i < triangles.length; i++) {
+    if (isRectOverlappingTriangle(rect, triangles[i])) {
+      isOverlapping = true;
+      break;
+    }
+  }
+  return isOverlapping;
+}
 
 
 

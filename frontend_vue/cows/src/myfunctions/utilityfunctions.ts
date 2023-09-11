@@ -45,6 +45,10 @@ export class Rectangle {
         return { x: this.x1, y: this.y2 };
     }
 
+    get center(): Point {
+        return { x: this.x + this.width / 2, y: this.y + this.height / 2 };
+    }
+
 
 
 
@@ -62,7 +66,7 @@ export function subdivideCanvas(canvas: HTMLCanvasElement, width: number, height
         for (let col = 0; col < numCols; col++) {
             const x: number = col * width;
             const y: number = row * height;
-            rectangles.push(new Rectangle( id, x, y, width, height ));
+            rectangles.push(new Rectangle(id, x, y, width, height));
             id++;
         }
     }

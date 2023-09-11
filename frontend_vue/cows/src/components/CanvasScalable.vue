@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { degreeLongitudeToMeters, degreeLatitideToMeters, drawCoordinateSystemYInv, setFillColor, drawPath, getPointsScaledYInv, addToScale, moveOrigin, getYInv, origin, scale, canvasPointToGeoCoordinate, drawRectangleDefault, getPointYInv, subtractOrigin, addOrigin, scalePointMultiply, setStrokeProperties, drawPoint, drawText, setFontProperties, drawRectangleYInv, drawRectangle, getRectYInv, getTriangleYInv, getPointScaledAndOrigin, getTriangleScaledAndOrigin, drawSpaceRectangle, drawRotatedImage, setScale, setOrigin, drawRectangleOnCanvas, barnRasterRectangle, getSubdividedRectangles, drawRotatedRectangle, getRasterPoints, generatePoints, generatePointsAndRectangles } from '@/myfunctions/canvashelperfunctions';
-import { drawTriangle, isInsidePolygon, isPointInTriangle, triangulatePolygon } from '@/myfunctions/drawingfunctions';
+import { degreeLongitudeToMeters, degreeLatitideToMeters, drawCoordinateSystemYInv, setFillColor, drawPath, getPointsScaledYInv, addToScale, moveOrigin, getYInv, origin, scale, canvasPointToGeoCoordinate, drawRectangleDefault, getPointYInv, subtractOrigin, addOrigin, scalePointMultiply, setStrokeProperties, drawPoint, drawText, setFontProperties, drawRectangleYInv, drawRectangle, getRectYInv, getTriangleYInv, getPointScaledAndOrigin, getTriangleScaledAndOrigin, drawSpaceRectangle, drawRotatedImage, setScale, setOrigin, drawRectangleOnCanvas, barnRasterRectangle, getSubdividedRectangles, drawRotatedRectangle, getRasterPoints, generatePoints, generatePointsAndRectangles, storedCanvasProperties, saveCanvasProperties as storeCanvasProperties, restoreCanvasProperties, getPolygonCenterPoint, coordShiftFromOrigin, canvasPointToGeoCoord, GeoCoordToCanvasPoint } from '@/myfunctions/canvashelperfunctions';
+import { drawPolygon, drawTriangle, isInsidePolygon, isPointInTriangle, triangulatePolygon } from '@/myfunctions/drawingfunctions';
 import { Space, type GeoCoordinate, Sensor } from '@/myfunctions/model';
-import { isPointInOrOnTriangle, isPointInsideRectangle as isPointInsideOrOnRectangle, isPointInsideTriangle, Triangle, type Point, isRectOverlappingTriangle } from '@/myfunctions/tempfunctions';
+import { isPointInOrOnTriangle, isPointInsideRectangle as isPointInsideOrOnRectangle, isPointInsideTriangle, Triangle, type Point, isRectOverlappingTriangle, isRectOverlappingPolygon, isPointInsidePolygon } from '@/myfunctions/tempfunctions';
 import { subdivideCanvas, Rectangle } from '@/myfunctions/utilityfunctions';
 import { useGlobalsStore } from '@/stores/globals';
 import { useDebugsStore } from '@/stores/debugs';
@@ -17,7 +17,7 @@ const ds = useDebugsStore();
 const labelText = ref("mousecoordinates");
 // testfunction();
 // console.log(coordinateOrigin);
-let coordShiftFromOrigin = ref({ x: 0, y: 0 });
+// let coordShiftFromOrigin = ref({ x: 0, y: 0 });
 
 let geoCoords = gs.coordinatesCombined;
 let geoCoords_m = geoCoords.map((coord) => {
@@ -41,11 +41,17 @@ let geoCoordsBarn_shifteback_m = shiftBackGeoCoords_to_m(geoCoordsBarn, coordShi
 console.log("geoCoordsBarn_shifteback_m: ");
 console.log(geoCoordsBarn_shifteback_m);
 
-// const img2 = new Image();
-// img2.src = almersbachBarn2;
 
 let debugDrawBarnRects = true;
 
+let previousScale = 1;
+let previousOrigin = { x: 0, y: 0 };
+
+let hoverablePastureRects: Rectangle[] = [];
+let isRecording = false;
+let hoveredPastureRectId = -1;
+let hoveredBarnPathId = -1;
+let forbiddenRectIds = [2, 3, 8, 9, 16, 17, 23, 24, 25];
 function increaseZoom() {
     // if (zoomelevel == 1) {
     let zoomSpeed = 1;
@@ -112,15 +118,19 @@ onMounted(() => {
             console.log(latestMousePosYInv.value);
         } else if (e.key == "q") {
             if (scale.value != 10) {
+                previousScale = scale.value;
+                previousOrigin = origin.value;
                 scale.value = 10;
-                origin.value = { x: -1000, y: 0 };
+                origin.value = { x: -990, y: 0 };
             } else {
-                scale.value = 3;
-                origin.value = { x: 0, y: 0 };
+                scale.value = previousScale;
+                origin.value = previousOrigin;
             }
         }
         else if (e.key == "w") {
             debugDrawBarnRects = !debugDrawBarnRects;
+        } else if (e.key == "r") {
+            isRecording = !isRecording;
         }
 
 
@@ -132,12 +142,93 @@ onMounted(() => {
         labelText.value = "mousecoordinates: " + mousePosYInv.x + ", " + mousePosYInv.y + " | lon:" + mousePosGeoCoordsYInv.lon + ", lat:" + mousePosGeoCoordsYInv.lat;
 
         latestMousePosYInv.value = mousePosYInv;
-
     });
 });
 
+function highlightHoveredSpace() {
+    let space = getSpaceUnderMouse();
+
+    setFontProperties(ctx!, "rgba(255,0,0,1)", 20 * scale.value);
+    if (space) drawText(ctx!, space.id.toString(), 100, 100);
+    
+
+    let closestSpaceToMousePosition: Space | null = null;
+    let allowedSpaces = gs.spaces.filter(space => !forbiddenRectIds.includes(space.id));
+    let spaceUnderMouse = getSpaceUnderMouse();
+    if (spaceUnderMouse && spaceUnderMouse.sensorType == "Beacon") {
+        closestSpaceToMousePosition = spaceUnderMouse;
+
+    } else if (spaceUnderMouse && spaceUnderMouse.sensorType == "Mioty" && !forbiddenRectIds.includes(spaceUnderMouse.id)) {
+
+        closestSpaceToMousePosition = spaceUnderMouse;
+    }
+
+    else {
+        let spacesSortedByDistanceToMouse = allowedSpaces.map((space) => {
+            return { space: space, distance: Math.sqrt(Math.pow(space.canvasCoordinates[0] - latestMousePosYInv.value.x, 2) + Math.pow(space.canvasCoordinates[1] - latestMousePosYInv.value.y, 2)) };
+        }).sort((a, b) => a.distance - b.distance);
+        closestSpaceToMousePosition = spacesSortedByDistanceToMouse[0].space;
+    }
+    if (closestSpaceToMousePosition == null) return;
 
 
+
+    if (closestSpaceToMousePosition.sensorType == "Mioty") {
+        drawPastureSpace(closestSpaceToMousePosition.id);
+        drawPastureSpace(closestSpaceToMousePosition.id);
+    } else if (closestSpaceToMousePosition.sensorType == "Beacon") {
+        drawBarnSpace(closestSpaceToMousePosition.id);
+        drawBarnSpace(closestSpaceToMousePosition.id);
+    }
+    setFontProperties(ctx!, "rgba(0,255,0,1)", 20 * scale.value);
+    drawText(ctx!, closestSpaceToMousePosition.id.toString(), 500, 100);
+    // console.log("closestSpaceToMousePosition: " + closestSpaceToMousePosition.id);
+
+}
+
+function isMouseInBarn(): boolean {
+    let barnCorners = getBarnCorners(getBarnRectPaths())
+    let isMouseInBarn = isPointInsidePolygon(latestMousePosYInv.value, barnCorners);
+    console.log("isMouseInBarn: " + isMouseInBarn);
+    return isMouseInBarn;
+}
+
+function getSpaceUnderMouse(): Space | null {
+    let resultSpace: Space | null = null;
+    for (let i = 0; i < gs.spacesBarn.length; i++) {
+        const space = gs.spacesBarn[i];
+        if (space.sensorType == "Beacon") {
+            let spacePath = space.pathGeoCoords.map(x => GeoCoordToCanvasPoint(x));
+            spacePath = spacePath.map(x => getPointYInv(ctx!, x));
+            if (isInsidePolygon(getPointYInv(ctx!, latestMousePosYInv.value), spacePath)) {
+                drawDebugGreenRectangle();
+                resultSpace = space;
+                break;
+            }
+        }
+    }
+    if (!resultSpace) {
+        for (let i = 0; i < gs.spacesPasture.length; i++) {
+            const space = gs.spacesPasture[i];
+            if (space.sensorType == "Mioty") {
+                let spaceRect = space.getCanvasRectangle();
+                if (isPointInsideOrOnRectangle(latestMousePosYInv.value, spaceRect)) {
+                    drawDebugGreenRectangle();
+                    resultSpace = space;
+                    break;
+                }
+            }
+        }
+    }
+
+    return resultSpace;
+}
+function drawDebugGreenRectangle() {
+    storeCanvasProperties(ctx!);
+    setFillColor(ctx!, "rgba(0,255,0,0.75)");
+    drawRectangleDefault(ctx!, new Rectangle(-100, 0, 0, 100, 100), true);
+    restoreCanvasProperties(ctx!);
+}
 
 // function getMouseGeoCoords(ctx: CanvasRenderingContext2D, mouseX: number, mouseY: number) {
 function getMouseGeoCoords() {
@@ -154,28 +245,24 @@ function ShiftGeoCoordPointInMetersBackToCanvasSpace(coordinate: Point) {
     return { x: coordinate.x - coordShiftFromOrigin.value.x, y: coordinate.y - coordShiftFromOrigin.value.y };
 }
 
-function GeoCoordToCanvasPoint(geoCoord: GeoCoordinate) {
-    let canvasPointX = (((degreeLongitudeToMeters * geoCoord.lon) - coordShiftFromOrigin.value.x) * scale.value) + origin.value.x;
-    let canvasPointY = (((degreeLatitideToMeters * geoCoord.lat) - coordShiftFromOrigin.value.y) * scale.value) + origin.value.y;
-    return { x: canvasPointX, y: canvasPointY };
-}
 
-function canvasPointToGeoCoord(canvasPoint: Point) {
-    let lon = (((canvasPoint.x - origin.value.x) / scale.value) + coordShiftFromOrigin.value.x) / degreeLongitudeToMeters;
-    let lat = (((canvasPoint.y - origin.value.y) / scale.value) + coordShiftFromOrigin.value.y) / degreeLatitideToMeters;
-    return { lon: lon, lat: lat };
-}
 
-function createSpace(spaceId: number, sensorType: string, rectangle: Rectangle) {
-    let centerX = rectangle.x + (rectangle.width / 2);
-    let centerY = rectangle.y + (rectangle.height / 2);
-    let geoCoords = canvasPointToGeoCoord({ x: centerX, y: centerY }); // we use the center of the rectangle as the geooords for the space and for its sensor
-    let space = new Space(spaceId + 1, "myspace", sensorType, -1, geoCoords.lon, geoCoords.lat, [geoCoords.lat, geoCoords.lon, 1], [rectangle.x, rectangle.y, 1], [rectangle.x, rectangle.y], [])
+function createSpace(spaceId: number, sensorType: string, centerPointOnCanvas: Point, priority: number, pathGeoCoords: GeoCoordinate[] = [], isRectOverlappinBarn: boolean = false): Space {
+    // let centerX = rectangle.x + (rectangle.width / 2);
+    // let centerY = rectangle.y + (rectangle.height / 2);
+    let geoCoords = canvasPointToGeoCoord(centerPointOnCanvas); // we use the center of the rectangle as the geooords for the space and for its sensor
+    let space = new Space(spaceId, "myspace", sensorType, -1, geoCoords.lon, geoCoords.lat, [geoCoords.lat, geoCoords.lon, 1], [centerPointOnCanvas.x, centerPointOnCanvas.y, 1], [centerPointOnCanvas.x, centerPointOnCanvas.y], [], priority, pathGeoCoords, isRectOverlappinBarn)
     gs.spaces.push(space);
+    if (sensorType == "Beacon") {
+        gs.spacesBarn.push(space);
+    } else if (sensorType == "Mioty") {
+        gs.spacesPasture.push(space);
+    }
+    return space;
     // spaceId++;
 }
 function createOutsideSpace() {
-    let outsideSpace = new Space(0, "outside", "Mioty", -1, gs.spaces[0].longitude, gs.spaces[0].latitude, gs.spaces[0].geoCoordinates, [-1, -1, 1], [-1, -1], [1]);
+    let outsideSpace = new Space(0, "outside", "Mioty", -1, gs.spaces[0].longitude, gs.spaces[0].latitude, gs.spaces[0].geoCoordinates, [-1, -1, 1], [-1, -1], [1], 0);
     gs.spaces.push(outsideSpace);
 }
 function createSensor(space: Space) {
@@ -204,18 +291,11 @@ function drawBarnImage() {
     drawRotatedImage(ctx!, img2, (imageCorner.x + 20 * scale.value), getYInv(ctx!, imageCorner.y - 25 * scale.value), 0, imageDrawWidth, imageDrawHeight, 1);
 
 }
-
-
-function UpdateDrawings() {
-
-  
-    drawBarnImage();
-
-
-
+function getMainRects() {
     let rectangles: Rectangle[] = [];
     let padding = 20 * scale.value;
-    let rasterSize = 20 * scale.value;
+    // let rasterSize = 20 * scale.value;
+    let rasterSize = gs.sensorWidthInMeters * scale.value;
     let topLeft = ShiftGeoCoordPointInMetersBackToCanvasSpace({ x: minX_m - padding, y: maxY_m + padding });
     let bottomRight = ShiftGeoCoordPointInMetersBackToCanvasSpace({ x: maxX_m + padding, y: minY_m - padding });
     let rasterWidth = (bottomRight.x - topLeft.x) * scale.value;
@@ -232,71 +312,34 @@ function UpdateDrawings() {
             id++;
         }
     }
-    let trianglesAll = triangulatePolygon(geoCoordsAllShiftedBack_m)
-    let trianglesAllTransformed = trianglesAll.map((triangle) => {
-        return getTriangleScaledAndOrigin(ctx!, triangle);
-    });
+    return rectangles;
+}
+function getMainRectsFiltered(): Rectangle[] {
+    let results: Rectangle[] = [];
+    let mainRects = getMainRects();
+    let mainTriangles = getMainTriangles();
 
-    let trianglesBarn = triangulatePolygon(geoCoordsBarn_shifteback_m)
-    let trianglesBarnTransformed = trianglesBarn.map((triangle) => {
-        return getTriangleScaledAndOrigin(ctx!, triangle);
-    });
+    // mainTriangles.forEach((triangle) => {
+    //     drawTriangle(ctx!, getTriangleYInv(ctx!, triangle));
+    // });
 
-    
-
-    setStrokeProperties(ctx!, "black", 0.75);
-    setFillColor(ctx!, "black");
-    setStrokeProperties(ctx!, "red", 0.75);
-
-    ds.drawnRects.length = 0;
-    for (let i = 0; i < rectangles.length; i++) {
-        const rectangle = rectangles[i];
-        for (let j = 0; j < trianglesAllTransformed.length; j++) {
-            const triangle = trianglesAllTransformed[j];
-            if (isRectOverlappingTriangle(rectangle, triangle)) {
-                ds.drawnRects.push(rectangle);
-                break;
-            }
-        }
-    };
-
-    let drawRectIndicesToSkip: number[] = [];
-    ds.drawnTriangles = trianglesBarnTransformed;
-    for (let i = 0; i < ds.drawnRects.length; i++) {
-        const rectangle = ds.drawnRects[i];
-        for (let j = 0; j < trianglesBarnTransformed.length; j++) {
-            const triangle = trianglesBarnTransformed[j];
-            setStrokeProperties(ctx!, "black", 0.75);
-            if (isRectOverlappingTriangle(rectangle, triangle)) {
-                drawRectIndicesToSkip.push(i);
+    for (let i = 0; i < mainRects.length; i++) {
+        const rect = mainRects[i];
+        for (let j = 0; j < mainTriangles.length; j++) {
+            const triangle = mainTriangles[j];
+            if (isRectOverlappingTriangle(rect, triangle)) {
+                results.push(rect);
                 break;
             }
         }
     }
+    return results;
+}
 
-
-    for (let i = 0; i < ds.drawnRects.length; i++) {
-        const rectangle = ds.drawnRects[i];
-        // if (!drawRectIndicesToSkip.includes(i)) {
-        drawSpaceRectangle(ctx!, rectangle);
-        // }
-    }
-
-
-    trianglesAllTransformed.forEach((triangle) => {
-        // drawTriangle(ctx!, getTriangleYInv(ctx!, triangle));
-    });
-
-    setStrokeProperties(ctx!, "red", 0.75);
-    setFillColor(ctx!, "rgba(255,0,0,0.2)");
-
-
-
-    // make Barn rectangles
+function getBarnRectPaths(): Point[][] {
+    let result = [];
     let p1 = GeoCoordToCanvasPoint({ lon: 12.198725503930264, lat: 49.6816003669697 });
     let p2 = GeoCoordToCanvasPoint({ lon: 12.199207591869754, lat: 49.68104582151515 });
-    setStrokeProperties(ctx!, "blue", 0.75);
-    setFillColor(ctx!, "rgba(0,255,0,0.82)");
 
     let pointsAndBarnRects = generatePointsAndRectangles(p1, p2, 10, 4, 7);
 
@@ -307,23 +350,131 @@ function UpdateDrawings() {
         let p3 = pointsAndBarnRects.points[rectangle.bottomRight];
         let p4 = pointsAndBarnRects.points[rectangle.bottomLeft];
         let path = [p1, p2, p3, p4];
-        setStrokeProperties(ctx!, "rgba(0,0,0,1)", 1);
-        if (debugDrawBarnRects) {
+        result.push(path);
+    }
+    return result;
+}
 
-            setFillColor(ctx!, "rgba(0,255,0,0.5)");
-            let pathYInv = path.map(x => getPointYInv(ctx!, x));
-            drawPath(ctx!, pathYInv, true, true);
+function getMainTriangles() {
+    let trianglesAll = triangulatePolygon(geoCoordsAllShiftedBack_m)
+    let trianglesAllTransformed = trianglesAll.map((triangle) => {
+        return getTriangleScaledAndOrigin(ctx!, triangle);
+    });
+    return trianglesAllTransformed;
+}
+function getBarnCorners(barnRectPaths: Point[][]) {
+    let barnCorners: Point[] = [];
 
-            setFontProperties(ctx!, "black", 20, "Arial");
-            for (let i = 0; i < pathYInv.length; i++) {
-                const point = pathYInv[i];
-                // drawText(ctx!, i.toString(), point.x, point.y);
-            }
-        }
-    };
+    let AllPoints: Point[] = [];
+    barnRectPaths.forEach((path) => {
+        AllPoints.push(...path);
+    });
+    let xMin = Math.min(...AllPoints.map(p => p.x));
+    let xMax = Math.max(...AllPoints.map(p => p.x));
+    let yMin = Math.min(...AllPoints.map(p => p.y));
+    let yMax = Math.max(...AllPoints.map(p => p.y));
+    let xMinPoints = AllPoints.filter(p => p.x == xMin);
+    let xMaxPoints = AllPoints.filter(p => p.x == xMax);
+    let yMinPoints = AllPoints.filter(p => p.y == yMin);
+    let yMaxPoints = AllPoints.filter(p => p.y == yMax);
+    if (xMinPoints.length > 1 || xMaxPoints.length > 1 || yMinPoints.length > 1 || yMaxPoints.length > 1) {
+        // the barn is exactly perpendicular
+        barnCorners.push({ x: xMin, y: yMax });
+        barnCorners.push({ x: xMax, y: yMax });
+        barnCorners.push({ x: xMax, y: yMin });
+        barnCorners.push({ x: xMin, y: yMin });
+    } else {
+        // the barn is rotated
+        barnCorners.push(...xMinPoints);
+        barnCorners.push(...yMaxPoints);
+        barnCorners.push(...xMaxPoints);
+        barnCorners.push(...yMinPoints);
+    }
+
+    return barnCorners;
+}
+
+function UpdateDrawings() {
+
+
+    drawBarnImage();
+
+    let mainRectsFiltered = getMainRectsFiltered();
+    let mainTriangles = getMainTriangles();
+    let barnRectPaths = getBarnRectPaths();
+    let barnCorners = getBarnCorners(barnRectPaths);
+
+    barnCorners.forEach((corner) => {
+        drawPoint(ctx!, getPointYInv(ctx!, { x: corner.x, y: corner.y }), 5, true);
+    });
+
+    mainTriangles.forEach((triangle) => {
+        // drawTriangle(ctx!, getTriangleYInv(ctx!, triangle));
+    });
+
+    gs.spaces.length = 0;
+    gs.spacesBarn.length = 0;
+    gs.spacesPasture.length = 0;
+    let spaceID = 1;
+    mainRectsFiltered.forEach((rectangle) => {
+        let isRectOverlappinBarn = isRectOverlappingPolygon(rectangle, barnCorners);
+        rectangle.id = spaceID;
+
+        let space = createSpace(spaceID++, "Mioty", rectangle.center, 1, [], isRectOverlappinBarn);
+        drawPastureSpace(space.id);
+    });
+
+    barnRectPaths.forEach((path) => {
+        let center = getPolygonCenterPoint(path);
+        let space = createSpace(spaceID++, "Beacon", center, 2, path.map(x => canvasPointToGeoCoord(x)));
+        if (debugDrawBarnRects) drawBarnSpace(space.id);
+    });
+
+
+    hoverablePastureRects = mainRectsFiltered;
+    highlightHoveredSpace();
 
 }
 
+
+function drawPastureSpace(id: number) {
+    let space = gs.spaces.filter(x => x.id == id)[0];
+    let center = GeoCoordToCanvasPoint({ lon: space.geoCoordinates[1], lat: space.geoCoordinates[0] });
+    let rectangle = new Rectangle(id, center.x - (gs.sensorWidthInMeters * scale.value / 2), center.y - (gs.sensorWidthInMeters * scale.value / 2), gs.sensorWidthInMeters * scale.value, gs.sensorWidthInMeters * scale.value);
+
+    // let transformedRect = getRectYInv(ctx!, rectangle);
+    setFillColor(ctx!, "rgba(255,0,0,0.2)");
+
+    if (space.isRectOverlappinBarn) {
+        setFillColor(ctx!, "rgba(255,0,0,0.05)");
+        drawSpaceRectangle(ctx!, rectangle);
+    } else {
+
+        setFillColor(ctx!, "rgba(255,0,0,0.25)");
+        drawSpaceRectangle(ctx!, rectangle);
+    }
+    drawPoint(ctx!, getPointYInv(ctx!, center), 0.3 * scale.value, true);
+
+}
+
+function drawBarnSpace(id: number) {
+    storeCanvasProperties(ctx!);
+    let space = gs.spaces.filter(x => x.id == id)[0];
+    let path = space.pathGeoCoords.map(x => GeoCoordToCanvasPoint(x));
+    let center = { x: space.coordinates[0], y: space.coordinates[1] };
+
+    setFillColor(ctx!, "rgba(0,255,0,0.55)");
+    let pathYInv = path.map(x => getPointYInv(ctx!, x));
+    drawPath(ctx!, pathYInv, true, true);
+
+    drawPoint(ctx!, getPointYInv(ctx!, center), 0.3 * scale.value, true);
+
+
+    let leftPoint = path.filter(x => x.x == Math.min(...path.map(p => p.x)))[0];
+    setFontProperties(ctx!, "rgba(255,0,0,0.5)", 2 * scale.value);
+    drawText(ctx!, id.toString(), leftPoint.x + 1.5 * scale.value, getYInv(ctx!, leftPoint.y - 1.5 * scale.value));
+    restoreCanvasProperties(ctx!);
+}
 
 
 
