@@ -44,7 +44,7 @@ console.log(geoCoordsBarn_shifteback_m);
 
 let debugDrawBarnRects = true;
 let debugDrawPastureRects = true;
-
+let debugDrawNeighbourSpaces = true;
 let previousScale = 1;
 let previousOrigin = { x: 0, y: 0 };
 
@@ -53,8 +53,23 @@ let isRecording = false;
 let hoveredPastureRectId = -1;
 let hoveredBarnPathId = -1;
 let forbiddenSpaceIds = [2, 3, 8, 9, 16, 17, 23, 24, 25];
-let bridgeSpaceIds = [10];
+let bridgeSpaceIdPairs = [[10, 94], [10, 98], [10, 102]];
 let highlightedSpace = ref();
+let lastRecordSpace = ref();
+
+
+function getBridgePartners(spaceId: number) {
+    let result: number[] = [];
+    bridgeSpaceIdPairs.forEach((pair) => {
+        if (pair.includes(spaceId)) {
+            if (spaceId == pair[0]) { result.push(pair[1]) }
+            else {
+                result.push(pair[0]);
+            }
+        }
+    });
+    return result;
+}
 
 function increaseZoom() {
     // if (zoomelevel == 1) {
@@ -137,6 +152,8 @@ onMounted(() => {
             debugDrawBarnRects = !debugDrawBarnRects;
         } else if (e.key == "e") {
             debugDrawPastureRects = !debugDrawPastureRects;
+        } else if (e.key == "n") {
+            debugDrawNeighbourSpaces = !debugDrawNeighbourSpaces;
         } else if (e.key == "r") {
             isRecording = !isRecording;
         }
@@ -201,9 +218,17 @@ function isMouseInBarn(): boolean {
     return isMouseInBarn;
 }
 
-function getCloseNeighbourSpacesOfCanvasPoint(point: Point): Space[] {
-    let result: Space[] = [];
+function getCloseNeighbourSpacesOfCanvasPoint(point: Point): number[] {
+    let result: number[] = [];
     let space = GetSpaceUnderCanvasPoint(point);
+    // first lets add the bridgePairs
+    if (space) {
+        let bridgePartners = getBridgePartners(space.id);
+        bridgePartners.forEach((bridgePartnerId) => {
+            if (!result.includes(bridgePartnerId)) result.push(bridgePartnerId);
+        });
+    }
+
 
     if (space && space.sensorType == "Beacon") {
         let offsetRow = { x: (barnSensorColumnHeight()) * barnUnitDirectionX.value, y: (barnSensorColumnHeight()) * barnUnitDirectionY.value };
@@ -228,23 +253,16 @@ function getCloseNeighbourSpacesOfCanvasPoint(point: Point): Space[] {
         potentialNeighbours.forEach((neighbour) => {
             if (neighbour &&
                 !forbiddenSpaceIds.includes(neighbour.id) &&
-                (neighbour.sensorType == "Beacon" || (neighbour.sensorType == "Mioty" && bridgeSpaceIds.includes(neighbour.id)))) {
-                if (!result.includes(neighbour)) result.push(neighbour);
-                if(neighbour.sensorType == "Mioty") drawPastureSpace(neighbour.id);
-                if(neighbour.sensorType == "Beacon") drawBarnSpace(neighbour.id);
+                neighbour.sensorType == "Beacon") {
+                // (neighbour.sensorType == "Mioty" && bridgeSpaceIds.includes(neighbour.id) && bridgeSpaceIds.includes(space!.id)))) {
+                // (neighbour.sensorType == "Mioty" && bridgeSpaceIds.includes(neighbour.id) && bridgeSpaceIds.includes(space!.id)))) {
+
+                if (!result.includes(neighbour.id)) result.push(neighbour.id);
             }
         });
-        // drawPoint(ctx!, getPointYInv(ctx!, pR), 5, true);
-        // drawPoint(ctx!, getPointYInv(ctx!, pL), 5, true);
-        // drawPoint(ctx!, getPointYInv(ctx!, pT), 5, true);
-        // drawPoint(ctx!, getPointYInv(ctx!, pB), 5, true);
-        // drawPoint(ctx!, getPointYInv(ctx!, pTR), 5, true);
-        // drawPoint(ctx!, getPointYInv(ctx!, pTL), 5, true);
-        // drawPoint(ctx!, getPointYInv(ctx!, pBR), 5, true);
-        // drawPoint(ctx!, getPointYInv(ctx!, pBL), 5, true);
+
     }
     //TODO - übergang nur in Neighbourspaces möglich
-    // TODO -  Mioty-Bridge Neighbours auffüllen mit BarnSpaces die den MiotySpace als Nachbarn haben.
 
     // add Neighbours for BarnSpaces
     if (space && !forbiddenSpaceIds.includes(space.id) && space.sensorType == "Mioty") {
@@ -260,20 +278,13 @@ function getCloseNeighbourSpacesOfCanvasPoint(point: Point): Space[] {
         let potentialNeighbours = [nL, nR, nT, nB, nTL, nBL, nTR, nBR];
         potentialNeighbours.forEach((neighbour) => {
             if (neighbour && !forbiddenSpaceIds.includes(neighbour.id) && neighbour.sensorType == "Mioty") {
-                if (!result.includes(neighbour)) result.push(neighbour);
-                drawPastureSpace(neighbour.id);
+                // (neighbour.sensorType == "Beacon" && bridgeSpaceIds.includes(neighbour.id) && bridgeSpaceIds.includes(space!.id)))) {
+                if (!result.includes(neighbour.id)) result.push(neighbour.id);
             }
         });
-        // if (nL && !forbiddenSpaceIds.includes(nL.id) && nL.sensorType == "Mioty") result.push(nL);
-        // if (nR && !forbiddenSpaceIds.includes(nR.id) && nR.sensorType == "Mioty") result.push(nR);
-        // if (nT && !forbiddenSpaceIds.includes(nT.id) && nT.sensorType == "Mioty") result.push(nT);
-        // if (nB && !forbiddenSpaceIds.includes(nB.id) && nB.sensorType == "Mioty") result.push(nB);
-        // if (nTL && !forbiddenSpaceIds.includes(nTL.id) && nTL.sensorType == "Mioty") result.push(nTL);
-        // if (nBL && !forbiddenSpaceIds.includes(nBL.id) && nBL.sensorType == "Mioty") result.push(nBL);
-        // if (nTR && !forbiddenSpaceIds.includes(nTR.id) && nTR.sensorType == "Mioty") result.push(nTR);
-        // if (nBR && !forbiddenSpaceIds.includes(nBR.id) && nBR.sensorType == "Mioty") result.push(nBR);
     }
-    result.sort((a, b) => a.id - b.id);
+
+    result.sort((a, b) => a - b);
     return result;
 }
 
@@ -509,6 +520,25 @@ function getBarnCorners(barnRectPaths: Point[][]) {
     return barnCorners;
 }
 
+function Record() {
+    let spaceUnderMouse = getSpaceUnderMouse();
+
+    // initiate starting space
+    if (lastRecordSpace.value == null) {
+        if (spaceUnderMouse && !forbiddenSpaceIds.includes(spaceUnderMouse.id)) {
+            lastRecordSpace.value = spaceUnderMouse;
+        } else {
+            console.log("no space under mouse");
+        }
+    }
+ //TODO - übergang nur in Neighbourspaces möglich
+
+    if (spaceUnderMouse && !forbiddenSpaceIds.includes(spaceUnderMouse.id)) {
+        lastRecordSpace.value = spaceUnderMouse;
+    }
+}
+
+
 function UpdateDrawings() {
 
 
@@ -518,8 +548,7 @@ function UpdateDrawings() {
 
     drawSpaces();
 
-    highlightHoveredSpace();
-
+    if (!isRecording) highlightHoveredSpace();
     // let n0 = getSpaceUnderMouse();
     // let n1 = GetSpaceUnderCanvasPoint(latestMousePosYInv.value);
     // console.log("ux:")
@@ -536,8 +565,23 @@ function UpdateDrawings() {
     drawLine(ctx!, getPointYInv(ctx!, p3), getPointYInv(ctx!, p4));
 
 
-    let neighbours = getCloseNeighbourSpacesOfCanvasPoint(latestMousePosYInv.value);
-    console.log(neighbours.map(x => x.id).join(", "));
+    let neighbourIds = getCloseNeighbourSpacesOfCanvasPoint(latestMousePosYInv.value);
+    let neighborSpaces = gs.spaces.filter(x => neighbourIds.includes(x.id));
+    neighborSpaces.forEach((neighbor) => {
+        if (debugDrawNeighbourSpaces) {
+            if (neighbor.sensorType == "Mioty") drawPastureSpace(neighbor.id);
+            if (neighbor.sensorType == "Beacon") drawBarnSpace(neighbor.id);
+        }
+    });
+    console.log(neighbourIds.join(", "));
+    if (isRecording) {
+        storeCanvasProperties(ctx!);
+        setFontProperties(ctx!, "rgba(255,0,0,1)", 50);
+        drawText(ctx!, "REC", canvas?.width! - 110, 50);
+        restoreCanvasProperties(ctx!);
+        Record();
+    }
+
 
 }
 
