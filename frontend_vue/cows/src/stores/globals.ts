@@ -1,4 +1,4 @@
-import type { CanvasCoordinate, GeoCoordinate, SMARTEvent, Sensor, Space } from '@/myfunctions/model';
+import type { CanvasCoordinate, GeoCoordinate, RecordEntry, SMARTEvent, Sensor, Space } from '@/myfunctions/model';
 import type { Point } from '@/myfunctions/tempfunctions';
 import { Rectangle } from '@/myfunctions/utilityfunctions';
 import { defineStore } from 'pinia';
@@ -21,7 +21,7 @@ interface GlobalsState {
     recordDurationInDays: number;
     timeSpeedMultiplier: number;
     sensorWidthInMeters: number;
-    recordedData: any[];
+    recordings: RecordEntry[];
     sensors: Sensor[];
     spaces: Space[];
     spaceNeighborCache: Map<number, number[]>;
@@ -57,10 +57,18 @@ interface GlobalsState {
     tipEventSpaceIds: string;
     tipEventCapacity: string;
 
-    // spacesBarn():Space[];
-    // spacesPasture():Space[];
 
+    timePassed: number;
+    previousTimePassed: number;
 
+    
+    
+    
+    drawBarnRects: boolean;
+    drawPastureRects: boolean;
+    drawNeighbourSpaces: boolean;
+    forbiddenSpaceIds: number[];
+    bridgeSpaceIdPairs: number[][];
 
 }
 
@@ -76,7 +84,7 @@ export const useGlobalsStore = defineStore({
         // spacesBarn: [],
         // spacesPasture: [],
 
-        recordedData: [],
+        recordings: [],
 
 
         ctx: null,
@@ -90,6 +98,13 @@ export const useGlobalsStore = defineStore({
         recordDurationInDays: 2,
         timeSpeedMultiplier: 600,
         sensorWidthInMeters: 20,
+
+        drawBarnRects: true,
+        drawPastureRects: true,
+        drawNeighbourSpaces: false,
+        forbiddenSpaceIds: [2, 3, 8, 9, 16, 17, 23, 24, 25],
+        bridgeSpaceIdPairs: [[10, 94], [10, 98], [10, 102]],
+
         loops: 0,
 
         isCowInBarn: false,
@@ -206,6 +221,10 @@ export const useGlobalsStore = defineStore({
         tipEventSpaceIds: "The space-ids property denotes the spaces in which the event can take place",
         tipEventCapacity: "The capacity property denotes the number of people of each type of metaperson. The range property specifies bounds ([lo, high]) on the number of people in attendance.",
 
+        timePassed: 0,
+        previousTimePassed: 0,
+     
+        
         get minLat(): number { return Math.min(...this.coordinatesCombined.map(p => p.lat)) },
         get maxLat(): number { return Math.max(...this.coordinatesCombined.map(p => p.lat)) },
         get minLon(): number { return Math.min(...this.coordinatesCombined.map(p => p.lon)) },
@@ -288,3 +307,18 @@ export const useGlobalsStore = defineStore({
         }
     }
 });
+
+
+// Save the state of the store to localStorage
+// useGlobalsStore().$subscribe(
+//     (state) => localStorage.setItem('counterState', JSON.stringify(state)),
+//     { deep: true }
+//   );
+  
+//   // Retrieve the state of the store from localStorage
+//   const savedState = JSON.parse(localStorage.getItem('counterState') || '{}');
+//   useCounterStore.$state = savedState;
+
+
+
+

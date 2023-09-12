@@ -30,10 +30,10 @@ import type { Point } from "./tempfunctions";
 
 export class RecordEntry {
     timeStamp: string;
-    cattleId: number;
+    cattleId: string;
     space: Space;
 
-    constructor(timeStamp: string, cattleId: number, space: Space) {
+    constructor(timeStamp: string, cattleId: string, space: Space) {
         this.timeStamp = timeStamp;
         this.cattleId = cattleId;
         this.space = space;

@@ -53,15 +53,19 @@ const handleExportSpacesAndSensorsToJSON = (event: any) => {
 const handleResetTimer = (event: any) => {
   console.log("handleRestTimer");
   gs.loops = 0
+  gs.timePassed = 0;
 }
 const handleClearRecords = (event: any) => {
   console.log("handleClearRecords");
-  gs.recordedData.length = 0;
+  gs.recordings.length = 0;
   clearConsoleOutput();
 }
 const handleExportRecordingAsCSV = (event: any) => {
   console.log("handleSave");
-  saveAsCsv(gs.recordedData);
+  // saveAsCsv(gs.recordings);
+  let data = gs.recordings.map(x=>{return {timeStamp: x.timeStamp, cattleId: x.cattleId, space: x.space.id}});
+  saveAsCsv(data);
+  // saveAsCsv(gs.recordings);
 }
 
 const handleCowIDChanged = (cowId: string) => {
@@ -86,23 +90,30 @@ const handleCowIDChanged = (cowId: string) => {
 
           <div class=" form-container" style="display: flex;flex-direction: column;">
 
-            <LabeledInput :label-text='"cowId : "' :default-value="'1'" input-type="number" :min-value="1"
+            <LabeledInput label-text="cowId : " :default-value="gs.cowId" input-type="number" :min-value="1"
               @on-input="(n) => handleCowIDChanged(n)"></LabeledInput>
 
-            <LabeledInput :label-text='"recordIntervalInSeconds : "' :default-value="'60'" input-type="number"
+            <LabeledInput label-text="recordIntervalInSeconds : " :default-value="gs.recordIntervalInSeconds.toString()" input-type="number"
               :min-value="1" @on-input="(n) => gs.recordIntervalInSeconds = n"></LabeledInput>
 
-            <LabeledInput :label-text='"recordDurationInDays : "' :default-value="'2'" input-type="number" :min-value="1"
+            <LabeledInput label-text="recordDurationInDays : " :default-value="gs.recordDurationInDays.toString()" input-type="number" :min-value="1"
               @on-input="(n) => gs.recordDurationInDays = n"></LabeledInput>
 
-            <LabeledInput :label-text='"timeSpeedMultiplier : "' :default-value="'600'" input-type="number" :min-value="1"
+            <LabeledInput label-text='timeSpeedMultiplier : ' :default-value="gs.timeSpeedMultiplier.toString()" input-type="number" :min-value="1"
               @on-input="(n) => gs.timeSpeedMultiplier = n"></LabeledInput>
 
             <SeparationLine></SeparationLine>
 
-            <LabeledInput :label-text="'Sensor Width in Meters'" :default-value="'40'" input-type="number" :min-value="30"
+            <LabeledInput label-text="Sensor Width in Meters" :default-value="gs.sensorWidthInMeters.toString()" input-type="number" :min-value="5"
               :max-value="100" @on-input="(n) => gs.sensorWidthInMeters = n"></LabeledInput>
 
+            <SeparationLine></SeparationLine>
+            <LabeledInput ref="forbiddenRectangles" label-text="forbidden Spaces" :input-type="'text'"
+                :default-value="gs.forbiddenSpaceIds.toString()" @onInput="(val) => gs.forbiddenSpaceIds = val" :tooltip="gs.tipEventSpaceIds">
+            </LabeledInput>
+            <LabeledInput ref="bridgeSpaceIdPairs" label-text="bridge SpacePairs" :input-type="'text'"
+                :default-value="gs.bridgeSpaceIdPairs.toString()" @onInput="(val) => gs.bridgeSpaceIdPairs = val" :tooltip="gs.tipEventSpaceIds">
+            </LabeledInput>
             <SeparationLine></SeparationLine>
 
             <div class="rowequal">
@@ -114,7 +125,7 @@ const handleCowIDChanged = (cowId: string) => {
               <button @click="handleExportSpacesAndSensorsToJSON" class="mybutton">Export Spaces and Sensors to
                 JSON</button>
               <button @click="handleExportRecordingAsCSV" class="mybutton">Export Recording to CSV</button>
-              <button @click="selectFiles()" class="mybutton">Select and Combine CSV-Files</button>
+              <!-- <button @click="selectFiles()" class="mybutton">Select and Combine CSV-Files</button> -->
             </div>
 
             <SeparationLine></SeparationLine>

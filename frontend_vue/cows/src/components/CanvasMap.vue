@@ -128,7 +128,7 @@ function setUpRecording() {
                 const latitude = ConvertCanvasXYToGeoCoords(gs.mousePosition.x, gs.mousePosition.y).latitude;
                 const longitude = ConvertCanvasXYToGeoCoords(gs.mousePosition.x, gs.mousePosition.y).longitude;
                 // console.log(`${cowId}  ${formattedTime} - mouseposition: ${mousePosition.x}, ${mousePosition.y} lon: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).longitude} lat: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).latitude} `);
-                gs.recordedData.push({ cowid: gs.cowId, time: formattedTime, longitude: longitude, latitude: latitude });
+                gs.recordings.push({ cowid: gs.cowId, time: formattedTime, longitude: longitude, latitude: latitude });
                 writeToConsoleOutput(`${gs.cowId}, ${formattedTime}, ${longitude},${latitude}\n`)
 
             } else {
