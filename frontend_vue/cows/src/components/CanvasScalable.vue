@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { degreeLongitudeToMeters, degreeLatitideToMeters, drawCoordinateSystemYInv, setFillColor, drawPath, getPointsScaledYInv, addToScale, moveOrigin, getYInv, origin, scale, canvasPointToGeoCoordinate, drawRectangleDefault, getPointYInv, subtractOrigin, addOrigin, scalePointMultiply, setStrokeProperties, drawPoint, drawText, setFontProperties, drawRectangleYInv, getRectYInv, getTriangleYInv, getPointScaledAndOrigin, getTriangleScaledAndOrigin, drawSpaceRectangle, drawRotatedImage, setScale, setOrigin, barnRasterRectangle, getSubdividedRectangles, drawRotatedRectangle, generatePoints, generatePointsAndRectangles, storedCanvasProperties, saveCanvasProperties as storeCanvasProperties, restoreCanvasProperties, getPolygonCenterPoint, coordShiftFromOrigin, canvasPointToGeoCoord, GeoCoordToCanvasPoint, barnSensorRows, barnSensorColumnWidth, barnSensorColumns, barnTopLeftGeoCoord, barnBottomLeftGeoCoord, drawLine, barnUnitDirectionX, barnUnitDirectionY, barnUnitNormalX, barnUnitNormalY, barnSensorColumnHeight } from '@/myfunctions/canvashelperfunctions';
 import { drawPolygon, drawTriangle, isInsidePolygon, isPointInTriangle, triangulatePolygon } from '@/myfunctions/drawingfunctions';
-import { Space, type GeoCoordinate, Sensor } from '@/myfunctions/model';
+import { Space, type GeoCoordinate, Sensor, RecordEntry } from '@/myfunctions/model';
 import { isPointInOrOnTriangle, isPointInsideRectangle as isPointInsideOrOnRectangle, isPointInsideTriangle, Triangle, type Point, isRectOverlappingTriangle, isRectOverlappingPolygon, isPointInsidePolygon } from '@/myfunctions/tempfunctions';
 import { subdivideCanvas, Rectangle } from '@/myfunctions/utilityfunctions';
 import { useGlobalsStore } from '@/stores/globals';
 import { useDebugsStore } from '@/stores/debugs';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import almersbachBarn from '@/assets/Almersbach_Barn_01.png';
 import almersbachBarn2 from '@/assets/Almesbach_Stallplan_1_rotated-01.png';
 
@@ -38,25 +38,30 @@ let geoCoordsAllShiftedBack_m = shiftBackGeoCoords_to_m(geoCoords, coordShiftFro
 
 let geoCoordsBarn = gs.coordinatesBarn;
 let geoCoordsBarn_shifteback_m = shiftBackGeoCoords_to_m(geoCoordsBarn, coordShiftFromOrigin.value);
-console.log("geoCoordsBarn_shifteback_m: ");
-console.log(geoCoordsBarn_shifteback_m);
+// console.log("geoCoordsBarn_shifteback_m: ");
+// console.log(geoCoordsBarn_shifteback_m);
 
 
 let debugDrawBarnRects = true;
 let debugDrawPastureRects = true;
-let debugDrawNeighbourSpaces = true;
+let debugDrawNeighbourSpaces = false;
 let previousScale = 1;
 let previousOrigin = { x: 0, y: 0 };
 
 // let hoverablePastureRects: Rectangle[] = [];
 let isRecording = false;
+let isRecordingManually = false
 let hoveredPastureRectId = -1;
 let hoveredBarnPathId = -1;
 let forbiddenSpaceIds = [2, 3, 8, 9, 16, 17, 23, 24, 25];
 let bridgeSpaceIdPairs = [[10, 94], [10, 98], [10, 102]];
 let highlightedSpace = ref();
 let lastRecordSpace = ref();
-
+let recordings = ref<RecordEntry[]>([]);
+let distanceTravelled = ref(0);
+let timePassed = ref(0);
+let needToUpdateNeighbors = true;
+const now = new Date('2021-01-01T01:00:00');
 
 function getBridgePartners(spaceId: number) {
     let result: number[] = [];
@@ -156,8 +161,13 @@ onMounted(() => {
             debugDrawNeighbourSpaces = !debugDrawNeighbourSpaces;
         } else if (e.key == "r") {
             isRecording = !isRecording;
+        } else if (e.key == "t") {
+            isRecordingManually = !isRecordingManually;
+        } else if (e.key == "1") {
+            RecordStepBackward();
+        } else if (e.key == "2") {
+            RecordStepForward();
         }
-
 
     });
     canvas.addEventListener("mousemove", (e) => {
@@ -168,6 +178,17 @@ onMounted(() => {
 
         latestMousePosYInv.value = mousePosYInv;
     });
+
+    watch([scale, scale.value], (newValue, oldValue) => {
+        console.log("scale changed from " + oldValue + " to " + newValue);
+        needToUpdateNeighbors = true;
+        // UpdateDrawings();
+    }, { deep: true });
+    watch([origin, origin.value], (newValue, oldValue) => {
+        console.log("origin changed from " + oldValue + " to " + newValue);
+        needToUpdateNeighbors = true;
+        // UpdateDrawings();
+    }, { deep: true });
 });
 
 function highlightHoveredSpace() {
@@ -216,6 +237,20 @@ function isMouseInBarn(): boolean {
     let isMouseInBarn = isPointInsidePolygon(latestMousePosYInv.value, barnCorners);
     console.log("isMouseInBarn: " + isMouseInBarn);
     return isMouseInBarn;
+}
+
+function assignAllNeighbors() {
+    gs.spaces.forEach((space) => {
+        // debugger;
+        if (gs.spaceNeighborCache.has(space.id) && !needToUpdateNeighbors) {
+            space.neighbors = gs.spaceNeighborCache.get(space.id)!;
+        } else {
+            space.neighbors = getCloseNeighbourSpacesOfCanvasPoint({ x: space.canvasCoordinates[0], y: space.canvasCoordinates[1] });
+            gs.spaceNeighborCache.set(space.id, space.neighbors);
+        }
+        // space.neighbors = getCloseNeighbourSpacesOfCanvasPoint({ x: space.canvasCoordinates[0], y: space.canvasCoordinates[1] });
+    });
+    needToUpdateNeighbors = false;
 }
 
 function getCloseNeighbourSpacesOfCanvasPoint(point: Point): number[] {
@@ -379,11 +414,11 @@ function createSpace(spaceId: number, sensorType: string, centerPointOnCanvas: P
     let geoCoords = canvasPointToGeoCoord(centerPointOnCanvas); // we use the center of the rectangle as the geooords for the space and for its sensor
     let space = new Space(spaceId, "myspace", sensorType, -1, geoCoords.lon, geoCoords.lat, [geoCoords.lat, geoCoords.lon, 1], [centerPointOnCanvas.x, centerPointOnCanvas.y, 1], [centerPointOnCanvas.x, centerPointOnCanvas.y], [], priority, pathGeoCoords, isRectOverlappinBarn)
     gs.spaces.push(space);
-    if (sensorType == "Beacon") {
-        gs.spacesBarn.push(space);
-    } else if (sensorType == "Mioty") {
-        gs.spacesPasture.push(space);
-    }
+    // if (sensorType == "Beacon") {
+    //     gs.spacesBarn.push(space);
+    // } else if (sensorType == "Mioty") {
+    //     gs.spacesPasture.push(space);
+    // }
     return space;
     // spaceId++;
 }
@@ -520,6 +555,7 @@ function getBarnCorners(barnRectPaths: Point[][]) {
     return barnCorners;
 }
 
+
 function Record() {
     let spaceUnderMouse = getSpaceUnderMouse();
 
@@ -529,16 +565,64 @@ function Record() {
             lastRecordSpace.value = spaceUnderMouse;
         } else {
             console.log("no space under mouse");
+            return;
         }
     }
- //TODO - übergang nur in Neighbourspaces möglich
-
+    //TODO - übergang nur in Neighbourspaces möglich
     if (spaceUnderMouse && !forbiddenSpaceIds.includes(spaceUnderMouse.id)) {
-        lastRecordSpace.value = spaceUnderMouse;
+        if (lastRecordSpace.value) {
+            // console.log("spaceUnderMouse: " + spaceUnderMouse?.id)
+            // console.log(lastRecordSpace.value);
+            if (lastRecordSpace.value.neighbors.includes(spaceUnderMouse.id)) {
+                distanceTravelled.value += Math.sqrt(Math.pow(spaceUnderMouse.canvasCoordinates[0] - lastRecordSpace.value.canvasCoordinates[0], 2) + Math.pow(spaceUnderMouse.canvasCoordinates[1] - lastRecordSpace.value.canvasCoordinates[1], 2)) / scale.value;
+                lastRecordSpace.value = spaceUnderMouse;
+            }
+        }
+    }
+
+    if (lastRecordSpace.value) {
+
+        // gs.loops = 0;
+        let totalDurationInSeconds = 60 * 60 * 24 * gs.recordDurationInDays;
+        let SecondsPerLoop = gs.recordIntervalInSeconds;
+        let loopIntevalMilliSeconds = (1 / gs.timeSpeedMultiplier) * 1000;
+
+
+        let offsetSeconds = SecondsPerLoop * gs.loops++;
+        timePassed.value += SecondsPerLoop;
+        let newDate = new Date(now.getTime() + offsetSeconds * 1000);
+        let lastDate = new Date(now.getTime() + totalDurationInSeconds * 1000);
+        // if (newDate.getTime() <= lastDate.getTime()) {
+
+        const formattedTime = newDate.toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
+        const latitude = lastRecordSpace.value.longitude;
+        const longitude = lastRecordSpace.value.latitude;
+
+        // console.log(`${cowId}  ${formattedTime} - mouseposition: ${mousePosition.x}, ${mousePosition.y} lon: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).longitude} lat: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).latitude} `);
+        // gs.recordedData.push({ cowid: gs.cowId, time: formattedTime, longitude: longitude, latitude: latitude });
+        // writeToConsoleOutput(`${gs.cowId}, ${formattedTime}, ${longitude},${latitude}\n`)
+
+        // }
+        recordings.value.push(new RecordEntry(formattedTime, longitude, latitude, 1));
+        console.log(`${gs.cowId}, ${formattedTime}, ${longitude},${latitude}\n`);
+
     }
 }
 
+function RecordStepForward() {
+    Record();
+}
+function RecordStepBackward() {
+    if (recordings.value.length > 0) recordings.value.pop();
+    if (recordings.value.length > 0) lastRecordSpace.value = recordings.value[recordings.value.length - 1].space;
+}
 
+function formatTime(seconds: number): string {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    return `${hours.toString().padStart(2, '0')} : ${minutes.toString().padStart(2, '0')} : ${remainingSeconds.toString().padStart(2, '0')}`;
+}
 function UpdateDrawings() {
 
 
@@ -546,44 +630,63 @@ function UpdateDrawings() {
     // drawTriangles();    
     createSpacesAndSensors();
 
-    drawSpaces();
+    drawAllSpaces();
+
 
     if (!isRecording) highlightHoveredSpace();
-    // let n0 = getSpaceUnderMouse();
-    // let n1 = GetSpaceUnderCanvasPoint(latestMousePosYInv.value);
-    // console.log("ux:")
-    let lineLength = 100;
-    let s = 200;
-    let p1 = { x: s, y: s };
-    let p2 = { x: s + barnUnitDirectionX.value * lineLength, y: s + barnUnitDirectionY.value * lineLength };
-    setStrokeProperties(ctx!, "rgba(0,255,0,1)", 1 * scale.value);
-    drawLine(ctx!, getPointYInv(ctx!, p1), getPointYInv(ctx!, p2));
-
-    let p3 = { x: s, y: s };
-    let p4 = { x: s + barnUnitNormalX.value * lineLength, y: s + barnUnitNormalY.value * lineLength };
-    setStrokeProperties(ctx!, "rgba(0,0,255,1)", 1 * scale.value);
-    drawLine(ctx!, getPointYInv(ctx!, p3), getPointYInv(ctx!, p4));
 
 
-    let neighbourIds = getCloseNeighbourSpacesOfCanvasPoint(latestMousePosYInv.value);
-    let neighborSpaces = gs.spaces.filter(x => neighbourIds.includes(x.id));
-    neighborSpaces.forEach((neighbor) => {
-        if (debugDrawNeighbourSpaces) {
-            if (neighbor.sensorType == "Mioty") drawPastureSpace(neighbor.id);
-            if (neighbor.sensorType == "Beacon") drawBarnSpace(neighbor.id);
-        }
-    });
-    console.log(neighbourIds.join(", "));
+    let spaceUnderMouse = getSpaceUnderMouse();
+    if (spaceUnderMouse) {
+
+        let neighbourIds = spaceUnderMouse.neighbors;
+        // console.log(neighbourIds.join(", "));
+        let neighborSpaces = gs.spaces.filter(x => neighbourIds.includes(x.id));
+
+        neighborSpaces.forEach((neighbor) => {
+            if (debugDrawNeighbourSpaces) {
+                if (neighbor.sensorType == "Mioty") drawPastureSpace(neighbor.id);
+                if (neighbor.sensorType == "Beacon") drawBarnSpace(neighbor.id);
+            }
+        });
+    }
+    // console.log(neighbourIds.join(", "));
     if (isRecording) {
+        const offsetTextX = 170
+        setFillColor(ctx!, "rgba(0,0,255,0.2)");
+        drawRectangleDefault(ctx!, new Rectangle(-100, canvas!.width - offsetTextX - 10, 0, offsetTextX + 10, 150), true);
         storeCanvasProperties(ctx!);
         setFontProperties(ctx!, "rgba(255,0,0,1)", 50);
-        drawText(ctx!, "REC", canvas?.width! - 110, 50);
+        drawText(ctx!, "REC", canvas?.width! - offsetTextX, 50);
+
         restoreCanvasProperties(ctx!);
-        Record();
+        if (lastRecordSpace.value) {
+            setFontProperties(ctx!, "rgba(0,0,255,1)", 15);
+
+            drawText(ctx!, "LastRec Space: " + lastRecordSpace.value?.id, canvas?.width! - offsetTextX, 100);
+            drawText(ctx!, "Distance Total: " + distanceTravelled.value.toFixed(0) + " m", canvas?.width! - offsetTextX, 120);
+            drawText(ctx!, "Time: " + formatTime(timePassed.value) + " m", canvas?.width! - offsetTextX, 140);
+        }
+
+
+
+        if (isRecordingManually) {
+            Record();
+        } else {
+            setFontProperties(ctx!, "rgba(255,0,255,1)", 15);
+            drawText(ctx!, "Manuall Steps", canvas?.width! - offsetTextX, 80);
+
+        }
+        if (lastRecordSpace.value) {
+            drawSpace(lastRecordSpace.value);
+            drawSpace(lastRecordSpace.value);
+        }
     }
 
 
 }
+
+
 
 function drawTriangles() {
     let mainTriangles = getMainTriangles();
@@ -594,6 +697,7 @@ function drawTriangles() {
 }
 
 function createSpacesAndSensors() {
+    if (!needToUpdateNeighbors) return;
     let mainRectsFiltered = getMainRectsFiltered();
     let barnRectPaths = getBarnRectPaths();
     let barnCorners = getBarnCorners(barnRectPaths);
@@ -605,8 +709,8 @@ function createSpacesAndSensors() {
 
 
     gs.spaces.length = 0;
-    gs.spacesBarn.length = 0;
-    gs.spacesPasture.length = 0;
+    // gs.spacesBarn.length = 0;
+    // gs.spacesPasture.length = 0;
     let spaceID = 1;
 
     mainRectsFiltered.forEach((rectangle) => {
@@ -624,19 +728,24 @@ function createSpacesAndSensors() {
         createSensor(space);
         // if (debugDrawBarnRects) drawBarnSpace(space.id);
     });
+    assignAllNeighbors();
     createOutsideSpace();
+
     // hoverablePastureRects = mainRectsFiltered;
 
 }
 
-function drawSpaces() {
-    gs.spaces.forEach((space) => {
-        if (space.sensorType == "Mioty") {
-            if (debugDrawPastureRects) drawPastureSpace(space.id);
-        } else if (space.sensorType == "Beacon") {
+function drawSpace(space: Space) {
+    if (space.sensorType == "Mioty") {
+        drawPastureSpace(space.id);
+    } else if (space.sensorType == "Beacon") {
+        drawBarnSpace(space.id);
+    }
+}
 
-            if (debugDrawBarnRects) drawBarnSpace(space.id);
-        }
+function drawAllSpaces() {
+    gs.spaces.forEach((space) => {
+        drawSpace(space)
     });
 }
 

@@ -24,8 +24,9 @@ interface GlobalsState {
     recordedData: any[];
     sensors: Sensor[];
     spaces: Space[];
-    spacesBarn: Space[];
-    spacesPasture: Space[];
+    spaceNeighborCache: Map<number, number[]>;
+    // spacesBarn: Space[];
+    // spacesPasture: Space[];
     loops: number;
     isCowInBarn: boolean;
     isCowInPasture: boolean;
@@ -56,7 +57,8 @@ interface GlobalsState {
     tipEventSpaceIds: string;
     tipEventCapacity: string;
 
-
+    // spacesBarn():Space[];
+    // spacesPasture():Space[];
 
 
 
@@ -70,8 +72,10 @@ export const useGlobalsStore = defineStore({
         mousePosition: { x: 0, y: 0 },
         sensors: [],
         spaces: [],
-        spacesBarn: [],
-        spacesPasture: [],
+        spaceNeighborCache: new Map<number, number[]>(),
+        // spacesBarn: [],
+        // spacesPasture: [],
+
         recordedData: [],
 
 
@@ -186,13 +190,13 @@ export const useGlobalsStore = defineStore({
             { lon: 12.199357205368216, lat: 49.681257639696966 },// G
             { lat: 49.681418, lon: 12.199800 },// H
 
-            
+
 
 
             { lat: 49.68131979333333, lon: 12.199891363333334 },
             { lat: 49.68111546833333, lon: 12.200051731666667 }
         ],
-      
+
         tipEventDescription: "a human understandable description of this event",
         tipEventId: "The id property should uniquely identify an event",
         tipEventMetaeventId: "The metaevent-id property determines the metaevent group to which the event belongs.",
@@ -223,6 +227,13 @@ export const useGlobalsStore = defineStore({
         // getName(): string {
         //     return this.name;
         // }
+        spacesBarn(): Space[] {
+            return this.spaces.filter(s => s.sensorType == "Beacon");
+        },
+        spacesPasture(): Space[] {
+            return this.spaces.filter(s => s.sensorType == "Mioty" || s.sensorType == "GPS");
+
+        }
     },
     actions: {
         getNextEventID(): number {

@@ -28,22 +28,33 @@ import type { Point } from "./tempfunctions";
 // 	GeoCoordinates []float64 `json:"geoCoordinates"`
 // }
 
+export class RecordEntry {
+    timeStamp: string;
+    cattleId: number;
+    space: Space;
 
-export class CanvasCoordinate{
+    constructor(timeStamp: string, cattleId: number, space: Space) {
+        this.timeStamp = timeStamp;
+        this.cattleId = cattleId;
+        this.space = space;
+    }
+}
+
+export class CanvasCoordinate {
     x: number;
     y: number;
 
-    constructor(x: number, y: number){
+    constructor(x: number, y: number) {
         this.x = x;
         this.y = y;
     }
 }
 
-export class GeoCoordinate{
+export class GeoCoordinate {
     lat: number;
     lon: number;
 
-    constructor(lat: number, lon: number){
+    constructor(lat: number, lon: number) {
         this.lat = lat;
         this.lon = lon;
     }
@@ -63,7 +74,7 @@ export class Space {
     priority: number; // drawing priority if we have multiple overlapping spaces, then the one with higher priority will be chose
     pathGeoCoords: GeoCoordinate[]; // for the barn quads we need the points to draw them as polygons
     isRectOverlappinBarn: boolean; // when computing the spaces we also remember if they overlap with the barn
-    constructor(id: number, description: string, sensorType: string, capacity: number, longitude: number, latitude: number, geoCoordinates: number[], coordinates: number[], canvasCoordinates: number[], neighbors: number[], priority: number,pathGeoCoords: GeoCoordinate[] = [], isRectOverlappinBarn: boolean = false) {
+    constructor(id: number, description: string, sensorType: string, capacity: number, longitude: number, latitude: number, geoCoordinates: number[], coordinates: number[], canvasCoordinates: number[], neighbors: number[], priority: number, pathGeoCoords: GeoCoordinate[] = [], isRectOverlappinBarn: boolean = false) {
         this.id = id;
         this.description = description;
         this.sensorType = sensorType;
@@ -74,18 +85,18 @@ export class Space {
         this.coordinates = coordinates;
         this.canvasCoordinates = canvasCoordinates;
         this.neighbors = neighbors;
-        
-        this.priority = priority; 
+
+        this.priority = priority;
         this.pathGeoCoords = pathGeoCoords;
         this.isRectOverlappinBarn = isRectOverlappinBarn;
     }
 
-    getCanvasRectangle(): Rectangle{
+    getCanvasRectangle(): Rectangle {
         let gs = useGlobalsStore();
         return new Rectangle(this.id, this.canvasCoordinates[0] - (gs.sensorWidthInMeters * scale.value / 2), this.canvasCoordinates[1] - (gs.sensorWidthInMeters * scale.value / 2), gs.sensorWidthInMeters * scale.value, gs.sensorWidthInMeters * scale.value);
     }
-    getCanvasPathCoords():Point[]{
-       return this.pathGeoCoords.map(x => GeoCoordToCanvasPoint(x));
+    getCanvasPathCoords(): Point[] {
+        return this.pathGeoCoords.map(x => GeoCoordToCanvasPoint(x));
     }
 }
 
@@ -126,7 +137,7 @@ export class SMARTEvent {
     colorRGB: string;
     colorAlpha: number;
 
-    constructor(id: number, description: string, metaeventId: number, profileIndex: number, spaceIds: string, capacityMetaPersonId: number, capacityRangeMin: number, capacityRangeMax: number, startDate: string, endDate: string, period: string, periodInterval: number, startTime: string, endTime: string, requiredAttendance: string, colorRGB: string, colorAlpha:number) {
+    constructor(id: number, description: string, metaeventId: number, profileIndex: number, spaceIds: string, capacityMetaPersonId: number, capacityRangeMin: number, capacityRangeMax: number, startDate: string, endDate: string, period: string, periodInterval: number, startTime: string, endTime: string, requiredAttendance: string, colorRGB: string, colorAlpha: number) {
         this.id = id;
         this.description = description;
         this.metaeventId = metaeventId;
