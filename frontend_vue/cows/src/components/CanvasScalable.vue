@@ -9,6 +9,7 @@ import { useDebugsStore } from '@/stores/debugs';
 import { onMounted, ref, watch } from 'vue';
 import almersbachBarn from '@/assets/Almersbach_Barn_01.png';
 import almersbachBarn2 from '@/assets/Almesbach_Stallplan_1_rotated-01.png';
+import cowImage from '@/assets/CowAlpha.png';
 
 let canvas: HTMLCanvasElement | null;
 let ctx: CanvasRenderingContext2D | null;
@@ -60,9 +61,12 @@ let lastRecordSpace = ref();
 let recordings = ref<RecordEntry[]>([]);
 let distanceTravelled = ref(0);
 let timePassed = ref(0);
+let previousTimePassed = ref(0);
+// let timeInteval_s = 300;
 let needToUpdateNeighbors = true;
 const now = new Date('2021-01-01T01:00:00');
-
+let timeRunId = -1;
+let simulationSpeed = 1;
 function getBridgePartners(spaceId: number) {
     let result: number[] = [];
     bridgeSpaceIdPairs.forEach((pair) => {
@@ -74,6 +78,11 @@ function getBridgePartners(spaceId: number) {
         }
     });
     return result;
+}
+
+function setTimePassed(newTime_s: number) {
+    previousTimePassed.value = timePassed.value;
+    timePassed.value = newTime_s;
 }
 
 function increaseZoom() {
@@ -160,13 +169,27 @@ onMounted(() => {
         } else if (e.key == "n") {
             debugDrawNeighbourSpaces = !debugDrawNeighbourSpaces;
         } else if (e.key == "r") {
-            isRecording = !isRecording;
+            if (!isSimulationRunning()) {
+                isRecording = !isRecording;
+            }
         } else if (e.key == "t") {
             isRecordingManually = !isRecordingManually;
         } else if (e.key == "1") {
             RecordStepBackward();
         } else if (e.key == "2") {
             RecordStepForward();
+        } else if (e.key == "3") {
+            setTimePassed(0);
+        } else if (e.key == "s") {
+            if (!isSimulationRunning() && !isRecording) {
+                console.log("interval set")
+                timeRunId = setInterval(() => {
+                    setTimePassed(timePassed.value + gs.recordIntervalInSeconds);
+                }, 1000 / simulationSpeed);
+            } else {
+                clearInterval(timeRunId);
+                timeRunId = -1;
+            }
         }
 
     });
@@ -190,7 +213,9 @@ onMounted(() => {
         // UpdateDrawings();
     }, { deep: true });
 });
-
+function isSimulationRunning(): boolean {
+    return timeRunId != -1;
+}
 function highlightHoveredSpace() {
     // let space = getSpaceUnderMouse();
 
@@ -231,6 +256,7 @@ function highlightHoveredSpace() {
     // console.log("closestSpaceToMousePosition: " + closestSpaceToMousePosition.id);
 
 }
+
 
 function isMouseInBarn(): boolean {
     let barnCorners = getBarnCorners(getBarnRectPaths())
@@ -442,14 +468,27 @@ function isPastureRectOverlappingBarnRect(pastureRect: Rectangle, barnRectPath: 
     return false;
 }
 
+
+function drawCowImage(spaceId: number, amount: number = 1) {
+    let space = gs.spaces.find(x => x.id == spaceId);
+    const img = new Image();
+    img.src = cowImage;
+    let imageCorner = { x: space!.canvasCoordinates[0], y: space!.canvasCoordinates[1] };
+    // let imageWidthHeightRatio = 2481 / 2298;
+    let size = (space?.sensorType == "Mioty" ? 15 : 4) * scale.value;
+    drawRotatedImage(ctx!, img, imageCorner.x, getYInv(ctx!, imageCorner.y), 0, size, size, 0.7);
+    // drawRotatedImage(ctx!, img, imageCorner.x + 5, getYInv(ctx!, imageCorner.y + 5), 0, size, size, 0.7);
+
+}
+
 function drawBarnImage() {
-    const img2 = new Image();
-    img2.src = almersbachBarn2;
+    const img = new Image();
+    img.src = almersbachBarn2;
     let imageCorner = GeoCoordToCanvasPoint({ lon: 12.198746, lat: 49.681592 });
     let imageWidthHeightRatio = 2481 / 2298;
     let imageDrawWidth = 80 * scale.value;
     let imageDrawHeight = imageDrawWidth * imageWidthHeightRatio;
-    drawRotatedImage(ctx!, img2, (imageCorner.x + 20 * scale.value), getYInv(ctx!, imageCorner.y - 25 * scale.value), 0, imageDrawWidth, imageDrawHeight, 1);
+    drawRotatedImage(ctx!, img, (imageCorner.x + 20 * scale.value), getYInv(ctx!, imageCorner.y - 25 * scale.value), 0, imageDrawWidth, imageDrawHeight, 1);
 
 }
 function getMainRects() {
@@ -589,12 +628,12 @@ function Record() {
 
 
         let offsetSeconds = SecondsPerLoop * gs.loops++;
-        timePassed.value += SecondsPerLoop;
-        let newDate = new Date(now.getTime() + offsetSeconds * 1000);
-        let lastDate = new Date(now.getTime() + totalDurationInSeconds * 1000);
+        let newDate = getDateTimeString(timePassed.value);
+        // let newDate = new Date(now.getTime() + timePassed.value * 1000);
+        // let lastDate = new Date(now.getTime() + totalDurationInSeconds * 1000);
         // if (newDate.getTime() <= lastDate.getTime()) {
 
-        const formattedTime = newDate.toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
+        // const formattedTime = newDate.toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
         const latitude = lastRecordSpace.value.longitude;
         const longitude = lastRecordSpace.value.latitude;
 
@@ -603,9 +642,9 @@ function Record() {
         // writeToConsoleOutput(`${gs.cowId}, ${formattedTime}, ${longitude},${latitude}\n`)
 
         // }
-        recordings.value.push(new RecordEntry(formattedTime, longitude, latitude, 1));
-        console.log(`${gs.cowId}, ${formattedTime}, ${longitude},${latitude}\n`);
-
+        recordings.value.push(new RecordEntry(newDate, 1, lastRecordSpace.value));
+        console.log(`${gs.cowId}, ${newDate}, ${longitude},${latitude}\n`);
+        setTimePassed(timePassed.value + SecondsPerLoop);
     }
 }
 
@@ -623,6 +662,29 @@ function formatTime(seconds: number): string {
     const remainingSeconds = seconds % 60;
     return `${hours.toString().padStart(2, '0')} : ${minutes.toString().padStart(2, '0')} : ${remainingSeconds.toString().padStart(2, '0')}`;
 }
+function getTimeInSeconds(dateTimeString: string): number {
+    const date = new Date(dateTimeString);
+    return date.getTime() / 1000;
+}
+function getDateTimeString(timeInSeconds: number): string {
+    const date = new Date(timeInSeconds * 1000);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+function simulateCow() {
+    // TODO this is only temporary for testing
+    let index = recordings.value.findIndex(x => getTimeInSeconds(x.timeStamp) >= timePassed.value);
+    if (index != -1) {
+        let space = recordings.value[index].space;
+        drawCowImage(space.id);
+    }
+}
+
 function UpdateDrawings() {
 
 
@@ -651,8 +713,8 @@ function UpdateDrawings() {
         });
     }
     // console.log(neighbourIds.join(", "));
+    const offsetTextX = 190
     if (isRecording) {
-        const offsetTextX = 170
         setFillColor(ctx!, "rgba(0,0,255,0.2)");
         drawRectangleDefault(ctx!, new Rectangle(-100, canvas!.width - offsetTextX - 10, 0, offsetTextX + 10, 150), true);
         storeCanvasProperties(ctx!);
@@ -665,7 +727,7 @@ function UpdateDrawings() {
 
             drawText(ctx!, "LastRec Space: " + lastRecordSpace.value?.id, canvas?.width! - offsetTextX, 100);
             drawText(ctx!, "Distance Total: " + distanceTravelled.value.toFixed(0) + " m", canvas?.width! - offsetTextX, 120);
-            drawText(ctx!, "Time: " + formatTime(timePassed.value) + " m", canvas?.width! - offsetTextX, 140);
+            // drawText(ctx!, "Time: " + formatTime(timePassed.value - gs.recordIntervalInSeconds) + " m", canvas?.width! - offsetTextX, 140);
         }
 
 
@@ -680,10 +742,22 @@ function UpdateDrawings() {
         if (lastRecordSpace.value) {
             drawSpace(lastRecordSpace.value);
             drawSpace(lastRecordSpace.value);
+            drawCowImage(lastRecordSpace.value.id);
         }
     }
+    setFontProperties(ctx!, "rgba(0,0,255,1)", 15);
+    drawText(ctx!, "Time: " + getDateTimeString(timePassed.value == 0 ? 0 : timePassed.value - gs.recordIntervalInSeconds), canvas?.width! - offsetTextX, 140);
+    if (isSimulationRunning()) {
+        // setFontProperties(ctx!, "rgba(0,122,0,1)", 15);
+        // drawText(ctx!, "", canvas?.width! - offsetTextX, 160);
+        setFontProperties(ctx!, "rgba(0,175,0,1)", 30);
+        drawText(ctx!, "Simulation", canvas?.width! - offsetTextX, 50);
+        drawText(ctx!, "Running", canvas?.width! - offsetTextX, 80);
 
-
+    }
+    if (isSimulationRunning()) {
+        simulateCow();
+    }
 }
 
 

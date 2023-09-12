@@ -86,7 +86,7 @@ export const useGlobalsStore = defineStore({
         canvasPanOffsetX: 0,
         canvasPanOffsetY: 0,
         cowId: '1',
-        recordIntervalInSeconds: 60,
+        recordIntervalInSeconds: 300,
         recordDurationInDays: 2,
         timeSpeedMultiplier: 600,
         sensorWidthInMeters: 20,
