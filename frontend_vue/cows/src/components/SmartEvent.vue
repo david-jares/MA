@@ -107,7 +107,9 @@ function removeEvent() {
             <LabeledInput ref="description" :label-text="'description'" :input-type="'text'" :default-value="description"
                 @onInput="(val) => updateGS('description', val)" :tooltip="gs.tipEventDescription">
             </LabeledInput>
-
+            <LabeledInput ref="screenDescription" :label-text="'screen description'" :input-type="'text'" :default-value="description"
+                @onInput="(val) => updateGS('screenDescription', val)" :tooltip="gs.tipEventDescription">
+            </LabeledInput>
             <LabeledInput ref="eventid" :label-text="'id'" :input-type="'number'" :default-value="id.toString()"
                 :min-value="1" :max-value="10000" @onInput="(val) => updateGS('id', val)" :tooltip="gs.tipEventId">
             </LabeledInput>

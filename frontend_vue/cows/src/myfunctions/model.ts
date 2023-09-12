@@ -121,6 +121,7 @@ export class Sensor {
 export class SMARTEvent {
     id: number;
     description: string;
+    screenDescription: string;
     metaeventId: number;
     profileIndex: number;
     spaceIds: string;
@@ -137,9 +138,10 @@ export class SMARTEvent {
     colorRGB: string;
     colorAlpha: number;
 
-    constructor(id: number, description: string, metaeventId: number, profileIndex: number, spaceIds: string, capacityMetaPersonId: number, capacityRangeMin: number, capacityRangeMax: number, startDate: string, endDate: string, period: string, periodInterval: number, startTime: string, endTime: string, requiredAttendance: string, colorRGB: string, colorAlpha: number) {
+    constructor(id: number,screenDescription:string, description: string, metaeventId: number, profileIndex: number, spaceIds: string, capacityMetaPersonId: number, capacityRangeMin: number, capacityRangeMax: number, startDate: string, endDate: string, period: string, periodInterval: number, startTime: string, endTime: string, requiredAttendance: string, colorRGB: string, colorAlpha: number) {
         this.id = id;
         this.description = description;
+        this.screenDescription = screenDescription;
         this.metaeventId = metaeventId;
         this.profileIndex = profileIndex;
         this.spaceIds = spaceIds;

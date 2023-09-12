@@ -8,7 +8,7 @@ export function writeToConsoleOutput(content: string): void {
 
 export function clearConsoleOutput(): void {
     let consoleOutput: HTMLTextAreaElement = document.getElementById('consoleOutput') as HTMLTextAreaElement;
-    consoleOutput.value = 'cattle_id, timestamp, latitude, longitude\n';
+    consoleOutput.value = 'cattle_id, timestamp, longitude, latitude\n';
     console.log('cleared console output');
 }
 

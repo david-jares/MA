@@ -94,63 +94,7 @@ export function triangulatePolygon(polygon: { x: number, y: number }[]): Triangl
 
     return triangles;
 }
-// export function triangulatePolygon(polygon: { x: number, y: number }[]): { x: number, y: number }[][] {
-//     const triangles: { x: number, y: number }[][] = [];
-//     const n = polygon.length;
 
-//     if (n < 3) {
-//         return triangles;
-//     }
-
-//     const V = new Array(n);
-//     if (0 < getArea(polygon)) {
-//         for (let v = 0; v < n; v++) {
-//             V[v] = v;
-//         }
-//     } else {
-//         for (let v = 0; v < n; v++) {
-//             V[v] = (n - 1) - v;
-//         }
-//     }
-
-//     let nv = n;
-//     let count = 2 * nv;
-//     for (let m = 0, v = nv - 1; nv > 2;) {
-//         if (0 >= (count--)) {
-//             return triangles;
-//         }
-
-//         let u = v;
-//         if (nv <= u) {
-//             u = 0;
-//         }
-//         v = u + 1;
-//         if (nv <= v) {
-//             v = 0;
-//         }
-//         let w = v + 1;
-//         if (nv <= w) {
-//             w = 0;
-//         }
-
-//         if (snip(polygon, u, v, w, nv, V)) {
-//             let a, b, c, s, t;
-
-//             a = V[u];
-//             b = V[v];
-//             c = V[w];
-//             triangles.push([polygon[a], polygon[b], polygon[c]]);
-
-//             for (s = v, t = v + 1; t < nv; s++, t++) {
-//                 V[s] = V[t];
-//             }
-//             nv--;
-//             count = 2 * nv;
-//         }
-//     }
-
-//     return triangles;
-// }
 export function getArea(polygon: { x: number, y: number }[]): number {
     let area = 0;
     const n = polygon.length;

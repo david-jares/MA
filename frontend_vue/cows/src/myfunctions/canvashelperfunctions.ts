@@ -257,6 +257,15 @@ export function drawTextYInv(ctx: CanvasRenderingContext2D, text: string, x: num
   ctx.fillText(text, x, yInv);
 }
 
+export function drawRotatedText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number,  angle: number) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle * Math.PI / 180);
+  // ctx.font = fontSize + "px sans-serif";
+  ctx.fillText(text, 0, 0);
+  ctx.restore();
+}
+
 export function drawCoordinateSystem(ctx: CanvasRenderingContext2D): void {
 
   let spacing = 100;

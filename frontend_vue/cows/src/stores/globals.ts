@@ -100,9 +100,10 @@ export const useGlobalsStore = defineStore({
         smartEvents: [{
             id: 1,
             description: "watering",
+            screenDescription: "watering",
             metaeventId: 1,
             profileIndex: 1,
-            spaceIds: '1,2,3',
+            spaceIds: '55,56,57',
             capacityMetaPersonId: 1,
             capacityRangeMin: 1,
             capacityRangeMax: 10000,
@@ -118,9 +119,10 @@ export const useGlobalsStore = defineStore({
         }, {
             id: 2,
             description: "feeding",
+            screenDescription: "feeding",
             metaeventId: 1,
             profileIndex: 1,
-            spaceIds: '11,12,13',
+            spaceIds: '67,68,69,70',
             capacityMetaPersonId: 1,
             capacityRangeMin: 1,
             capacityRangeMax: 10000,
@@ -250,6 +252,7 @@ export const useGlobalsStore = defineStore({
                 // gs.smartEvents.push({
                 id: this.getNextEventID(),
                 description: "defaultevent",
+                screenDescription: "defaultevent",
                 // cowId: '1',
                 metaeventId: 1,
                 profileIndex: 1,

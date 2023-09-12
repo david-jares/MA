@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { degreeLongitudeToMeters, degreeLatitideToMeters, drawCoordinateSystemYInv, setFillColor, drawPath, getPointsScaledYInv, addToScale, moveOrigin, getYInv, origin, scale, canvasPointToGeoCoordinate, drawRectangleDefault, getPointYInv, subtractOrigin, addOrigin, scalePointMultiply, setStrokeProperties, drawPoint, drawText, setFontProperties, drawRectangleYInv, getRectYInv, getTriangleYInv, getPointScaledAndOrigin, getTriangleScaledAndOrigin, drawSpaceRectangle, drawRotatedImage, setScale, setOrigin, barnRasterRectangle, getSubdividedRectangles, drawRotatedRectangle, generatePoints, generatePointsAndRectangles, storedCanvasProperties, saveCanvasProperties as storeCanvasProperties, restoreCanvasProperties, getPolygonCenterPoint, coordShiftFromOrigin, canvasPointToGeoCoord, GeoCoordToCanvasPoint, barnSensorRows, barnSensorColumnWidth, barnSensorColumns, barnTopLeftGeoCoord, barnBottomLeftGeoCoord, drawLine, barnUnitDirectionX, barnUnitDirectionY, barnUnitNormalX, barnUnitNormalY, barnSensorColumnHeight } from '@/myfunctions/canvashelperfunctions';
+import { degreeLongitudeToMeters, degreeLatitideToMeters, drawCoordinateSystemYInv, setFillColor, drawPath, getPointsScaledYInv, addToScale, moveOrigin, getYInv, origin, scale, canvasPointToGeoCoordinate, drawRectangleDefault, getPointYInv, subtractOrigin, addOrigin, scalePointMultiply, setStrokeProperties, drawPoint, drawText, setFontProperties, drawRectangleYInv, getRectYInv, getTriangleYInv, getPointScaledAndOrigin, getTriangleScaledAndOrigin, drawSpaceRectangle, drawRotatedImage, setScale, setOrigin, barnRasterRectangle, getSubdividedRectangles, drawRotatedRectangle, generatePoints, generatePointsAndRectangles, storedCanvasProperties, saveCanvasProperties as storeCanvasProperties, restoreCanvasProperties, getPolygonCenterPoint, coordShiftFromOrigin, canvasPointToGeoCoord, GeoCoordToCanvasPoint, barnSensorRows, barnSensorColumnWidth, barnSensorColumns, barnTopLeftGeoCoord, barnBottomLeftGeoCoord, drawLine, barnUnitDirectionX, barnUnitDirectionY, barnUnitNormalX, barnUnitNormalY, barnSensorColumnHeight, setCanvasProperties, drawRotatedText } from '@/myfunctions/canvashelperfunctions';
 import { drawPolygon, drawTriangle, isInsidePolygon, isPointInTriangle, triangulatePolygon } from '@/myfunctions/drawingfunctions';
 import { Space, type GeoCoordinate, Sensor, RecordEntry } from '@/myfunctions/model';
 import { isPointInOrOnTriangle, isPointInsideRectangle as isPointInsideOrOnRectangle, isPointInsideTriangle, Triangle, type Point, isRectOverlappingTriangle, isRectOverlappingPolygon, isPointInsidePolygon } from '@/myfunctions/tempfunctions';
-import { subdivideCanvas, Rectangle } from '@/myfunctions/utilityfunctions';
+import { subdivideCanvas, Rectangle, colorToRgba, writeToConsoleOutput, clearConsoleOutput } from '@/myfunctions/utilityfunctions';
 import { useGlobalsStore } from '@/stores/globals';
 import { useDebugsStore } from '@/stores/debugs';
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, toValue, watch } from 'vue';
 import almersbachBarn from '@/assets/Almersbach_Barn_01.png';
 import almersbachBarn2 from '@/assets/Almesbach_Stallplan_1_rotated-01.png';
 import cowImage from '@/assets/CowAlpha.png';
@@ -86,15 +86,34 @@ function setTimePassed(newTime_s: number) {
 }
 
 function increaseZoom() {
-    // if (zoomelevel == 1) {
-    let zoomSpeed = 1;
-    let deltOriginToScreenCenter = { x: origin.value.x - canvas!.width! / 2, y: origin.value.y - canvas!.height! / 2 };
-    console.log("deltOriginToScreenCenter: ");
-    console.log(deltOriginToScreenCenter);
-    addToScale(zoomSpeed);
-    setOrigin(origin.value.x + (deltOriginToScreenCenter.x) * zoomSpeed, origin.value.y + (deltOriginToScreenCenter.y) * zoomSpeed);
+    let currentOriginGeoCoord = canvasPointToGeoCoord({ x: origin.value.x, y: origin.value.y });
+    let bottomLeftGeoCoord = canvasPointToGeoCoord({ x: 0, y: canvas!.height });
 
+    let delta = { lon: currentOriginGeoCoord.lon - bottomLeftGeoCoord.lon, lat: currentOriginGeoCoord.lat - bottomLeftGeoCoord.lat };
+    let newOrigin = GeoCoordToCanvasPoint({ lon: currentOriginGeoCoord.lon + delta.lon, lat: currentOriginGeoCoord.lat + delta.lat });
+    setScale(scale.value * 2);
+    setOrigin(newOrigin.x, newOrigin.y);
+}
+function decreaseZoom() {
+    let currentOriginGeoCoord = canvasPointToGeoCoord({ x: origin.value.x, y: origin.value.y });
+    let bottomLeftGeoCoord = canvasPointToGeoCoord({ x: 0, y: canvas!.height });
 
+    let delta = { lon: currentOriginGeoCoord.lon - bottomLeftGeoCoord.lon, lat: currentOriginGeoCoord.lat - bottomLeftGeoCoord.lat };
+    let newOrigin = GeoCoordToCanvasPoint({ lon: currentOriginGeoCoord.lon - delta.lon, lat: currentOriginGeoCoord.lat - delta.lat });
+    setScale(scale.value / 2);
+    setOrigin(newOrigin.x, newOrigin.y);
+}
+function moveCanvasRight() {
+    moveOrigin(-50, 0);
+}
+function moveCanvasLeft() {
+    moveOrigin(50, 0);
+}
+function moveCanvasUp() {
+    moveOrigin(0, -50);
+}
+function moveCanvasDown() {
+    moveOrigin(0, 50);
 }
 
 function shiftBackGeoCoords_to_m(geoCoords: GeoCoordinate[], coordShiftFromOrigin: Point) {
@@ -112,7 +131,7 @@ function shiftBackGeoCoords_to_m(geoCoords: GeoCoordinate[], coordShiftFromOrigi
 onMounted(() => {
     canvas = document.getElementById("mycanvas") as HTMLCanvasElement;
     ctx = canvas.getContext("2d");
-
+    clearConsoleOutput();
     // drawRectangleOnCanvas(canvas);
 
     let interval = setInterval(() => {
@@ -127,24 +146,27 @@ onMounted(() => {
 
 
     document.addEventListener("keydown", (e) => {
-        if (e.key == "ArrowUp" && e.shiftKey) {
+        if (e.key == "+" && e.shiftKey) {
             increaseZoom();
         }
+        else if (e.key == "-" && e.shiftKey) {
+            decreaseZoom();
+        }
+        else if (e.key == "ArrowUp" && e.shiftKey) {
+            // e.preventDefault()
+            moveCanvasUp()
+        }
         else if (e.key == "ArrowDown" && e.shiftKey) {
-            // setOrigin(origin.value.x + 200, origin.value.y + 200);
-            // setScale(scale.value / 2);
+            // e.preventDefault()
+            moveCanvasDown();
         }
-        else if (e.key == "ArrowUp") {
-            moveOrigin(0, -50);
+        else if (e.key == "ArrowLeft" && e.shiftKey) {
+            // e.preventDefault()
+            moveCanvasLeft();
         }
-        else if (e.key == "ArrowDown") {
-            moveOrigin(0, 50);
-        }
-        else if (e.key == "ArrowLeft") {
-            moveOrigin(50, 0);
-        }
-        else if (e.key == "ArrowRight") {
-            moveOrigin(-50, 0);
+        else if (e.key == "ArrowRight" && e.shiftKey) {
+            // e.preventDefault()
+            moveCanvasRight();
         }
         else if (e.key == "p") {
             console.log(getMouseGeoCoords());
@@ -219,8 +241,6 @@ function isSimulationRunning(): boolean {
 function highlightHoveredSpace() {
     // let space = getSpaceUnderMouse();
 
-    // setFontProperties(ctx!, "rgba(255,0,0,1)", 20 * scale.value);
-    // if (space) drawText(ctx!, space.id.toString(), 100, 100);
 
 
     let closestSpaceToMousePosition: Space | null = null;
@@ -607,11 +627,8 @@ function Record() {
             return;
         }
     }
-    //TODO - übergang nur in Neighbourspaces möglich
     if (spaceUnderMouse && !forbiddenSpaceIds.includes(spaceUnderMouse.id)) {
         if (lastRecordSpace.value) {
-            // console.log("spaceUnderMouse: " + spaceUnderMouse?.id)
-            // console.log(lastRecordSpace.value);
             if (lastRecordSpace.value.neighbors.includes(spaceUnderMouse.id)) {
                 distanceTravelled.value += Math.sqrt(Math.pow(spaceUnderMouse.canvasCoordinates[0] - lastRecordSpace.value.canvasCoordinates[0], 2) + Math.pow(spaceUnderMouse.canvasCoordinates[1] - lastRecordSpace.value.canvasCoordinates[1], 2)) / scale.value;
                 lastRecordSpace.value = spaceUnderMouse;
@@ -622,28 +639,19 @@ function Record() {
     if (lastRecordSpace.value) {
 
         // gs.loops = 0;
-        let totalDurationInSeconds = 60 * 60 * 24 * gs.recordDurationInDays;
+        // let totalDurationInSeconds = 60 * 60 * 24 * gs.recordDurationInDays;
         let SecondsPerLoop = gs.recordIntervalInSeconds;
-        let loopIntevalMilliSeconds = (1 / gs.timeSpeedMultiplier) * 1000;
+        // let loopIntevalMilliSeconds = (1 / gs.timeSpeedMultiplier) * 1000;
 
 
-        let offsetSeconds = SecondsPerLoop * gs.loops++;
+        // let offsetSeconds = SecondsPerLoop * gs.loops++;
         let newDate = getDateTimeString(timePassed.value);
-        // let newDate = new Date(now.getTime() + timePassed.value * 1000);
-        // let lastDate = new Date(now.getTime() + totalDurationInSeconds * 1000);
-        // if (newDate.getTime() <= lastDate.getTime()) {
+        const latitude = lastRecordSpace.value.latitude;
+        const longitude = lastRecordSpace.value.longitude;
 
-        // const formattedTime = newDate.toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
-        const latitude = lastRecordSpace.value.longitude;
-        const longitude = lastRecordSpace.value.latitude;
-
-        // console.log(`${cowId}  ${formattedTime} - mouseposition: ${mousePosition.x}, ${mousePosition.y} lon: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).longitude} lat: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).latitude} `);
-        // gs.recordedData.push({ cowid: gs.cowId, time: formattedTime, longitude: longitude, latitude: latitude });
-        // writeToConsoleOutput(`${gs.cowId}, ${formattedTime}, ${longitude},${latitude}\n`)
-
-        // }
         recordings.value.push(new RecordEntry(newDate, 1, lastRecordSpace.value));
         console.log(`${gs.cowId}, ${newDate}, ${longitude},${latitude}\n`);
+        writeToConsoleOutput(`${gs.cowId}, ${newDate}, ${longitude},${latitude}\n`);
         setTimePassed(timePassed.value + SecondsPerLoop);
     }
 }
@@ -758,6 +766,7 @@ function UpdateDrawings() {
     if (isSimulationRunning()) {
         simulateCow();
     }
+    drawSMARTEventsToCanvas();
 }
 
 
@@ -867,14 +876,52 @@ function drawBarnSpace(id: number) {
     restoreCanvasProperties(ctx!);
 }
 
+function drawSMARTEventsToCanvas() {
+    const gs = useGlobalsStore();
 
+    gs.smartEvents.forEach(smartEvent => {
+        let spaceIds = smartEvent.spaceIds.split(',').map(Number);
+        spaceIds.reverse(); //reversed, so that when we draw the text it will be on top of the other spaces
+        for (let i = 0; i < spaceIds.length; i++) {
+            const spaceId = spaceIds[i];
+
+            let space = gs.spaces.find(s => s.id === spaceId);
+            if (space === undefined) continue;
+            let x = space.canvasCoordinates[0];
+            let y = space.canvasCoordinates[1];
+
+            let eventColor = colorToRgba(smartEvent.colorRGB, smartEvent.colorAlpha);
+            if (space.sensorType == "Mioty") {
+                setCanvasProperties(ctx!, {
+                    borderColor: "black",
+                    borderThickness: 1,
+                    fillColor: eventColor,
+                });
+                drawRectangleDefault(ctx!, getRectYInv(ctx!, new Rectangle(-1, x - 0.5 * gs.sensorWidthInMeters * scale.value, y - 0.5 * gs.sensorWidthInMeters * scale.value, gs.sensorWidthInMeters * scale.value, gs.sensorWidthInMeters * scale.value)), true);
+                setFontProperties(ctx!, "white", 10 * scale.value)
+                if (i == spaceIds.length - 1) drawText(ctx!, smartEvent.screenDescription, x - 8 * scale.value, getYInv(ctx!, y - 3 * scale.value));
+            } else if (space.sensorType == "Beacon") {
+                setCanvasProperties(ctx!, {
+                    borderColor: "black",
+                    borderThickness: 1,
+                    fillColor: eventColor,
+                });
+                setStrokeProperties(ctx!, eventColor, 1);
+                setFillColor(ctx!, eventColor);
+                drawPath(ctx!, space.pathGeoCoords.map(x => GeoCoordToCanvasPoint(x)).map(x => getPointYInv(ctx!, x)), true, true);
+                setFontProperties(ctx!, "white", 4 * scale.value)
+                if (i == spaceIds.length - 1) drawRotatedText(ctx!, smartEvent.screenDescription, x, getYInv(ctx!, y), -28);
+            }
+        }
+    });
+}
 
 
 </script>
 
 <template>
     <div>
-        <canvas id="mycanvas" ref=canvas width="800" height="800" style="border:1px solid #000000;">
+        <canvas id="mycanvas" ref=canvas width="800" height="800" style="border:4px solid #000000;">
         </canvas>
         <label style="display: block; font-family: monospace;">{{ labelText }}</label>
         <label style="display: block; font-family: monospace;">origin: {{ origin }} | scale: {{ scale.toFixed(3) }} (1 pixel

@@ -77,9 +77,9 @@ const handleCowIDChanged = (cowId: string) => {
     <div class="wrapper">
       <h1>Weideinsight Setup</h1>
       <div style="display: flex;">
-        <CanvasScalable></CanvasScalable>
-        <!-- <div class="leftside" style=" flex: 1; flex-direction: column;">
-          <CanvasMap> </CanvasMap>
+        <div class="leftside" style=" flex: 1; flex-direction: column;">
+          <CanvasScalable></CanvasScalable>
+          <!-- <CanvasMap> </CanvasMap> -->
           <Console></Console>
         </div>
         <div class="rightside" style=" flex: 1;  flex-direction: column;">
@@ -123,7 +123,7 @@ const handleCowIDChanged = (cowId: string) => {
 
             <SmartEventList></SmartEventList>
           </div>
-        </div> -->
+        </div>
       </div>
       <!-- <nav>
         <RouterLink to="/">Home</RouterLink>
