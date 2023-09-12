@@ -3,7 +3,7 @@ import { degreeLongitudeToMeters, degreeLatitideToMeters, drawCoordinateSystemYI
 import { drawPolygon, drawTriangle, isInsidePolygon, isPointInTriangle, triangulatePolygon } from '@/myfunctions/drawingfunctions';
 import { Space, type GeoCoordinate, Sensor, RecordEntry } from '@/myfunctions/model';
 import { isPointInOrOnTriangle, isPointInsideRectangle as isPointInsideOrOnRectangle, isPointInsideTriangle, Triangle, type Point, isRectOverlappingTriangle, isRectOverlappingPolygon, isPointInsidePolygon } from '@/myfunctions/tempfunctions';
-import { subdivideCanvas, Rectangle, colorToRgba, writeToConsoleOutput, clearConsoleOutput } from '@/myfunctions/utilityfunctions';
+import { subdivideCanvas, Rectangle, colorToRgba, writeToConsoleOutput, clearConsoleOutput, getTimeInSeconds, getDateTimeString } from '@/myfunctions/utilityfunctions';
 import { useGlobalsStore } from '@/stores/globals';
 import { useDebugsStore } from '@/stores/debugs';
 import { computed, onMounted, ref, toValue, watch } from 'vue';
@@ -36,21 +36,35 @@ let lastRecordSpace = ref();
 let distanceTravelled = ref(0);
 
 let isRecording = false;
-let isRecordingManually = false
+let isRecordingManually = true;
 let previousScale = 1;
 let previousOrigin = { x: 0, y: 0 };
 let needToUpdateComputations = true;
-const now = new Date('2021-01-01T01:00:00');
-let timeRunId = -1;
+let simulationTimeRunId = -1;
 let simulationSpeed = 1;
 const offsetRectTextX = 190;
 
 
-const sensorWidthInMeters = computed(() => {
-    return gs.sensorWidthInMeters;
-});
+gs.ResetTimePassed();
+
+const stepId = ref(0);
+let _stepTimerId = -1;
+
+
+function setUpStepTimer() {
+    if (_stepTimerId != -1) clearInterval(_stepTimerId);
+    _stepTimerId = setInterval(() => {
+        stepId.value++;
+        // console.log("stepId: " + stepId.value);
+    }, 1000 / gs.stepsPerSecond);
+}
+function stopStepTimer() {
+    if (_stepTimerId != -1) clearInterval(_stepTimerId);
+    _stepTimerId = -1;
+}
 
 onMounted(() => {
+    console.log("seconds " + getTimeInSeconds(gs.now.toDateString()));
     canvas = document.getElementById("mycanvas") as HTMLCanvasElement;
     ctx = canvas.getContext("2d");
     clearConsoleOutput();
@@ -110,24 +124,29 @@ onMounted(() => {
         } else if (e.key == "r") {
             if (!isSimulationRunning()) {
                 isRecording = !isRecording;
+                if (isRecording && !isRecordingManually) {
+                    setUpStepTimer();
+                } else {
+                    stopStepTimer();
+                }
             }
         } else if (e.key == "t") {
-            isRecordingManually = !isRecordingManually;
+            setIsRecordingManually(!isRecordingManually);
         } else if (e.key == "1") {
-            if (isRecording) RecordStepBackward();
-        } else if (e.key == "2") {
+            if (isRecording && isRecordingManually) RecordStepBackward();
+        } else if (e.key == "2" && isRecordingManually) {
             if (isRecording) RecordStepForward();
         } else if (e.key == "3") {
-            setTimePassed(0);
+            gs.ResetTimePassed();
         } else if (e.key == "s") {
             if (!isSimulationRunning() && !isRecording) {
                 console.log("interval set")
-                timeRunId = setInterval(() => {
-                    setTimePassed(gs.timePassed + gs.recordIntervalInSeconds);
+                simulationTimeRunId = setInterval(() => {
+                    gs.timePassed += gs.recordIntervalInSeconds;
                 }, 1000 / simulationSpeed);
             } else {
-                clearInterval(timeRunId);
-                timeRunId = -1;
+                clearInterval(simulationTimeRunId);
+                simulationTimeRunId = -1;
             }
         }
 
@@ -167,10 +186,25 @@ onMounted(() => {
         needToUpdateComputations = true;
     }, { deep: true });
 
+    watch(() => [stepId.value, stepId], (newValue, oldValue) => {
+        // console.log("origin changed from " + oldValue + " to " + newValue);
+        // draw
+        // console.log("stepId changed from " + oldValue + " to " + newValue);
+        // drawRectangleDefault(ctx!, new Rectangle(-100, 200, 0, 200, 200), true);
+        RecordStepForward();
+    }, { deep: true });
 });
 
 
 function UpdateDrawings() {
+    if (_stepTimerId != -1) {
+        drawDebugGreenRectangle();
+    }
+    setFontProperties(ctx!, "rgba(0,0,255,1)", 25);
+    drawText(ctx!, "isRecording: " + isRecording, 10, 20);
+    drawText(ctx!, "isRecording Manually: " + isRecordingManually, 10, 50);
+    drawText(ctx!, "stepTimer ID: " + _stepTimerId, 10, 80);
+    drawText(ctx!, "step ID: " + stepId.value, 10, 110);
 
     drawCoordinateSystemYInv(ctx!);
 
@@ -183,7 +217,7 @@ function UpdateDrawings() {
     highlightHoveredSpace();
     drawNeighbours();
 
-    handleRecording();
+    // handleAutomaticRecording();
     drawRecordingInfoBox();
     drawSimulationTime();
     drawSimulationInfoText();
@@ -193,6 +227,15 @@ function UpdateDrawings() {
     }
 
     drawSMARTEventsToCanvas();
+}
+
+function setIsRecordingManually(value: boolean) {
+    isRecordingManually = value;
+    if (isRecordingManually) {
+        stopStepTimer();
+    } else if (isRecording) {
+        setUpStepTimer();
+    }
 }
 
 function drawBarnAndPasturePolygons() {
@@ -227,13 +270,13 @@ function drawInfoBoxBackground() {
 
 }
 
-function handleRecording() {
-    if (isRecording) {
-        if (isRecordingManually) {
-            Record();
-        }
-    }
-}
+// function handleAutomaticRecording() {
+//     if (isRecording) {
+//         if (!isRecordingManually) {
+//             Record();
+//         }
+//     }
+// }
 function drawRecordingInfoBox() {
     if (isRecording) {
         drawInfoBoxBackground();
@@ -250,7 +293,6 @@ function drawRecordingInfoBox() {
         }
 
         if (isRecordingManually) {
-        } else {
             setFontProperties(ctx!, "rgba(255,255,0,1)", 15);
             drawText(ctx!, "Manual Steps", canvas?.width! - offsetRectTextX, 80);
 
@@ -263,9 +305,19 @@ function drawRecordingInfoBox() {
     }
 }
 
+
 function drawSimulationTime() {
-    setFontProperties(ctx!, "rgba(0,0,255,1)", 15);
-    drawText(ctx!, "Time: " + getDateTimeString(gs.timePassed == 0 ? 0 : gs.timePassed - gs.recordIntervalInSeconds), canvas?.width! - offsetRectTextX, 140);
+    if (gs.isSimulationEndTimeReached) {
+        setFontProperties(ctx!, "rgba(255,0,0,1)", 15);
+        drawText(ctx!, "Time: " + getDateTimeString(gs.timePassed), canvas?.width! - offsetRectTextX, 140);
+        setFontProperties(ctx!, "rgba(255,0,0,1)", 25);
+        drawText(ctx!, "Simulation End Time Reached", canvas?.width! - offsetRectTextX - 150, 190);
+
+    } else {
+        setFontProperties(ctx!, "rgba(0,0,255,1)", 15);
+        drawText(ctx!, "Time: " + getDateTimeString(gs.timePassed), canvas?.width! - offsetRectTextX, 140);
+    }
+    // drawText(ctx!, "Time: " + getDateTimeString(gs.timePassed == 0 ? 0 : gs.timePassed - gs.recordIntervalInSeconds), canvas?.width! - offsetRectTextX, 140);
 }
 
 function drawSimulationInfoText() {
@@ -290,10 +342,7 @@ function getBridgePartners(spaceId: number) {
     return result;
 }
 
-function setTimePassed(newTime_s: number) {
-    gs.previousTimePassed = gs.timePassed;
-    gs.timePassed = newTime_s;
-}
+
 
 function increaseZoom() {
     let currentOriginGeoCoord = canvasPointToGeoCoord({ x: origin.value.x, y: origin.value.y });
@@ -340,7 +389,7 @@ function shiftBackGeoCoords_to_m(geoCoords: GeoCoordinate[], coordShiftFromOrigi
 
 
 function isSimulationRunning(): boolean {
-    return timeRunId != -1;
+    return simulationTimeRunId != -1;
 }
 function highlightHoveredSpace() {
     if (isRecording) return;
@@ -691,6 +740,12 @@ function getBarnCorners(barnRectPaths: Point[][]) {
 
 
 function Record() {
+    if (gs.isSimulationEndTimeReached) {
+        setIsRecordingManually(true);
+        console.log("recordTimeUpperBound reached");
+        return;
+    }
+
     let spaceUnderMouse = getSpaceUnderMouse();
 
     // initiate starting space
@@ -713,21 +768,14 @@ function Record() {
 
     if (lastRecordSpace.value) {
 
-        // gs.loops = 0;
-        // let totalDurationInSeconds = 60 * 60 * 24 * gs.recordDurationInDays;
-        // let SecondsPerLoop = gs.recordIntervalInSeconds;
-        // let loopIntevalMilliSeconds = (1 / gs.timeSpeedMultiplier) * 1000;
-
-
-        // let offsetSeconds = SecondsPerLoop * gs.loops++;
         let newDate = getDateTimeString(gs.timePassed);
         const latitude = lastRecordSpace.value.latitude;
         const longitude = lastRecordSpace.value.longitude;
 
         gs.recordings.push(new RecordEntry(newDate, gs.cowId, lastRecordSpace.value));
-        console.log(`${gs.cowId}, ${newDate}, ${longitude},${latitude}\n`);
+        // console.log(`${gs.cowId}, ${newDate}, ${longitude},${latitude}\n`);
         writeToConsoleOutput(`${gs.cowId}, ${newDate}, ${longitude},${latitude}\n`);
-        setTimePassed(gs.timePassed + gs.recordIntervalInSeconds);
+        gs.timePassed += gs.recordIntervalInSeconds;
     }
 }
 
@@ -737,7 +785,7 @@ function RecordStepForward() {
 function RecordStepBackward() {
     if (gs.recordings.length > 0) gs.recordings.pop();
     if (gs.recordings.length > 0) lastRecordSpace.value = gs.recordings[gs.recordings.length - 1].space;
-    setTimePassed(gs.timePassed - gs.recordIntervalInSeconds);
+    gs.timePassed -= gs.recordIntervalInSeconds;
     clearConsoleOutput();
     gs.recordings.forEach((recording) => {
         const latitude = recording.space.latitude;
@@ -746,26 +794,7 @@ function RecordStepBackward() {
     });
 }
 
-function formatTime(seconds: number): string {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const remainingSeconds = seconds % 60;
-    return `${hours.toString().padStart(2, '0')} : ${minutes.toString().padStart(2, '0')} : ${remainingSeconds.toString().padStart(2, '0')}`;
-}
-function getTimeInSeconds(dateTimeString: string): number {
-    const date = new Date(dateTimeString);
-    return date.getTime() / 1000;
-}
-function getDateTimeString(timeInSeconds: number): string {
-    const date = new Date(timeInSeconds * 1000);
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}
+
 function simulateCow() {
     // TODO this is only temporary for testing
     let index = gs.recordings.findIndex(x => getTimeInSeconds(x.timeStamp) >= gs.timePassed);

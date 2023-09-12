@@ -1,12 +1,13 @@
 import type { CanvasCoordinate, GeoCoordinate, RecordEntry, SMARTEvent, Sensor, Space } from '@/myfunctions/model';
 import type { Point } from '@/myfunctions/tempfunctions';
-import { Rectangle } from '@/myfunctions/utilityfunctions';
+import { Rectangle, getTimeInSeconds } from '@/myfunctions/utilityfunctions';
 import { defineStore } from 'pinia';
 import type { ref } from 'vue';
 
 interface GlobalsState {
 
     mousePosition: Point;
+    now : Date;
 
     canvasRef: any;
     ctx: CanvasRenderingContext2D | null;
@@ -19,7 +20,7 @@ interface GlobalsState {
     cowId: string;
     recordIntervalInSeconds: number;
     recordDurationInDays: number;
-    timeSpeedMultiplier: number;
+    stepsPerSecond: number;
     sensorWidthInMeters: number;
     recordings: RecordEntry[];
     sensors: Sensor[];
@@ -59,7 +60,6 @@ interface GlobalsState {
 
 
     timePassed: number;
-    previousTimePassed: number;
 
     
     
@@ -85,7 +85,7 @@ export const useGlobalsStore = defineStore({
         // spacesPasture: [],
 
         recordings: [],
-
+        now : new Date('2021-01-01T01:00:00'),
 
         ctx: null,
         canvasRef: null,
@@ -96,7 +96,7 @@ export const useGlobalsStore = defineStore({
         cowId: '1',
         recordIntervalInSeconds: 300,
         recordDurationInDays: 2,
-        timeSpeedMultiplier: 600,
+        stepsPerSecond: 1,
         sensorWidthInMeters: 20,
 
         drawBarnRects: true,
@@ -222,7 +222,6 @@ export const useGlobalsStore = defineStore({
         tipEventCapacity: "The capacity property denotes the number of people of each type of metaperson. The range property specifies bounds ([lo, high]) on the number of people in attendance.",
 
         timePassed: 0,
-        previousTimePassed: 0,
      
         
         get minLat(): number { return Math.min(...this.coordinatesCombined.map(p => p.lat)) },
@@ -254,6 +253,12 @@ export const useGlobalsStore = defineStore({
         spacesPasture(): Space[] {
             return this.spaces.filter(s => s.sensorType == "Mioty" || s.sensorType == "GPS");
 
+        },
+         recordTimeUpperBound():number{
+            return getTimeInSeconds(this.now.toDateString()) + this.recordDurationInDays * 24 * 60 * 60;
+        },
+        isSimulationEndTimeReached():boolean{
+            return this.timePassed >= this.recordTimeUpperBound;
         }
     },
     actions: {
@@ -304,7 +309,11 @@ export const useGlobalsStore = defineStore({
             if (index !== -1) {
                 this.smartEvents.splice(index, 1);
             }
+        },
+        ResetTimePassed(){
+            this.timePassed =  getTimeInSeconds(this.now.toDateString());
         }
+        
     }
 });
 

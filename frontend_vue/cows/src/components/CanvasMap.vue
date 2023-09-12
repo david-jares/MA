@@ -62,7 +62,7 @@ onMounted(() => {
     // });
 
     watch(
-        () => [gs.cowId, gs.recordIntervalInSeconds, gs.recordDurationInDays, gs.timeSpeedMultiplier, gs.sensorWidthInMeters],
+        () => [gs.cowId, gs.recordIntervalInSeconds, gs.recordDurationInDays, gs.stepsPerSecond, gs.sensorWidthInMeters],
         (newValue, oldValue) => {
             console.log("gs value changed from " + oldValue + " to " + newValue);
             updateScene();
@@ -91,7 +91,7 @@ function toggleRecording() {
 }
 
 function printUserData() {
-    console.log(`cowId: ${gs.cowId} recordIntervalInSeconds: ${gs.recordIntervalInSeconds} recordDurationInDays: ${gs.recordDurationInDays} timeSpeedMultiplier: ${gs.timeSpeedMultiplier}`);
+    console.log(`cowId: ${gs.cowId} recordIntervalInSeconds: ${gs.recordIntervalInSeconds} recordDurationInDays: ${gs.recordDurationInDays} timeSpeedMultiplier: ${gs.stepsPerSecond}`);
     console.log("SMARTEvents:");
     console.log(gs.smartEvents);
     console.log("sensors:")
@@ -110,7 +110,7 @@ function setUpRecording() {
     gs.loops = 0;
     let totalDurationInSeconds = 60 * 60 * 24 * gs.recordDurationInDays;
     let SecondsPerLoop = gs.recordIntervalInSeconds;
-    let loopIntevalMilliSeconds = (1 / gs.timeSpeedMultiplier) * 1000;
+    let loopIntevalMilliSeconds = (1 / gs.stepsPerSecond) * 1000;
 
     console.log(`Resetting Interval: ${loopIntevalMilliSeconds}`);
 

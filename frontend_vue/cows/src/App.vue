@@ -53,7 +53,7 @@ const handleExportSpacesAndSensorsToJSON = (event: any) => {
 const handleResetTimer = (event: any) => {
   console.log("handleRestTimer");
   gs.loops = 0
-  gs.timePassed = 0;
+  gs.ResetTimePassed();
 }
 const handleClearRecords = (event: any) => {
   console.log("handleClearRecords");
@@ -90,17 +90,17 @@ const handleCowIDChanged = (cowId: string) => {
 
           <div class=" form-container" style="display: flex;flex-direction: column;">
 
-            <LabeledInput label-text="cowId : " :default-value="gs.cowId" input-type="number" :min-value="1"
+            <LabeledInput label-text="Cow ID : " :default-value="gs.cowId" input-type="number" :min-value="1"
               @on-input="(n) => handleCowIDChanged(n)"></LabeledInput>
 
-            <LabeledInput label-text="recordIntervalInSeconds : " :default-value="gs.recordIntervalInSeconds.toString()" input-type="number"
+            <LabeledInput label-text="Record Interval in Seconds : " :default-value="gs.recordIntervalInSeconds.toString()" input-type="number"
               :min-value="1" @on-input="(n) => gs.recordIntervalInSeconds = n"></LabeledInput>
 
-            <LabeledInput label-text="recordDurationInDays : " :default-value="gs.recordDurationInDays.toString()" input-type="number" :min-value="1"
+            <LabeledInput label-text="Record Duration In Days : " :default-value="gs.recordDurationInDays.toString()" input-type="number" :min-value="1"
               @on-input="(n) => gs.recordDurationInDays = n"></LabeledInput>
 
-            <LabeledInput label-text='timeSpeedMultiplier : ' :default-value="gs.timeSpeedMultiplier.toString()" input-type="number" :min-value="1"
-              @on-input="(n) => gs.timeSpeedMultiplier = n"></LabeledInput>
+            <LabeledInput label-text='Steps per Second : ' :default-value="gs.stepsPerSecond.toString()" input-type="number" :min-value="1"
+              @on-input="(n) => gs.stepsPerSecond = n"></LabeledInput>
 
             <SeparationLine></SeparationLine>
 
