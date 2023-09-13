@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { degreeLongitudeToMeters, degreeLatitideToMeters, drawCoordinateSystemYInv, setFillColor, drawPath, getPointsScaledYInv, addToScale, moveOrigin, getYInv, origin, scale, canvasPointToGeoCoordinate, drawRectangleDefault, getPointYInv, subtractOrigin, addOrigin, scalePointMultiply, setStrokeProperties, drawPoint, drawText, setFontProperties, drawRectangleYInv, getRectYInv, getTriangleYInv, getPointScaledAndOrigin, getTriangleScaledAndOrigin, drawSpaceRectangle, drawRotatedImage, setScale, setOrigin, barnRasterRectangle, getSubdividedRectangles, drawRotatedRectangle, generatePoints, generatePointsAndRectangles, storedCanvasProperties, saveCanvasProperties as storeCanvasProperties, restoreCanvasProperties, getPolygonCenterPoint, coordShiftFromOrigin, canvasPointToGeoCoord, GeoCoordToCanvasPoint, barnSensorRows, barnSensorColumnWidth, barnSensorColumns, barnTopLeftGeoCoord, barnBottomLeftGeoCoord, drawLine, barnUnitDirectionX, barnUnitDirectionY, barnUnitNormalX, barnUnitNormalY, barnSensorColumnHeight, setCanvasProperties, drawRotatedText } from '@/myfunctions/canvashelperfunctions';
-import { drawPolygon, drawTriangle, isInsidePolygon, isPointInTriangle, triangulatePolygon } from '@/myfunctions/drawingfunctions';
+import { drawPolygon, drawRectangle, drawTriangle, isInsidePolygon, isPointInTriangle, triangulatePolygon } from '@/myfunctions/drawingfunctions';
 import { Space, type GeoCoordinate, Sensor, RecordEntry } from '@/myfunctions/model';
 import { isPointInOrOnTriangle, isPointInsideRectangle as isPointInsideOrOnRectangle, isPointInsideTriangle, Triangle, type Point, isRectOverlappingTriangle, isRectOverlappingPolygon, isPointInsidePolygon } from '@/myfunctions/tempfunctions';
 import { subdivideCanvas, Rectangle, colorToRgba, writeToConsoleOutput, clearConsoleOutput, getTimeInSeconds, getDateTimeString } from '@/myfunctions/utilityfunctions';
@@ -24,7 +24,9 @@ const minX_m = Math.min(...geoCoords_m.map(coord => coord.x));
 const maxX_m = Math.max(...geoCoords_m.map(coord => coord.x));
 const minY_m = Math.min(...geoCoords_m.map(coord => coord.y));
 const maxY_m = Math.max(...geoCoords_m.map(coord => coord.y));
+// coordShiftFromOrigin.value = { x: minX_m , y: minY_m};
 coordShiftFromOrigin.value = { x: minX_m, y: minY_m };
+// coordShiftFromOrigin.value = { x: minX_m -10, y: minY_m -10};
 
 let latestMousePosYInv = ref({ x: 0, y: 0 });
 let geoCoordsAllShiftedBack_m = shiftBackGeoCoords_to_m(geoCoords, coordShiftFromOrigin.value);
@@ -35,6 +37,7 @@ let highlightedSpace = ref();
 let lastRecordSpace = ref();
 let distanceTravelled = ref(0);
 
+let isDisplayingHotkeys = true;
 let isRecording = false;
 let isRecordingManually = true;
 let previousScale = 1;
@@ -85,19 +88,15 @@ onMounted(() => {
             decreaseZoom();
         }
         else if (e.key == "ArrowUp" && e.shiftKey) {
-            // e.preventDefault()
             moveCanvasUp()
         }
         else if (e.key == "ArrowDown" && e.shiftKey) {
-            // e.preventDefault()
             moveCanvasDown();
         }
         else if (e.key == "ArrowLeft" && e.shiftKey) {
-            // e.preventDefault()
             moveCanvasLeft();
         }
         else if (e.key == "ArrowRight" && e.shiftKey) {
-            // e.preventDefault()
             moveCanvasRight();
         }
         else if (e.key == "p") {
@@ -122,14 +121,7 @@ onMounted(() => {
         } else if (e.key == "n") {
             gs.drawNeighbourSpaces = !gs.drawNeighbourSpaces;
         } else if (e.key == "r") {
-            if (!isSimulationRunning()) {
-                isRecording = !isRecording;
-                if (isRecording && !isRecordingManually) {
-                    setUpStepTimer();
-                } else {
-                    stopStepTimer();
-                }
-            }
+            toggleRecording();
         } else if (e.key == "t") {
             setIsRecordingManually(!isRecordingManually);
         } else if (e.key == "1") {
@@ -139,15 +131,10 @@ onMounted(() => {
         } else if (e.key == "3") {
             gs.ResetTimePassed();
         } else if (e.key == "s") {
-            if (!isSimulationRunning() && !isRecording) {
-                console.log("interval set")
-                simulationTimeRunId = setInterval(() => {
-                    gs.timePassed += gs.recordIntervalInSeconds;
-                }, 1000 / simulationSpeed);
-            } else {
-                clearInterval(simulationTimeRunId);
-                simulationTimeRunId = -1;
-            }
+            toggleSimulation();
+        }
+        else if (e.key == "i") {
+            toggleDisplayHotkeys();
         }
 
     });
@@ -170,18 +157,17 @@ onMounted(() => {
         () => gs.bridgeSpaceIdPairs,
 
     ], (newValue, oldValue) => {
-        // console.log("origin changed from " + oldValue + " to " + newValue);
         needToUpdateComputations = true;
     }, { deep: true });
 
     watch(() => [stepId.value, stepId], (newValue, oldValue) => {
-        // console.log("origin changed from " + oldValue + " to " + newValue);
-        // draw
-        // console.log("stepId changed from " + oldValue + " to " + newValue);
-        // drawRectangleDefault(ctx!, new Rectangle(-100, 200, 0, 200, 200), true);
         RecordStepForward();
     }, { deep: true });
 });
+
+function toggleDisplayHotkeys() {
+    isDisplayingHotkeys = !isDisplayingHotkeys;
+}
 
 
 function UpdateDrawings() {
@@ -189,10 +175,6 @@ function UpdateDrawings() {
         drawDebugGreenRectangle();
     }
     setFontProperties(ctx!, "rgba(0,0,255,1)", 25);
-    // drawText(ctx!, "isRecording: " + isRecording, 10, 20);
-    // drawText(ctx!, "isRecording Manually: " + isRecordingManually, 10, 50);
-    // drawText(ctx!, "stepTimer ID: " + _stepTimerId, 10, 80);
-    // drawText(ctx!, "step ID: " + stepId.value, 10, 110);
 
     drawCoordinateSystemYInv(ctx!);
 
@@ -215,6 +197,54 @@ function UpdateDrawings() {
     }
 
     drawSMARTEventsToCanvas();
+
+    drawHotekeysInfo();
+}
+
+function drawHotekeysInfo() {
+    if (isDisplayingHotkeys) {
+        const startOffsetX = 100;
+        const startOffsetY = 100;
+        setFillColor(ctx!, "rgba(0,255,255,0.8)");
+        drawRectangleDefault(ctx!, new Rectangle(-1, startOffsetX, startOffsetY, 600, 400), true);
+        setFontProperties(ctx!, "rgba(0,0,0,1)", 25,"Monospace");
+        drawText(ctx!, "I = Toggle Display Hotkeys", startOffsetX + 10, startOffsetY + 30);
+        drawText(ctx!, "Shift + ArrowKeys = Panning", startOffsetX + 10, startOffsetY + 60);
+        drawText(ctx!, "Q = Toggle Zoom To Barn", startOffsetX + 10, startOffsetY + 90);
+        drawText(ctx!, "W = Toggle Display Barn Spaces", startOffsetX + 10, startOffsetY + 120);
+        drawText(ctx!, "E = Toggle Display Pasture Spaces", startOffsetX + 10, startOffsetY + 150);
+        drawText(ctx!, "N = Toggle Display Neighbors", startOffsetX + 10, startOffsetY + 180);
+        drawText(ctx!, "R = Toggle Recording", startOffsetX + 10, startOffsetY + 210);
+        drawText(ctx!, "T = Toggle Recording Manually / Auto", startOffsetX + 10, startOffsetY + 240);
+        drawText(ctx!, "1 = Manually Recording - Step Backward ", startOffsetX + 10, startOffsetY + 270);
+        drawText(ctx!, "2 = Manually Recording - Step Forward ", startOffsetX + 10, startOffsetY + 300);
+        drawText(ctx!, "3 = Reset Simulation Timer ", startOffsetX + 10, startOffsetY + 330);
+        drawText(ctx!, "S = Toggle Simulation ", startOffsetX + 10, startOffsetY + 360);
+
+    }
+}
+
+function toggleRecording() {
+    if (!isSimulationRunning()) {
+        isRecording = !isRecording;
+        if (isRecording && !isRecordingManually) {
+            setUpStepTimer();
+        } else {
+            stopStepTimer();
+        }
+    }
+}
+
+function toggleSimulation() {
+    if (!isSimulationRunning() && !isRecording) {
+        console.log("interval set")
+        simulationTimeRunId = setInterval(() => {
+            gs.timePassed += gs.recordIntervalInSeconds;
+        }, 1000 / simulationSpeed);
+    } else {
+        clearInterval(simulationTimeRunId);
+        simulationTimeRunId = -1;
+    }
 }
 
 function setIsRecordingManually(value: boolean) {
@@ -321,10 +351,12 @@ function drawSimulationInfoText() {
 function getBridgePartners(spaceId: number) {
     let result: number[] = [];
     gs.bridgeSpaceIdPairs.forEach((pair) => {
-        if (pair.includes(spaceId)) {
-            if (spaceId == pair[0]) { result.push(pair[1]) }
+        if (pair.space1Id == spaceId || pair.space2Id == spaceId) {
+            if (spaceId == pair.space1Id) {
+                result.push(pair.space2Id)
+            }
             else {
-                result.push(pair[0]);
+                result.push(pair.space2Id);
             }
         }
     });
@@ -443,7 +475,7 @@ function getCloseNeighbourSpacesOfCanvasPoint(point: Point): number[] {
     if (space) {
         let bridgePartners = getBridgePartners(space.id);
         bridgePartners.forEach((bridgePartnerId) => {
-            if (!result.includes(bridgePartnerId)) result.push(bridgePartnerId);
+            if (bridgePartnerId >= 0 && !result.includes(bridgePartnerId)) result.push(bridgePartnerId);
         });
     }
 
@@ -858,25 +890,18 @@ function drawPastureSpace(id: number) {
     let center = GeoCoordToCanvasPoint({ lon: space.geoCoordinates[1], lat: space.geoCoordinates[0] });
     let rectangle = new Rectangle(id, center.x - (gs.sensorWidthInMeters * scale.value / 2), center.y - (gs.sensorWidthInMeters * scale.value / 2), gs.sensorWidthInMeters * scale.value, gs.sensorWidthInMeters * scale.value);
 
-    // setFillColor(ctx!, "rgba(255,0,0,0.2)");
 
     if (space.isRectOverlappinBarn) {
         storeCanvasProperties(ctx!);
-        // setStrokeProperties(ctx!, "rgba(0,0,0,0.15)", 0.5 * scale.value);
-        // setStrokeProperties(ctx!, "rgba(0,0,0,0.15)", 1);
         setStrokeProperties(ctx!, colorToRgba("ff00000", gs.colorAlphaSpacesPasture - 0.1), 1);
 
-        // setFillColor(ctx!, "rgba(255,0,0,0.05)");
-        // setFillColor(ctx!, colorToRgba(gs.colorSpacesPasture, 0.05));
         setFillColor(ctx!, colorToRgba(gs.colorSpacesPasture, gs.colorAlphaSpacesPasture - 0.2));
 
         drawSpaceRectangle(ctx!, rectangle, gs.drawSpaceIds);
         restoreCanvasProperties(ctx!);
     } else {
 
-        // setStrokeProperties(ctx!, colorToRgba("#000000", gs.colorAlphaSpacesPasture), 0.5 * scale.value);
         setStrokeProperties(ctx!, colorToRgba("#000000", gs.colorAlphaSpacesPasture), 1);
-        // setFillColor(ctx!, "rgba(255,0,0,0.25)");
         setFillColor(ctx!, colorToRgba(gs.colorSpacesPasture, gs.colorAlphaSpacesPasture));
         drawSpaceRectangle(ctx!, rectangle, gs.drawSpaceIds);
     }

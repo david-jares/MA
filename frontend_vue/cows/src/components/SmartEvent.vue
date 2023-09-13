@@ -71,9 +71,7 @@ function updateGS(property: string, value: any) {
     gs.updateSmartEvent(props.id, property, value);
 }
 
-// defineExpose({
-//     getData
-// })
+
 
 function toggleFolding() {
     isFolded.value = !isFolded.value;
@@ -86,13 +84,7 @@ function removeEvent() {
     gs.removeSmartEvent(props.id);
 }
 
-// let colorRGB: string = "rgba(255,255,0,255)";
-// let colorAlpha: number = 0.2;
 
-// function handleColorChange() {
-//     console.log("handleColorChange");
-//     updateGS('color', color.value);
-// }
 
 </script>
 
@@ -168,7 +160,7 @@ function removeEvent() {
                 <LabeledInput ref="colorRGB" :label-text="'color'" :input-type="'color'" :default-value="colorRGB"
                     @onInput="(val) => updateGS('colorRGB', val)">
                 </LabeledInput>
-                <input type="number" ref="colorAlpha" style="flex: 0 1 70px; width: 70px;" min="0" max="1" step="0.1"
+                <input type="number" ref="colorAlpha" style="flex:1; width: 70px;" min="0" max="1" step="0.1"
                     value="0.5" @input="(ev) => updateGS('colorAlpha', ev.target!.value)" />
             </div>
         </div>

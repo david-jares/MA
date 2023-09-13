@@ -159,3 +159,14 @@ export class SMARTEvent {
         this.colorAlpha = colorAlpha;
     }
 }
+
+export class BridgePair{
+    id:number;
+    space1Id:number;
+    space2Id:number;
+    constructor(id:number,space1Id:number,space2Id:number){
+        this.id = id;
+        this.space1Id = space1Id;
+        this.space2Id = space2Id;
+    }
+}

@@ -60,9 +60,9 @@ onMounted(() => {
 <template>
     <div class="important">
         <div style="display: flex;flex-direction: row; padding: 3px 0 3px 0; border: 1px solid #00000033;">
-            <label :for="id.toString()" style="flex: 0 1 250px; padding: 0 0 0 5px;"
+            <label :for="id.toString()" style="flex: 1; padding: 0 0 0 5px;"
                 :class="tooltipClass">{{ labelText }}</label>
-            <input :type="inputType" :id="id.toString()" v-model="inputValue" style="flex: 0 1 100px; width: 250px;"
+            <input :type="inputType" :id="id.toString()" v-model="inputValue" style="flex: 1; width: 250px;"
                 :min="minValue" :max="maxValue" />
             <!-- <input :type="inputType" id="myinput" v-model="inputValue" @input="() => $emit('onInput', inputValue)"
                 style="flex: 0 1 100px;" :min="minValue" :max="maxValue" /> -->

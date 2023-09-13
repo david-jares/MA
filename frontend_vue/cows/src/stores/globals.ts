@@ -1,4 +1,4 @@
-import type { CanvasCoordinate, GeoCoordinate, RecordEntry, SMARTEvent, Sensor, Space } from '@/myfunctions/model';
+import { BridgePair, type CanvasCoordinate, type GeoCoordinate, type RecordEntry, type SMARTEvent, type Sensor, type Space } from '@/myfunctions/model';
 import type { Point } from '@/myfunctions/tempfunctions';
 import { Rectangle, getTimeInSeconds } from '@/myfunctions/utilityfunctions';
 import { defineStore } from 'pinia';
@@ -68,7 +68,7 @@ interface GlobalsState {
     drawPastureRects: boolean;
     drawNeighbourSpaces: boolean;
     forbiddenSpaceIds: number[];
-    bridgeSpaceIdPairs: number[][];
+    bridgeSpaceIdPairs: BridgePair[];
 
     colorSpacesPasture:string;
     colorAlphaSpacesPasture:number;
@@ -110,7 +110,7 @@ export const useGlobalsStore = defineStore({
         drawPastureRects: true,
         drawNeighbourSpaces: false,
         forbiddenSpaceIds: [2, 3, 8, 9, 16, 17, 23, 24, 25],
-        bridgeSpaceIdPairs: [[10, 94], [10, 98], [10, 102]],
+        bridgeSpaceIdPairs: [new BridgePair(0,10,94),new BridgePair(1,10,98), new BridgePair(2,10,102)],
         colorSpacesPasture: "#FF0000",
         colorAlphaSpacesPasture: 0.25,
         colorSpacesBarn: "#00FF00",
@@ -325,6 +325,17 @@ export const useGlobalsStore = defineStore({
         },
         ResetTimePassed(){
             this.timePassed =  getTimeInSeconds(this.now.toDateString());
+        },
+        removeBridgeSpaceIdPair(id: number) {
+            const index = this.bridgeSpaceIdPairs.findIndex(pair => pair.id === id);
+            if (index !== -1) {
+                this.bridgeSpaceIdPairs.splice(index, 1);
+            }
+            for (let i = 0; i <  this.bridgeSpaceIdPairs.length; i++) {
+                const pair =  this.bridgeSpaceIdPairs[i];
+                pair.id = i;
+                
+            }
         }
         
     }
