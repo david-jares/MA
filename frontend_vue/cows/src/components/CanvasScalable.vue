@@ -37,7 +37,7 @@ let highlightedSpace = ref();
 let lastRecordSpace = ref();
 let distanceTravelled = ref(0);
 
-let isDisplayingHotkeys = true;
+let isDisplayingHotkeys = false;
 let isRecording = false;
 let isRecordingManually = true;
 let previousScale = 1;

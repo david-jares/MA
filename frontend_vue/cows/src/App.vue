@@ -94,20 +94,52 @@ const handleCowIDChanged = (cowId: string) => {
           <div class=" form-container" style="display: flex;flex-direction: column;">
             <SeparationLine></SeparationLine>
             <p style="padding-left: 5px;"> Press I = Display HotKeys </p>
+            <SeparationLine></SeparationLine>
             <div class="rowequal">
               <button @click="handleResetTimer" class="mybutton" style="height: 30px;">Reset Timer</button>
               <button @click="handleClearRecords" class="mybutton" style="height: 30px;"> Clear Records</button>
             </div>
 
             <div class="rowequal">
-              <button @click="handleExportSpacesAndSensorsToJSON" class="mybutton">Export Spaces and Sensors to
+              <button @click="handleExportSpacesAndSensorsToJSON" style="height: 30px;" class="mybutton">Export Config to
                 JSON</button>
-              <button @click="handleExportRecordingAsCSV" class="mybutton">Export Recording to CSV</button>
+              <button @click="handleExportRecordingAsCSV" style="height: 30px;" class="mybutton">Export Recording to
+                CSV</button>
               <!-- <button @click="selectFiles()" class="mybutton">Select and Combine CSV-Files</button> -->
             </div>
-            
+            <div class="rowequal">
+              <button style="height: 30px;" class="mybutton">Export Config to Server</button>
+              <button style="height: 30px;" class="mybutton">Import Config From Server</button>
+              <!-- <button @click="selectFiles()" class="mybutton">Select and Combine CSV-Files</button> -->
+            </div>
             <SeparationLine></SeparationLine>
-
+            <div style="display: flex;">
+              <LabeledInput label-text="Color Area" :input-type="'color'" :default-value="gs.colorPolygon"
+                @onInput="(val) => gs.colorPolygon = val">
+              </LabeledInput>
+              <input type="number" style="flex:1; " min="0" max="1" step="0.05" :value="gs.colorAlphaPolygon"
+                @input="(ev) => gs.colorAlphaPolygon = ev.target!.value" />
+            </div>
+            <div style="display: flex;">
+              <LabeledInput label-text="Color Spaces Pasture" :input-type="'color'" :default-value="gs.colorSpacesPasture"
+                @onInput="(val) => gs.colorSpacesPasture = val">
+              </LabeledInput>
+              <input type="number" style="flex: 1;" min="0" max="1" step="0.05" :value="gs.colorAlphaSpacesPasture"
+                @input="(ev) => gs.colorAlphaSpacesPasture = ev.target!.value" />
+            </div>
+            <div style="display: flex;">
+              <LabeledInput label-text="Color Spaces Barn" :input-type="'color'" :default-value="gs.colorSpacesBarn"
+                @onInput="(val) => gs.colorSpacesBarn = val">
+              </LabeledInput>
+              <input type="number" style="flex: 1; " min="0" max="1" step="0.05" :value="gs.colorAlphaSpacesBarn"
+                @input="(ev) => gs.colorAlphaSpacesBarn = ev.target!.value" />
+            </div>
+            <div style="display: flex;flex-direction: row; padding: 3px 0 3px 0; border: 1px solid #00000033;">
+              <label style="flex: 0 1 250px; padding: 0 0 0 5px;"> Display Space IDs </label>
+              <input type="checkbox" style="flex: 0 1 70px; width: 70px;" checked value="drawids"
+                @input="(ev) => gs.drawSpaceIds = !gs.drawSpaceIds" />
+            </div>
+            <SeparationLine></SeparationLine>
             <LabeledInput label-text="Cow ID : " :default-value="gs.cowId" input-type="number" :min-value="1"
               @on-input="(n) => handleCowIDChanged(n)"></LabeledInput>
 
@@ -129,45 +161,16 @@ const handleCowIDChanged = (cowId: string) => {
 
             <SeparationLine></SeparationLine>
 
-            <!-- <LabeledInput ref="bridgeSpaceIdPairs" label-text="bridge SpacePairs" :input-type="'text'"
-              :default-value="gs.bridgeSpaceIdPairs.toString()" @onInput="(val) => gs.bridgeSpaceIdPairs = val"
-              :tooltip="gs.tipEventSpaceIds">
-            </LabeledInput> -->
+
             <BridgeList></BridgeList>
-            <LabeledInput ref="forbiddenRectangles" label-text="forbidden Spaces" :input-type="'text'"
+            <LabeledInput ref="forbiddenRectangles" label-text="Forbidden Spaces" :input-type="'text'"
               :default-value="gs.forbiddenSpaceIds.toString()" @onInput="(val) => gs.forbiddenSpaceIds = val"
               :tooltip="gs.tipEventSpaceIds">
             </LabeledInput>
             <SeparationLine></SeparationLine>
-            <div style="display: flex;">
-              <LabeledInput label-text="Color Area" :input-type="'color'" :default-value="gs.colorPolygon"
-                @onInput="(val) => gs.colorPolygon = val">
-              </LabeledInput>
-              <input type="number" style="flex:1; " min="0" max="1" step="0.05"
-                :value="gs.colorAlphaPolygon" @input="(ev) => gs.colorAlphaPolygon = ev.target!.value" />
-            </div>
-            <div style="display: flex;">
-              <LabeledInput label-text="Color Spaces Pasture" :input-type="'color'" :default-value="gs.colorSpacesPasture"
-                @onInput="(val) => gs.colorSpacesPasture = val">
-              </LabeledInput>
-              <input type="number" style="flex: 1;" min="0" max="1" step="0.05" :value="gs.colorAlphaSpacesPasture"
-                @input="(ev) => gs.colorAlphaSpacesPasture = ev.target!.value" />
-            </div>
-            <div style="display: flex;">
-              <LabeledInput label-text="Color Spaces Barn" :input-type="'color'" :default-value="gs.colorSpacesBarn"
-                @onInput="(val) => gs.colorSpacesBarn = val">
-              </LabeledInput>
-              <input type="number" style="flex: 1; " min="0" max="1" step="0.05"
-                :value="gs.colorAlphaSpacesBarn" @input="(ev) => gs.colorAlphaSpacesBarn = ev.target!.value" />
-            </div>
-            <div style="display: flex;flex-direction: row; padding: 3px 0 3px 0; border: 1px solid #00000033;">
-              <label style="flex: 0 1 250px; padding: 0 0 0 5px;"> Display Space IDs </label>
-              <input type="checkbox" style="flex: 0 1 70px; width: 70px;" checked value="drawids"
-                @input="(ev) => gs.drawSpaceIds = !gs.drawSpaceIds" />
-            </div>
-            <SeparationLine></SeparationLine>
 
-          
+
+
             <h2>Events Configuration</h2>
 
             <SmartEventList></SmartEventList>
