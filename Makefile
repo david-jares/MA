@@ -107,6 +107,17 @@ run-my-script:
 	go run "/root/MA/scripts/dave/Create_insert_in_smartspec_conf_gps_sql.go"
 	go run "/root/MA/scripts/dave/Create_cattle_gps_formatted_with_sensorid_csv.go"
 
+run-my-farm-script:
+	go run ./scripts/dave/Testprint.go
+	go run "/root/MA/scripts/dave_farm_gps/read_cattlegps.go"
+	go run "/root/MA/scripts/dave_farm_gps/reformat_cattlegps.go"
+	go run "/root/MA/scripts/dave_farm_gps/Create_Spaces.go"
+	go run "/root/MA/scripts/dave_farm_gps/Countandprint.go"
+	go run "/root/MA/scripts/dave_farm_gps/analyze_cattle_gps.go"
+	go run "/root/MA/scripts/dave_farm_gps/Create_Sensors.go"
+	go run "/root/MA/scripts/dave_farm_gps/Create_insert_in_smartspec_conf_gps_sql.go"
+	go run "/root/MA/scripts/dave_farm_gps/Create_cattle_gps_formatted_with_sensorid_csv.go"
+
 
 
 # So David die E-Mail nur an dich.
