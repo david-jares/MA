@@ -70,6 +70,13 @@ interface GlobalsState {
     forbiddenSpaceIds: number[];
     bridgeSpaceIdPairs: number[][];
 
+    colorSpacesPasture:string;
+    colorAlphaSpacesPasture:number;
+    colorSpacesBarn:string;
+    colorAlphaSpacesBarn:number;
+    colorPolygon:string;
+    colorAlphaPolygon:number;
+    drawSpaceIds:boolean;
 }
 
 export const useGlobalsStore = defineStore({
@@ -104,7 +111,13 @@ export const useGlobalsStore = defineStore({
         drawNeighbourSpaces: false,
         forbiddenSpaceIds: [2, 3, 8, 9, 16, 17, 23, 24, 25],
         bridgeSpaceIdPairs: [[10, 94], [10, 98], [10, 102]],
-
+        colorSpacesPasture: "#FF0000",
+        colorAlphaSpacesPasture: 0.25,
+        colorSpacesBarn: "#00FF00",
+        colorAlphaSpacesBarn: 0.55,
+        colorPolygon: "#FF00FF",
+        colorAlphaPolygon: 0.45,
+        drawSpaceIds: true,
         loops: 0,
 
         isCowInBarn: false,

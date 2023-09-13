@@ -375,13 +375,16 @@ export function drawRectangleYInv(ctx: CanvasRenderingContext2D, x: number, y: n
   }
 }
 
-export function drawSpaceRectangle(ctx: CanvasRenderingContext2D, rectangle: Rectangle) {
+export function drawSpaceRectangle(ctx: CanvasRenderingContext2D, rectangle: Rectangle, drawIds: boolean = true): void {
   let transformedRect = getRectYInv(ctx!, rectangle);
   // setFillColor(ctx!, "rgba(255,0,0,0.2)");
   drawRectangleDefault(ctx!, transformedRect, true);
-  setFontProperties(ctx!, "rgba(0,0,255,0.5)", 4 * scale.value, "Arial");
-  let text = rectangle.id.toString();
-  drawText(ctx!, text, transformedRect.x + 1.5 * scale.value, transformedRect.y + 4 * scale.value);
+  if(drawIds){
+
+    setFontProperties(ctx!, "rgba(0,0,255,0.5)", 4 * scale.value, "Arial");
+    let text = rectangle.id.toString();
+    drawText(ctx!, text, transformedRect.x + 1.5 * scale.value, transformedRect.y + 4 * scale.value);
+  }
 
 }
 

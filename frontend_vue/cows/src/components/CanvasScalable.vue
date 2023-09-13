@@ -160,18 +160,6 @@ onMounted(() => {
         latestMousePosYInv.value = mousePosYInv;
     });
 
-    // watch([scale, scale.value], (newValue, oldValue) => {
-    //     // console.log("scale changed from " + oldValue + " to " + newValue);
-    //     needToUpdateComputations = true;
-    // }, { deep: true });
-    // watch([origin, origin.value], (newValue, oldValue) => {
-    //     // console.log("origin changed from " + oldValue + " to " + newValue);
-    //     needToUpdateComputations = true;
-    // }, { deep: true });
-    // watch(sensorWidthInMeters, (newValue, oldValue) => {
-    //     // console.log("origin changed from " + oldValue + " to " + newValue);
-    //     needToUpdateComputations = true;
-    // }, { deep: true });
     watch([
         () => gs.sensorWidthInMeters,
         () => origin,
@@ -201,10 +189,10 @@ function UpdateDrawings() {
         drawDebugGreenRectangle();
     }
     setFontProperties(ctx!, "rgba(0,0,255,1)", 25);
-    drawText(ctx!, "isRecording: " + isRecording, 10, 20);
-    drawText(ctx!, "isRecording Manually: " + isRecordingManually, 10, 50);
-    drawText(ctx!, "stepTimer ID: " + _stepTimerId, 10, 80);
-    drawText(ctx!, "step ID: " + stepId.value, 10, 110);
+    // drawText(ctx!, "isRecording: " + isRecording, 10, 20);
+    // drawText(ctx!, "isRecording Manually: " + isRecordingManually, 10, 50);
+    // drawText(ctx!, "stepTimer ID: " + _stepTimerId, 10, 80);
+    // drawText(ctx!, "step ID: " + stepId.value, 10, 110);
 
     drawCoordinateSystemYInv(ctx!);
 
@@ -239,7 +227,8 @@ function setIsRecordingManually(value: boolean) {
 }
 
 function drawBarnAndPasturePolygons() {
-    setFillColor(ctx!, "rgba(255,0,255,0.45)");
+    // setFillColor(ctx!, "rgba(255,0,255,0.45)");
+    setFillColor(ctx!, colorToRgba(gs.colorPolygon, gs.colorAlphaPolygon));
     drawPath(ctx!, getPointsScaledYInv(ctx!, geoCoordsAllShiftedBack_m)); // Draw polygons
 
 }
@@ -869,19 +858,27 @@ function drawPastureSpace(id: number) {
     let center = GeoCoordToCanvasPoint({ lon: space.geoCoordinates[1], lat: space.geoCoordinates[0] });
     let rectangle = new Rectangle(id, center.x - (gs.sensorWidthInMeters * scale.value / 2), center.y - (gs.sensorWidthInMeters * scale.value / 2), gs.sensorWidthInMeters * scale.value, gs.sensorWidthInMeters * scale.value);
 
-    setFillColor(ctx!, "rgba(255,0,0,0.2)");
+    // setFillColor(ctx!, "rgba(255,0,0,0.2)");
 
     if (space.isRectOverlappinBarn) {
         storeCanvasProperties(ctx!);
-        setStrokeProperties(ctx!, "rgba(0,0,0,0.15)", 0.5 * scale.value);
-        setFillColor(ctx!, "rgba(255,0,0,0.05)");
+        // setStrokeProperties(ctx!, "rgba(0,0,0,0.15)", 0.5 * scale.value);
+        // setStrokeProperties(ctx!, "rgba(0,0,0,0.15)", 1);
+        setStrokeProperties(ctx!, colorToRgba("ff00000", gs.colorAlphaSpacesPasture - 0.1), 1);
 
-        drawSpaceRectangle(ctx!, rectangle);
+        // setFillColor(ctx!, "rgba(255,0,0,0.05)");
+        // setFillColor(ctx!, colorToRgba(gs.colorSpacesPasture, 0.05));
+        setFillColor(ctx!, colorToRgba(gs.colorSpacesPasture, gs.colorAlphaSpacesPasture - 0.2));
+
+        drawSpaceRectangle(ctx!, rectangle, gs.drawSpaceIds);
         restoreCanvasProperties(ctx!);
     } else {
 
-        setFillColor(ctx!, "rgba(255,0,0,0.25)");
-        drawSpaceRectangle(ctx!, rectangle);
+        // setStrokeProperties(ctx!, colorToRgba("#000000", gs.colorAlphaSpacesPasture), 0.5 * scale.value);
+        setStrokeProperties(ctx!, colorToRgba("#000000", gs.colorAlphaSpacesPasture), 1);
+        // setFillColor(ctx!, "rgba(255,0,0,0.25)");
+        setFillColor(ctx!, colorToRgba(gs.colorSpacesPasture, gs.colorAlphaSpacesPasture));
+        drawSpaceRectangle(ctx!, rectangle, gs.drawSpaceIds);
     }
     drawPoint(ctx!, getPointYInv(ctx!, center), 0.3 * scale.value, true);
 
@@ -893,16 +890,18 @@ function drawBarnSpace(id: number) {
     let path = space.pathGeoCoords.map(x => GeoCoordToCanvasPoint(x));
     let center = { x: space.coordinates[0], y: space.coordinates[1] };
 
-    setFillColor(ctx!, "rgba(0,255,0,0.55)");
+    // setFillColor(ctx!, "rgba(0,255,0,0.55)");
+    setFillColor(ctx!, colorToRgba(gs.colorSpacesBarn, gs.colorAlphaSpacesBarn));
     let pathYInv = path.map(x => getPointYInv(ctx!, x));
     drawPath(ctx!, pathYInv, true, true);
 
     drawPoint(ctx!, getPointYInv(ctx!, center), 0.3 * scale.value, true);
 
-
-    let leftPoint = path.filter(x => x.x == Math.min(...path.map(p => p.x)))[0];
-    setFontProperties(ctx!, "rgba(255,0,0,0.5)", 2 * scale.value);
-    drawText(ctx!, id.toString(), leftPoint.x + 1.5 * scale.value, getYInv(ctx!, leftPoint.y - 1.5 * scale.value));
+    if (gs.drawSpaceIds) {
+        let leftPoint = path.filter(x => x.x == Math.min(...path.map(p => p.x)))[0];
+        setFontProperties(ctx!, "rgba(255,0,0,0.5)", 2 * scale.value);
+        drawText(ctx!, id.toString(), leftPoint.x + 1.5 * scale.value, getYInv(ctx!, leftPoint.y - 1.5 * scale.value));
+    }
     restoreCanvasProperties(ctx!);
 }
 
