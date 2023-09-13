@@ -52,10 +52,10 @@ class Sensor {
 }
 
 class SMARTEvent {
-    constructor(id, description, metaEventId, profileIndex, spaceIds, capacityMetaPersonId, capacityRangeMin, capacityRangeMax, startDate, endDate, period, periodInterval, startTime, endTime, requiredAttendance) {
+    constructor(id, description, metaeventId, profileIndex, spaceIds, capacityMetaPersonId, capacityRangeMin, capacityRangeMax, startDate, endDate, period, periodInterval, startTime, endTime, requiredAttendance,color) {
         this.id = id;
         this.description = description;
-        this.metaEventId = metaEventId;
+        this.metaeventId = metaeventId;
         this.profileIndex = profileIndex;
         this.spaceIds = spaceIds;
         this.capacityMetaPersonId = capacityMetaPersonId;
@@ -68,5 +68,6 @@ class SMARTEvent {
         this.startTime = startTime;
         this.endTime = endTime;
         this.requiredAttendance = requiredAttendance;
+        this.color = color;
     }
 }

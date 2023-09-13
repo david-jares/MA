@@ -27,26 +27,34 @@ function removeElement(elementId) {
   element.remove();
 }
 
-function updateEventModel(eventId) {
-  const event = document.getElementById(eventId);
-  const description = document.getElementById(eventId + 'description').value;
-  const id = document.getElementById(eventId + 'id').value;
-  const metaeventId = document.getElementById(eventId + 'metaeventId').value;
-  const profileIndex = document.getElementById(eventId + 'profileIndex').value;
-  const spaceIds = document.getElementById(eventId + 'spaceIds').value;
-  const capacityMetaPersonId = document.getElementById(eventId + 'capacityMetaPersonId').value;
-  const capacityRangeMin = document.getElementById(eventId + 'capacityRangeMin').value;
-  const capacityRangeMax = document.getElementById(eventId + 'capacityRangeMax').value;
-  const startDate = document.getElementById(eventId + 'startDate').value;
-  const endDate = document.getElementById(eventId + 'endDate').value;
-  const period = document.getElementById(eventId + 'period').value;
-  const periodInterval = document.getElementById(eventId + 'periodInterval').value;
-  const startTime = document.getElementById(eventId + 'startTime').value;
-  const endTime = document.getElementById(eventId + 'endTime').value;
-  const requiredAttendance = document.getElementById(eventId + 'requiredAttendance').value;
-  const color = document.getElementById(eventId + 'color').value;
 
-  const SMARTEvent = {
+function removeEventElement(elementId) {
+  const element = document.getElementById(elementId);
+  const SMARTEventId = document.getElementById().value;
+  element.remove();
+}
+
+
+function updateEventModel(eventElemIDText) {
+  const event = document.getElementById(eventElemIDText);
+  const description = document.getElementById(eventElemIDText + 'description').value;
+  const id = document.getElementById(eventElemIDText + 'id').value;
+  const metaeventId = document.getElementById(eventElemIDText + 'metaeventId').value;
+  const profileIndex = document.getElementById(eventElemIDText + 'profileIndex').value;
+  const spaceIds = document.getElementById(eventElemIDText + 'spaceIds').value;
+  const capacityMetaPersonId = document.getElementById(eventElemIDText + 'capacityMetaPersonId').value;
+  const capacityRangeMin = document.getElementById(eventElemIDText + 'capacityRangeMin').value;
+  const capacityRangeMax = document.getElementById(eventElemIDText + 'capacityRangeMax').value;
+  const startDate = document.getElementById(eventElemIDText + 'startDate').value;
+  const endDate = document.getElementById(eventElemIDText + 'endDate').value;
+  const period = document.getElementById(eventElemIDText + 'period').value;
+  const periodInterval = document.getElementById(eventElemIDText + 'periodInterval').value;
+  const startTime = document.getElementById(eventElemIDText + 'startTime').value;
+  const endTime = document.getElementById(eventElemIDText + 'endTime').value;
+  const requiredAttendance = document.getElementById(eventElemIDText + 'requiredAttendance').value;
+  const color = document.getElementById(eventElemIDText + 'color').value;
+
+  let SMARTEvent = {
     description: description,
     id: id,
     metaeventId: metaeventId,
@@ -68,16 +76,42 @@ function updateEventModel(eventId) {
   const oldEventIndex = smartEvents.findIndex(e => e.id === id);
   if (oldEventIndex !== -1) {
     smartEvents.splice(oldEventIndex, 1, SMARTEvent);
+  } else {
+    smartEvents.push(SMARTEvent)
   }
 }
 
-function updateEventUI(eventObject){
+function updateEventUI(SMARTEvent) {
+  const event = document.getElementById(SMARTEvent.id);
+  if (!event) {
+    generateEvent(SMARTEvent.id);
+  }
+
+  document.getElementById(eventId + 'description').value = SMARTEvent.description;
+  document.getElementById(eventId + 'id').value = SMARTEvent.id;
+  document.getElementById(eventId + 'metaeventId').value = SMARTEvent.metaeventId;
+  document.getElementById(eventId + 'profileIndex').value = SMARTEvent.profileIndex;
+  document.getElementById(eventId + 'spaceIds').value = SMARTEvent.spaceIds;
+  document.getElementById(eventId + 'capacityMetaPersonId').value = SMARTEvent.capacityMetaPersonId;
+  document.getElementById(eventId + 'capacityRangeMin').value = SMARTEvent.capacityRangeMin;
+  document.getElementById(eventId + 'capacityRangeMax').value = SMARTEvent.capacityRangeMax;
+  document.getElementById(eventId + 'startDate').value = SMARTEvent.startDate;
+  document.getElementById(eventId + 'endDate').value = SMARTEvent.endDate;
+  document.getElementById(eventId + 'period').value = SMARTEvent.period;
+  document.getElementById(eventId + 'periodInterval').value = SMARTEvent.periodInterval;
+  document.getElementById(eventId + 'startTime').value = SMARTEvent.startTime;
+  document.getElementById(eventId + 'endTime').value = SMARTEvent.endTime;
+  document.getElementById(eventId + 'requiredAttendance').value = SMARTEvent.requiredAttendance;
+  document.getElementById(eventId + 'color').value = SMARTEvent.color;
 
 }
 
-function generateEvent(parentId) {
-  let eventNumber = nextEventID++;
-  let eventID = 'event_' + eventNumber;
+function generateEvent(id = -1) {
+  let eventNumber = id;
+  if (eventNumber === -1) {
+    eventNumber = nextEventID++;
+  }
+  let eventElemIDText = 'event_' + eventNumber;
   // create the outer div
   const eventsDiv = document.createElement('div');
   eventsDiv.id = 'events';
@@ -88,7 +122,7 @@ function generateEvent(parentId) {
 
   // create the event div
   const eventDiv = document.createElement('div');
-  eventDiv.id = eventID;
+  eventDiv.id = eventElemIDText;
 
   // create seperator
   const hr = document.createElement('hr');
@@ -98,7 +132,7 @@ function generateEvent(parentId) {
   const foldButton = document.createElement('button');
   foldButton.textContent = 'Fold';
   foldButton.onclick = function () {
-    toggleHideElement(eventID + '_details');
+    toggleHideElement(eventElemIDText + '_details');
   };
 
   // create the delete button
@@ -111,7 +145,7 @@ function generateEvent(parentId) {
 
   // create the input rows
   const inputRows = document.createElement('div');
-  inputRows.id = eventID + '_details';
+  inputRows.id = eventElemIDText + '_details';
 
   // create the description input row
   const descriptionRow = document.createElement('div');
@@ -122,7 +156,7 @@ function generateEvent(parentId) {
   descriptionLabel.textContent = 'description:';
 
   const descriptionInput = document.createElement('input');
-  descriptionInput.id = eventID + "description";
+  descriptionInput.id = eventElemIDText + "description";
   descriptionInput.className = 'inputrow-input-m';
   descriptionInput.type = 'text';
   descriptionInput.value = 'human readable description';
@@ -142,7 +176,7 @@ function generateEvent(parentId) {
   idLabel.textContent = 'id:';
 
   const idInput = document.createElement('input');
-  idInput.id = eventID + "id";
+  idInput.id = eventElemIDText + "id";
   idInput.className = 'inputrow-input-m';
   idInput.type = 'number';
   idInput.value = eventNumber;
@@ -162,7 +196,7 @@ function generateEvent(parentId) {
   metaeventIdLabel.textContent = 'metaevent-id:';
 
   const metaeventIdInput = document.createElement('input');
-  metaeventIdInput.id = eventID + "metaeventId";
+  metaeventIdInput.id = eventElemIDText + "metaeventId";
 
   metaeventIdInput.className = 'inputrow-input-m';
   metaeventIdInput.type = 'number';
@@ -183,7 +217,7 @@ function generateEvent(parentId) {
   profileIndexLabel.textContent = 'profile index:';
 
   const profileIndexInput = document.createElement('input');
-  profileIndexInput.id = eventID + "profileIndex";
+  profileIndexInput.id = eventElemIDText + "profileIndex";
   profileIndexInput.className = 'inputrow-input-m';
   profileIndexInput.type = 'number';
   profileIndexInput.value = 1;
@@ -203,7 +237,7 @@ function generateEvent(parentId) {
   spaceIdsLabel.textContent = 'space ids (commaseperated):';
 
   const spaceIdsInput = document.createElement('input');
-  spaceIdsInput.id = eventID + "spaceIds";
+  spaceIdsInput.id = eventElemIDText + "spaceIds";
 
   spaceIdsInput.className = 'inputrow-input-m';
   spaceIdsInput.type = 'text';
@@ -224,7 +258,7 @@ function generateEvent(parentId) {
   capacityMetaPersonIdLabel.textContent = 'capacity MetaPerson id:';
 
   const capacityMetaPersonIdInput = document.createElement('input');
-  capacityMetaPersonIdInput.id = eventID + "capacityMetaPersonId";
+  capacityMetaPersonIdInput.id = eventElemIDText + "capacityMetaPersonId";
 
   capacityMetaPersonIdInput.className = 'inputrow-input-m';
   capacityMetaPersonIdInput.type = 'number';
@@ -245,7 +279,7 @@ function generateEvent(parentId) {
   capacityRangeMinLabel.textContent = 'capacity range min:';
 
   const capacityRangeMinInput = document.createElement('input');
-  capacityRangeMinInput.id = eventID + "capacityRangeMin";
+  capacityRangeMinInput.id = eventElemIDText + "capacityRangeMin";
 
   capacityRangeMinInput.className = 'inputrow-input-m';
   capacityRangeMinInput.type = 'number';
@@ -266,7 +300,7 @@ function generateEvent(parentId) {
   capacityRangeMaxLabel.textContent = 'capacity range max:';
 
   const capacityRangeMaxInput = document.createElement('input');
-  capacityRangeMaxInput.id = eventID + "capacityRangeMax";
+  capacityRangeMaxInput.id = eventElemIDText + "capacityRangeMax";
 
   capacityRangeMaxInput.className = 'inputrow-input-m';
   capacityRangeMaxInput.type = 'number';
@@ -287,7 +321,7 @@ function generateEvent(parentId) {
   startDateLabel.textContent = 'start date:';
 
   const startDateInput = document.createElement('input');
-  startDateInput.id = eventID + "startDate";
+  startDateInput.id = eventElemIDText + "startDate";
 
   startDateInput.className = 'inputrow-input-m';
   startDateInput.type = 'date';
@@ -308,7 +342,7 @@ function generateEvent(parentId) {
   endDateLabel.textContent = 'end date:';
 
   const endDateInput = document.createElement('input');
-  endDateInput.id = eventID + "endDate";
+  endDateInput.id = eventElemIDText + "endDate";
 
   endDateInput.className = 'inputrow-input-m';
   endDateInput.type = 'date';
@@ -329,7 +363,7 @@ function generateEvent(parentId) {
   periodLabel.textContent = 'period:';
 
   const periodInput = document.createElement('input');
-  periodInput.id = eventID + "period";
+  periodInput.id = eventElemIDText + "period";
   periodInput.className = 'inputrow-input-m';
   periodInput.type = 'text';
   periodInput.value = 'day';
@@ -349,7 +383,7 @@ function generateEvent(parentId) {
   periodIntervalLabel.textContent = 'period interval:';
 
   const periodIntervalInput = document.createElement('input');
-  periodIntervalInput.id = eventID + "periodInterval";
+  periodIntervalInput.id = eventElemIDText + "periodInterval";
   periodIntervalInput.className = 'inputrow-input-m';
   periodIntervalInput.type = 'number';
   periodIntervalInput.value = 1;
@@ -369,7 +403,7 @@ function generateEvent(parentId) {
   startTimeLabel.textContent = 'start-time:';
 
   const startTimeInput = document.createElement('input');
-  startTimeInput.id = eventID + "startTime";
+  startTimeInput.id = eventElemIDText + "startTime";
   startTimeInput.className = 'inputrow-input-m';
   startTimeInput.type = 'time';
   startTimeInput.value = '00:00';
@@ -389,7 +423,7 @@ function generateEvent(parentId) {
   endTimeLabel.textContent = 'end-time:';
 
   const endTimeInput = document.createElement('input');
-  endTimeInput.id = eventID + "endTime";
+  endTimeInput.id = eventElemIDText + "endTime";
   endTimeInput.className = 'inputrow-input-m';
   endTimeInput.type = 'time';
   endTimeInput.value = '23:59';
@@ -409,7 +443,7 @@ function generateEvent(parentId) {
   requiredAttendanceLabel.textContent = 'required-attendance:';
 
   const requiredAttendanceInput = document.createElement('input');
-  requiredAttendanceInput.id = eventID + "requiredAttendance";
+  requiredAttendanceInput.id = eventElemIDText + "requiredAttendance";
 
   requiredAttendanceInput.className = 'inputrow-input-m';
   requiredAttendanceInput.type = 'text';
@@ -430,11 +464,11 @@ function generateEvent(parentId) {
   colorLabel.textContent = 'color:';
 
   const colorInput = document.createElement('input');
-  colorInput.id = eventID + "color";
+  colorInput.id = eventElemIDText + "color";
 
   colorInput.className = 'inputrow-input-m';
   colorInput.type = 'color';
-  colorInput.value = '#000000';
+  colorInput.value = '#0000ff';
   colorInput.oninput = updateUserData;
 
   colorRow.appendChild(colorLabel);
@@ -460,5 +494,6 @@ function generateEvent(parentId) {
 
   eventsDiv.appendChild(eventDiv);
 
-  document.getElementById(parentId).appendChild(eventsDiv);
+  document.getElementById('eventsList').appendChild(eventsDiv);
+  updateEventModel(eventElemIDText);
 }

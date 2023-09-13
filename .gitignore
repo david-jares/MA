@@ -1,8 +1,7 @@
-.vscode
+# .vscode
 
-*.png
-*.json
-*.conf
+# *.png
+# *.json
+# *.conf
 
-*tndr.go
-joymachinery.html
+# *tndr.go

@@ -16,292 +16,227 @@
             <canvas id="myCanvas" width="800" height="600" style="border:1px solid;"></canvas>
             <div id="coordinatesLabel">Coordinates: </div>
         </div>
-        <div class="rightside" style=" flex: 1;  flex-direction: column;"">
+        <div class="rightside" style=" flex: 1;  flex-direction: column;">
 
             <div class=" form-container" style="display: flex;flex-direction: column;">
-            <div style="display: flex;flex-direction: row;">
-                <label for="cowIdInput" style="flex: 0 1 250px;">Cow ID:</label>
-                <input type="text" id="cowIdInput" oninput="updateUserData()" value="1" style="flex: 0 1 100px;" />
-            </div>
-            <div style="display: flex;flex-direction: row; ">
-                <label for="recordIntervalInSeconds" style="flex: 0 1 250px;">Record Interval In Seconds:</label>
-                <input type="number" id="recordIntervalInSeconds" oninput="updateUserData()" value="60"
-                    style="flex: 0 1 100px;" />
-            </div>
-            <div style="display: flex;flex-direction: row; ">
-                <label for="recordDurationInDays" style="flex: 0 1 250px;">Record Duration In Days:</label>
-                <input type="number" id="recordDurationInDays" oninput="updateUserData()" value="2"
-                    style="flex: 0 1 100px;" />
-            </div>
-            <div style="display: flex;flex-direction: row; ">
-                <label for="timeSpeedMultiplier" style="flex: 0 1 250px;">Time Speed Multiplier</label>
-                <input type="number" id="timeSpeedMultiplier" oninput="updateUserData()" value="600"
-                    style="flex: 0 1 100px;" />
-            </div>
-        </div>
-        </br>
-        </br>
-        <hr style="border: 1px solid black;">
-        <div class="rightside" style=" flex: 1;  flex-direction: column;">
-            <div class=" form-container" style="display: flex;flex-direction: column;">
                 <div style="display: flex;flex-direction: row;">
-                    <label for="sensorWidthInMeters" style="flex: 0 1 250px;">Sensor Width In Meters:</label>
-                    <!-- <input type="number" id="sensorWidthInMeters" oninput="updateUserData()" style="flex: 0 1 100px;" /> -->
-                    <input type="number" id="sensorWidthInMetersNumber" oninput="updateUserData()" min="0" max="100"
-                        step="1" style="flex: 0 1 100px;" />
-                    <input type="range" id="sensorWidthInMeters" oninput="updateUserData()" min="30" max="100" step="1"
+                    <label for="cowIdInput" style="flex: 0 1 250px;">Cow ID:</label>
+                    <input type="text" id="cowIdInput" oninput="updateUserData()" value="1" style="flex: 0 1 100px;" />
+                </div>
+                <div style="display: flex;flex-direction: row; ">
+                    <label for="recordIntervalInSeconds" style="flex: 0 1 250px;">Record Interval In Seconds:</label>
+                    <input type="number" id="recordIntervalInSeconds" oninput="updateUserData()" value="60"
+                        style="flex: 0 1 100px;" />
+                </div>
+                <div style="display: flex;flex-direction: row; ">
+                    <label for="recordDurationInDays" style="flex: 0 1 250px;">Record Duration In Days:</label>
+                    <input type="number" id="recordDurationInDays" oninput="updateUserData()" value="2"
+                        style="flex: 0 1 100px;" />
+                </div>
+                <div style="display: flex;flex-direction: row; ">
+                    <label for="timeSpeedMultiplier" style="flex: 0 1 250px;">Time Speed Multiplier</label>
+                    <input type="number" id="timeSpeedMultiplier" oninput="updateUserData()" value="600"
                         style="flex: 0 1 100px;" />
                 </div>
             </div>
-            <button id="exportSensorsAndSpaces" onclick="exportSensorsAndSpaces()">Export Spaces and Sensors to
-                JSON</button>
+            </br>
+            </br>
             <hr style="border: 1px solid black;">
-
-            <button id="resetTimerButton">Reset Timer</button>
-            </br>
-            </br>
-            <button id="clearRecordsButton">Clear Records</button>
-            </br>
-            </br>
-            <button id="saveButton">Export as CSV</button>
-            <input type="file" id="csvFiles" multiple accept=".csv" onchange="combineFiles()">
-            <button onclick="selectFiles()">Select and Combine CSV Files</button>
-
-            <div style="display: flex;flex-direction: row; ">
-                <textarea id="consoleOutput" rows="5" style="flex: 0 1 750px;"></textarea>
-            </div>
-            <hr style="border: 1px solid black;">
-            <h4>Configuration</h4>
-            <div id="configuration">
-                <button onclick="generateEvent('eventsList')">AddEvent</button>
-                <div id="eventsList" style="display: flex; flex-direction:column;">
-                    <div id="event1">
-                        <div class="inputrow">
-                            <div>
-                                <button onclick="toggleHideElement('event1details')">Fold</button>
-                            </div>
-                            <div>
-                                <button onclick="removeElement('event1')">Delete</button>
-                            </div>
-                        </div>
-                        <div id="event1details">
-                            <div class="inputrow">
-                                <label class="inputrowlabel-m">description: </label>
-                                <input type="text" oninput="updateUserData()" value="human readable description"
-                                    class=".inputrow-input-m" />
-                            </div>
-                            <div class="inputrow">
-                                <label class="inputrowlabel-m">id: </label>
-                                <input type="number" oninput="updateUserData()" value="1" class=".inputrow-input-m" />
-                            </div>
-                            <div class="inputrow">
-                                <label class="inputrowlabel-m">metaevent-id: </label>
-                                <input type="number" oninput="updateUserData()" value="1" class=".inputrow-input-m" />
-                            </div>
-                            <div class="inputrow">
-                                <label class="inputrowlabel-m">profile index: </label>
-                                <input type="number" oninput="updateUserData()" value="1" class=".inputrow-input-m" />
-                            </div>
-                            <div class="inputrow">
-                                <label class="inputrowlabel-m">space ids (commaseperated): </label>
-                                <input type="text" oninput="updateUserData()" value="1,2,3" class=".inputrow-input-m" />
-                            </div>
-                            <div class="inputrow">
-                                <label class="inputrowlabel-m">capacity MetaPerson id </label>
-                                <input type="number" oninput="updateUserData()" value="1" class=".inputrow-input-m" />
-                            </div>
-                            <div class="inputrow">
-                                <label class="inputrowlabel-m">capacity range min </label>
-                                <input type="number" oninput="updateUserData()" value="0" class=".inputrow-input-m" />
-                            </div>
-                            <div class="inputrow">
-                                <label class="inputrowlabel-m">capacity range max </label>
-                                <input type="number" oninput="updateUserData()" value="1000"
-                                    class=".inputrow-input-m" />
-                            </div>
-                            <div class="inputrow">
-                                <label class="inputrowlabel-m">start date: </label>
-                                <input type="date" oninput="updateUserData()" value="2000-01-01"
-                                    class="inputrow-input-l" />
-                            </div>
-                            <div class="inputrow">
-                                <label class="inputrowlabel-m">end date: </label>
-                                <input type="date" oninput="updateUserData()" value="2999-01-01"
-                                    class="inputrow-input-l" />
-                            </div>
-                            <div class="inputrow">
-                                <label class="inputrowlabel-m">period: </label>
-                                <input type="text" oninput="updateUserData()" value="day" class="inputrow-input-l" />
-                            </div>
-                            <div class="inputrow">
-                                <label class="inputrowlabel-m">period interval: </label>
-                                <input type="number" oninput="updateUserData()" value="1" class="inputrow-input-l" />
-                            </div>
-                            <div class="inputrow">
-                                <label class="inputrowlabel-m">start-time: </label>
-                                <input type="time" oninput="updateUserData()" value="00:00" class="inputrow-input-l" />
-                            </div>
-                            <div class="inputrow">
-                                <label class="inputrowlabel-m">end-time: </label>
-                                <input type="time" oninput="updateUserData()" value="23:59" class="inputrow-input-l" />
-                            </div>
-                            <div class="inputrow">
-                                <label class="inputrowlabel-m">required-attendance: </label>
-                                <input type="time" oninput="updateUserData()" value="02:00" class="inputrow-input-l" />
-                            </div>
-                        </div>
+            <div class="rightside" style=" flex: 1;  flex-direction: column;">
+                <div class=" form-container" style="display: flex;flex-direction: column;">
+                    <div style="display: flex;flex-direction: row;">
+                        <label for="sensorWidthInMeters" style="flex: 0 1 250px;">Sensor Width In Meters:</label>
+                        <!-- <input type="number" id="sensorWidthInMeters" oninput="updateUserData()" style="flex: 0 1 100px;" /> -->
+                        <input type="number" id="sensorWidthInMetersNumber" oninput="updateUserData()" min="0" max="100"
+                            step="1" style="flex: 0 1 100px;" />
+                        <input type="range" id="sensorWidthInMeters" oninput="updateUserData()" min="30" max="100"
+                            step="1" style="flex: 0 1 100px;" />
                     </div>
                 </div>
+                <button id="exportSensorsAndSpaces" onclick="exportSensorsAndSpaces()">Export Spaces and Sensors to
+                    JSON</button>
+                <hr style="border: 1px solid black;">
+
+                <button id="resetTimerButton">Reset Timer</button>
+                </br>
+                </br>
+                <button id="clearRecordsButton">Clear Records</button>
+                </br>
+                </br>
+                <button id="saveButton">Export as CSV</button>
+                <input type="file" id="csvFiles" multiple accept=".csv" onchange="combineFiles()">
+                <button onclick="selectFiles()">Select and Combine CSV Files</button>
+
+                <div style="display: flex;flex-direction: row; ">
+                    <textarea id="consoleOutput" rows="5" style="flex: 0 1 750px;"></textarea>
+                </div>
+                <hr style="border: 1px solid black;">
+                <h4>Configuration</h4>
+                <div id="configuration">
+                    <button onclick="generateEvent()">AddEvent</button>
+                    <div id="eventsList" style="display: flex; flex-direction:column;">
+
+                    </div>
+                </div>
+
             </div>
         </div>
-    </div>
-    <script src="globals.js"></script>
-    <script src="modelfunctions.js"></script>
-    <script src="filefunctions.js"></script>
-    <script src="drawingfunctions.js"></script>
-    <script src="interactionfunctions.js"></script>
-    <script src="utilityfunctions.js"></script>
-    <script src="tempfunctions.js"></script>
-    <script src="uifunctions.js"></script>
-    <script>
+        <script src="globals.js"></script>
+        <script src="modelfunctions.js"></script>
+        <script src="filefunctions.js"></script>
+        <script src="drawingfunctions.js"></script>
+        <script src="interactionfunctions.js"></script>
+        <script src="utilityfunctions.js"></script>
+        <script src="tempfunctions.js"></script>
+        <script src="uifunctions.js"></script>
+
+        <script>
 
 
-        helloDave()
+            helloDave()
 
-        let canvas = document.getElementById('myCanvas');
-        canvas.width = canvasWidth;
-        canvas.height = canvasHeight;
-        let ctx = canvas.getContext('2d');
-        let coordinatesLabel = document.getElementById('coordinatesLabel');
-        const rect = canvas.getBoundingClientRect();
-        let recordeddata = [
+            let canvas = document.getElementById('myCanvas');
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            let ctx = canvas.getContext('2d');
+            let coordinatesLabel = document.getElementById('coordinatesLabel');
+            const rect = canvas.getBoundingClientRect();
+            let recordeddata = [
 
-        ];
-        let mousePosition = { x: 0, y: 0 };
-        let isrecording = false;
-        const now = new Date('2021-01-01T01:00:00');
-        let recordingID;
+            ];
+            let mousePosition = {x: 0, y: 0};
+            let isrecording = false;
+            const now = new Date('2021-01-01T01:00:00');
+            let recordingID;
 
-        document.getElementById('cowIdInput').value = cowId;
-        document.getElementById('recordIntervalInSeconds').value = recordIntervalInSeconds;
-        document.getElementById('recordDurationInDays').value = recordDurationInDays;
-        document.getElementById('timeSpeedMultiplier').value = timeSpeedMultiplier;
-        document.getElementById('sensorWidthInMeters').value = sensorWidthInMeters;
-        // create html elements
-        createSlider("sensorWidthInMetersNumber", "sensorWidthInMeters", 30, 100, 1, updateUserData);
-        // document.getElementById("addEvent").appendChild(createFoldableDiv());
-
-
-
-
-        clearConsoleOutput();
+            document.getElementById('cowIdInput').value = cowId;
+            document.getElementById('recordIntervalInSeconds').value = recordIntervalInSeconds;
+            document.getElementById('recordDurationInDays').value = recordDurationInDays;
+            document.getElementById('timeSpeedMultiplier').value = timeSpeedMultiplier;
+            document.getElementById('sensorWidthInMeters').value = sensorWidthInMeters;
+            // create html elements
+            createSlider("sensorWidthInMetersNumber", "sensorWidthInMeters", 30, 100, 1, updateUserData);
+            // document.getElementById("addEvent").appendChild(createFoldableDiv());
 
 
 
-        function updateUserData() {
-            cowId = document.getElementById('cowIdInput').value;
-            recordIntervalInSeconds = parseInt(document.getElementById('recordIntervalInSeconds').value);
-            recordDurationInDays = parseInt(document.getElementById('recordDurationInDays').value);
-            timeSpeedMultiplier = parseInt(document.getElementById('timeSpeedMultiplier').value);
-            sensorWidthInMeters = parseInt(document.getElementById('sensorWidthInMeters').value);
-            if (sensorWidthInMeters < 30) sensorWidthInMeters = 30;
-            setUpRecording();
+
+            clearConsoleOutput();
+
+
+
+            function updateUserData() {
+                cowId = document.getElementById('cowIdInput').value;
+                recordIntervalInSeconds = parseInt(document.getElementById('recordIntervalInSeconds').value);
+                recordDurationInDays = parseInt(document.getElementById('recordDurationInDays').value);
+                timeSpeedMultiplier = parseInt(document.getElementById('timeSpeedMultiplier').value);
+                sensorWidthInMeters = parseInt(document.getElementById('sensorWidthInMeters').value);
+                if (sensorWidthInMeters < 30) sensorWidthInMeters = 30;
+                setUpRecording();
+                drawScene();
+            }
+
+            function printUserData() {
+                console.log(`cowId: ${cowId} recordIntervalInSeconds: ${recordIntervalInSeconds} recordDurationInDays: ${recordDurationInDays} timeSpeedMultiplier: ${timeSpeedMultiplier}`);
+                console.log("SMARTEvents:");
+                console.log(smartEvents);
+                console.log("sensors:")
+                console.log(sensors)
+                console.log("spaces:")
+                console.log(spaces)
+            }
+
+            let isDrawing = false;
+            let path = [];
             drawScene();
 
-
-        }
-        function printUserData() {
-            console.log(`cowId: ${cowId} recordIntervalInSeconds: ${recordIntervalInSeconds} recordDurationInDays: ${recordDurationInDays} timeSpeedMultiplier: ${timeSpeedMultiplier}`);
-        }
-
-        let isDrawing = false;
-        let path = [];
-        drawScene();
-
-        canvas.onmousedown = (e) => {
-            toggleDrawing(e);
-        };
+            canvas.onmousedown = (e) => {
+                toggleDrawing(e);
+            };
 
 
 
-        canvas.onmousemove = (e) => {
-            // update live coordinates label
-            geocoords = GetGeoocordinatesUnderMouse(e);
-            let mouseCoords = ConvertGeoCoordsToCanvasXY(geocoords.latitude.toFixed(6), geocoords.longitude.toFixed(6))
-            coordinatesLabel.innerText = `MouseCoordinates: lat: ${geocoords.latitude.toFixed(6)}, long: ${geocoords.longitude.toFixed(6)} , ( x: ${mouseCoords.x} , y:  ${mouseCoords.y})`;
+            canvas.onmousemove = (e) => {
+                // update live coordinates label
+                geocoords = GetGeoocordinatesUnderMouse(e);
+                let mouseCoords = ConvertGeoCoordsToCanvasXY(geocoords.latitude.toFixed(6), geocoords.longitude.toFixed(6))
+                coordinatesLabel.innerText = `MouseCoordinates: lat: ${geocoords.latitude.toFixed(6)}, long: ${geocoords.longitude.toFixed(6)} , ( x: ${mouseCoords.x} , y:  ${mouseCoords.y})`;
 
-            updateDrawings(e);
+                updateDrawings(e);
 
-        };
+            };
 
-        canvas.onmouseout = (e) => {
-            coordinatesLabel.innerText = "Coordinates: ";
-        };
+            canvas.onmouseout = (e) => {
+                coordinatesLabel.innerText = "Coordinates: ";
+            };
 
 
-        function toggleRecording() {
-            isrecording = !isrecording;
-            console.log(isrecording ? 'Recording started!' : 'Recording stopped!');
-        }
-
-        document.addEventListener('keydown', (event) => {
-            if (event.code === 'Space') {
-                toggleRecording();
+            function toggleRecording() {
+                isrecording = !isrecording;
+                console.log(isrecording ? 'Recording started!' : 'Recording stopped!');
             }
-        });
 
-
-        document.getElementById('resetTimerButton').addEventListener('click', () => {
-            loops = 0;
-        });
-        document.getElementById('clearRecordsButton').addEventListener('click', () => {
-            recordeddata = [];
-            clearConsoleOutput();
-        });
-        document.getElementById('saveButton').addEventListener('click', () => {
-            saveAsCsv(recordeddata);
-        });
-
-
-
-
-        function setUpRecording() {
-            let loops = 0;
-            let totalDurationInSeconds = 60 * 60 * 24 * recordDurationInDays;
-            let SecondsPerLoop = recordIntervalInSeconds;
-            let loopIntevalMilliSeconds = (1 / timeSpeedMultiplier) * 1000;
-
-            console.log(`Resetting Interval: ${loopIntevalMilliSeconds}`);
-
-            clearInterval(recordingID);
-
-            recordingID = setInterval(() => {
-
-                if (isrecording) {
-                    let offsetSeconds = SecondsPerLoop * loops++;
-                    let newDate = new Date(now.getTime() + offsetSeconds * 1000);
-                    let lastDate = new Date(now.getTime() + totalDurationInSeconds * 1000);
-                    if (newDate.getTime() <= lastDate.getTime()) {
-
-                        const formattedTime = newDate.toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
-                        const latitude = ConvertCanvasXYToGeoCoords(mousePosition.x, mousePosition.y).latitude;
-                        const longitude = ConvertCanvasXYToGeoCoords(mousePosition.x, mousePosition.y).longitude;
-                        // console.log(`${cowId}  ${formattedTime} - mouseposition: ${mousePosition.x}, ${mousePosition.y} lon: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).longitude} lat: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).latitude} `);
-                        recordeddata.push({ cowid: cowId, time: formattedTime, longitude: longitude, latitude: latitude });
-                        writeToCOnsoleOutput(`${cowId}, ${formattedTime}, ${longitude},${latitude}\n`)
-
-                    } else {
-                        toggleRecording();
-                    }
+            document.addEventListener('keydown', (event) => {
+                if (event.code === 'Space') {
+                    toggleRecording();
                 }
-            }, loopIntevalMilliSeconds);
-        }
-        setUpRecording();
+                if (event.code == 'KeyP') {
+                    printUserData();
+                }
+            });
+
+
+            document.getElementById('resetTimerButton').addEventListener('click', () => {
+                loops = 0;
+            });
+            document.getElementById('clearRecordsButton').addEventListener('click', () => {
+                recordeddata = [];
+                clearConsoleOutput();
+            });
+            document.getElementById('saveButton').addEventListener('click', () => {
+                saveAsCsv(recordeddata);
+            });
 
 
 
 
-    </script>
+            function setUpRecording() {
+                let loops = 0;
+                let totalDurationInSeconds = 60 * 60 * 24 * recordDurationInDays;
+                let SecondsPerLoop = recordIntervalInSeconds;
+                let loopIntevalMilliSeconds = (1 / timeSpeedMultiplier) * 1000;
+
+                console.log(`Resetting Interval: ${loopIntevalMilliSeconds}`);
+
+                clearInterval(recordingID);
+
+                recordingID = setInterval(() => {
+
+                    if (isrecording) {
+                        let offsetSeconds = SecondsPerLoop * loops++;
+                        let newDate = new Date(now.getTime() + offsetSeconds * 1000);
+                        let lastDate = new Date(now.getTime() + totalDurationInSeconds * 1000);
+                        if (newDate.getTime() <= lastDate.getTime()) {
+
+                            const formattedTime = newDate.toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
+                            const latitude = ConvertCanvasXYToGeoCoords(mousePosition.x, mousePosition.y).latitude;
+                            const longitude = ConvertCanvasXYToGeoCoords(mousePosition.x, mousePosition.y).longitude;
+                            // console.log(`${cowId}  ${formattedTime} - mouseposition: ${mousePosition.x}, ${mousePosition.y} lon: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).longitude} lat: ${MouseXYToGeoCoords(mousePosition.x, mousePosition.y).latitude} `);
+                            recordeddata.push({cowid: cowId, time: formattedTime, longitude: longitude, latitude: latitude});
+                            writeToCOnsoleOutput(`${cowId}, ${formattedTime}, ${longitude},${latitude}\n`)
+
+                        } else {
+                            toggleRecording();
+                        }
+                    }
+                }, loopIntevalMilliSeconds);
+            }
+            setUpRecording();
+
+
+
+
+        </script>
 </body>
 
 </html>

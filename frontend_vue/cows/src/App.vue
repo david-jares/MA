@@ -80,7 +80,7 @@ const handleCowIDChanged = (cowId: string) => {
 </script>
 
 <template>
-  <header>
+  <header style="background-color: white; padding: 50px;">
     <div class="wrapper">
       <h1>Weideinsight Setup</h1>
       <div style="display: flex;">

@@ -197,7 +197,7 @@ function drawTriangle(ctx, triangle) {
     ctx.closePath();
     ctx.strokeStyle = 'red';
     ctx.stroke();
-    ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.0)';
     ctx.fill();
 }
 
@@ -316,16 +316,18 @@ function closestPointOnPolygon(point, scaledCoordinates) {
 
 
 
-function drawRectangle(canvas, id, x, y, width, height, fillColor = 'rgba(255, 0, 0, 0.25)') {
+function drawRectangle(canvas, id = -1, x, y, width, height, fillColor = 'rgba(255, 0, 0, 0.25)') {
     const ctx = canvas.getContext('2d');
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, width, height);
     ctx.fillStyle = fillColor;
     ctx.fillRect(x + 2, y + 2, width - 4, height - 4);
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.font = '14px Arial';
-    ctx.fillText(id, x + 3, y + 14);
+    if (id >= 0) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.font = '14px Arial';
+        ctx.fillText(id, x + 3, y + 14);
+    }
 }
 
 function calculateSpaces(canvas, width, height) {
@@ -356,6 +358,8 @@ function calculateSpaces(canvas, width, height) {
         let sensorType = "";
         for (let j = 0; j < triangles.length; j++) {
             const triangle = triangles[j];
+            // drawTriangle(ctx, triangle);
+            // debugger;
             if (isPointInsideTriangle(p1, triangle) || isPointInsideTriangle(p2, triangle) || isPointInsideTriangle(p3, triangle) || isPointInsideTriangle(p4, triangle)) {
                 // console.log(`Rectangle ${rectangle.id} overlaps with outside polygon`);
                 foundRectangle = true;
@@ -532,6 +536,7 @@ function drawScene() {
 
     calculateSpaces(canvas, sensorWidthInMeters, sensorWidthInMeters);
     drawSpaces();
+    drawSMARTEvents()
     // drawTriangle(ctx,[{x:10,y:10},{x:400,y:40},{x:200,y:300}])
 }
 
@@ -582,8 +587,8 @@ function updateDrawings(event) {
             const clampedPoint = closestPointOnPolygon({ x, y }, scaledCoordinatesCombined);
             x = clampedPoint.x;
             y = clampedPoint.y;
-            
-            
+
+
         }
         if (isInsideBarnPolygon({ x, y })) { console.log("inside BARN"); isCowInBarn = true; } else { isCowInBarn = false; }
         if (isInsidePasturePolygon({ x, y })) { console.log("inside PASTURE"); isCowInPasture = true; } else { isCowInPasture = false; }
@@ -593,4 +598,46 @@ function updateDrawings(event) {
 
         drawScene();
     }
+}
+
+
+
+function drawSMARTEvents() {
+    smartEvents.forEach(smartEvent => {
+        // debugger;
+        console.log(smartEvent.spaceIds);
+        let spaceIds = smartEvent.spaceIds.split(',').map(Number);
+        for (let i = 0; i < spaceIds.length; i++) {
+            const spaceId = spaceIds[i];
+
+            let space = spaces.find(s => s.id === spaceId);
+            let x = space.canvasCoordinates[0];
+            let y = space.canvasCoordinates[1];
+
+            padding = 10;
+            drawRectangle(canvas, -1, x + padding, y + padding, sensorWidthInMeters - 2 * padding, sensorWidthInMeters - 2 * padding, smartEvent.color)
+            // ctx.fillStyle = 'rgba(255, 0, 0, 1)';
+            ctx.fillStyle = 'rgba(255, 0, 0, 1)';
+            ctx.font = '14px Arial';
+            ctx.fillText(smartEvent.id, x + 0.5 * sensorWidthInMeters, y + 0.5 * sensorWidthInMeters);
+        }
+
+        // smartEvent.spaceIds.forEach(spaceId => {
+        //     let space = spaces.find(s => s.id === spaceId);
+        //     let x = space.coordinates[0];
+        //     let y = space.coordinates[1];
+
+        //     // let x = smartEvent.coordinates[0];
+        //     // let y = smartEvent.coordinates[1];
+        //     let radius = 30;
+        //     ctx.beginPath();
+        //     ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+        //     ctx.fillStyle = 'rgba(255, 0, 0, 1)';
+        //     ctx.fill();
+        //     ctx.lineWidth = 1;
+        //     ctx.strokeStyle = '#003300';
+        //     debugger;
+        //     ctx.stroke();
+        // })
+    })
 }
