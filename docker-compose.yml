@@ -1,19 +1,20 @@
 version: '3.3'
+# version: '3.3'
 services:
   ### Gateway ###
   gateway:
-    depends_on : 
+    depends_on:
       - db
     build: gateway
-    ports: 
+    ports:
       - 8080:8080
     volumes:
       - ./gateway:/app
-  
-  # ### SmartSPEC service ###
+
+  ## SmartSPEC service ###
   smartspec-service:
     build: smartspec-service
-    depends_on : 
+    depends_on:
       - db
 
     environment:
@@ -27,7 +28,7 @@ services:
   ### Configuration service ###
   configuration-service:
     build: configuration-service
-    depends_on : 
+    depends_on:
       - db
 
     environment:
@@ -41,7 +42,7 @@ services:
   ### Location service ###
   location-service:
     build: location-service
-    depends_on : 
+    depends_on:
       - db
     environment:
       MYSQL_HOST: db
@@ -69,29 +70,59 @@ services:
       # Where the data is persisted
       - my-db:/var/lib/mysql
       # Init scripts
-      
+
       #mounts the ./data directory on the host system to the /data directory in the container. This is used to provide additional data files to the container.
-      - ./data:/data 
-      
+      - ./data:/data
+
       #mounts the create_tables.sql file on the host system to the /docker-entrypoint-initdb.d/1.sql file in the container. This file is executed when the container is started, and is used to create the necessary database tables.
-      - ./scripts/init/grant_rights_to_user.sql:/docker-entrypoint-initdb.d/1.sql 
-      - ./scripts/init/create_tables.sql:/docker-entrypoint-initdb.d/2.sql 
+      - ./scripts/init/grant_rights_to_user.sql:/docker-entrypoint-initdb.d/1.sql
+      - ./scripts/init/create_tables.sql:/docker-entrypoint-initdb.d/2.sql
       # - ./scripts/init/insert_in_smartspec_conf.sql:/docker-entrypoint-initdb.d/3.sql
       - ./scripts/init/insert_in_smartspec_conf_GPS.sql:/docker-entrypoint-initdb.d/4.sql
       # - ./scripts/init/load_data_from_csv.sql:/docker-entrypoint-initdb.d/5.sql
       - ./scripts/init/load_data_from_csv_GPS.sql:/docker-entrypoint-initdb.d/6.sql
       - ./scripts/init/transform_measurements.sql:/docker-entrypoint-initdb.d/7.sql
 
-  ### Web UI ###
-  web-ui:
-    build: web-ui
-    depends_on : 
-      - db
-    environment:
-      # REACT_APP_SERVER_URL: http://localhost:8080
-      REACT_APP_SERVER_URL: http://157.230.24.1:8080
+  # ### Web UI ###
+  # web-ui:
+  #   build: web-ui
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     # REACT_APP_SERVER_URL: http://localhost:8080
+  #     REACT_APP_SERVER_URL: http://157.230.24.1:8080
 
+  #   volumes:
+  #     - ./web-ui:/app
+
+  vite_docker:
+    image: node:alpine
+    container_name: vite_docker
+    entrypoint: /bin/sh
+    ports:
+      - 8000:8000
+    working_dir: /srv/app
+    # environment:
+    #   VUE_APP_SERVER_URL: http://157.230.24.1:8000
     volumes:
-      - ./web-ui:/app
+      - type: bind
+        source: ./frontend_final/
+        target: /srv/app
+    tty: true
+
 volumes:
   my-db:
+
+    # services:
+    #   vite_docker:
+    #     image: node:alpine
+    #     container_name: vite_docker
+    #     entrypoint: /bin/sh
+    #     ports:
+    #       - 8000:8000
+    #     working_dir: /srv/app
+    #     volumes:
+    #       - type: bind
+    #         source: ./frontend_final/
+    #         target: /srv/app
+    #     tty: true

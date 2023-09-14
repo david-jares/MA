@@ -120,9 +120,44 @@ run-my-farm-script:
 
 
 
-# So David die E-Mail nur an dich.
-# Die CSV mit den Koordinaten ist etwas verwirrend formatiert. Latitude ist immer etwas mit 480.xxxxxxxx und Longtitude ist zweistellig mit 12.xxxxxxx
-# Kirchweihdach müsste das sein.
+# # So David die E-Mail nur an dich.
+# # Die CSV mit den Koordinaten ist etwas verwirrend formatiert. Latitude ist immer etwas mit 480.xxxxxxxx und Longtitude ist zweistellig mit 12.xxxxxxx
+# # Kirchweihdach müsste das sein.
 
+CURRENT_DIR=$(patsubst %/,%,$(dir $(realpath $(firstword $(MAKEFILE_LIST)))))
+ROOT_DIR=$(CURRENT_DIR)
+CURRENT_USER=
+DOCKER_NAME=vite_docker
+DOCKER_COMPOSE?=docker compose
+DOCKER_EXEC_TOOLS_APP=$(CURRENT_USER) docker exec -it $(DOCKER_NAME) sh
+NODE_INSTALL="npm i"
+SERVER_RUN="npm run dev"
 
+.PHONY:	vue_build vue_install vue_dev vue_up vue_start vue_first vue_stop vue_restart vue_clear
 
+vue_build:
+	$(DOCKER_COMPOSE)	up --build --no-recreate -d
+
+vue_install:
+	$(DOCKER_EXEC_TOOLS_APP) -c $(NODE_INSTALL)
+
+vue_dev:
+	$(DOCKER_EXEC_TOOLS_APP) -c $(SERVER_RUN)
+
+vue_up:
+	$(DOCKER_COMPOSE) up -d
+
+vue_start:	vue_up vue_dev
+# // this will up the docker env and run the npm run dev it to
+
+vue_first:	vue_build vue_install vue_dev
+# // this will build the env, up it and run the npm install and then run npm run dev it to
+
+vue_stop: $(ROOT_DIR)/docker-compose.yml
+	$(DOCKER_COMPOSE) kill || true
+	$(DOCKER_COMPOSE) rm --force || true
+
+vue_restart: vue_stop vue_start vue_dev
+
+vue_clear: stop $(ROOT_DIR)/docker-compose.yml
+	$(DOCKER_COMPOSE) down -v --remove-orphans || true

@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-import CanvasMap from './components/CanvasMap.vue';
 import LabeledInput from './components/LabeledInput.vue';
 import LabeledInputWithSlider from './components/LabeledInputWithSlider.vue';
 import SeparationLine from './components/SeparationLine.vue';
 import MyButton from './components/MyButton.vue';
 import SmartEvent from './components/SmartEvent.vue';
-import Test from './components/Test.vue'
 import './style.css'
 import { useGlobalsStore } from './stores/globals';
 import { onMounted, onBeforeUnmount, ref, getCurrentInstance, watch } from 'vue';
@@ -20,10 +17,11 @@ import { drawScene } from './myfunctions/drawingfunctions';
 import CanvasScalable from './components/CanvasScalable.vue';
 import BridgeList from './components/BridgeList.vue';
 import BridgeEntry from './components/BridgeEntry.vue';
-
+import axios from 'axios';
+import { getStatusLearningAPI } from './myfunctions/axiosRequests';
 const gs = useGlobalsStore();
 const testevent = ref();
-
+// const serverURL = process.env.VUE_APP_SERVER_URL;
 onMounted(() => {
   document.addEventListener('keydown', (ev) => {
     handleKeyDown(ev);
@@ -77,20 +75,22 @@ const handleCowIDChanged = (cowId: string) => {
   // getCurrentInstance()?.emit(OnCowIDChanged, cowId);
   // saveAsCsv(gs.recordedData);
 }
+
+
 </script>
 
 <template>
   <header style="background-color: white; padding: 50px;">
     <div class="wrapper">
-      <h1>Weideinsight Setup</h1>
+      <h1>Weideinsight Setups</h1>
       <div style="display: flex;">
         <div class="leftside" style=" flex: 1; flex-direction: column;">
-          <!-- <CanvasScalable></CanvasScalable> -->
-          <!-- <CanvasMap> </CanvasMap> -->
+          <CanvasScalable></CanvasScalable>
           <Console></Console>
         </div>
         <div class="rightside" style=" flex: 1;  flex-direction: column;">
-
+          <button @click="() => getStatusLearningAPI()">test</button>
+          <p>{{ gs.serverAddress }}</p>
           <div class=" form-container" style="display: flex;flex-direction: column;">
             <SeparationLine></SeparationLine>
             <p style="padding-left: 5px;"> Press I = Display HotKeys </p>
@@ -117,22 +117,23 @@ const handleCowIDChanged = (cowId: string) => {
               <LabeledInput label-text="Color Area" :input-type="'color'" :default-value="gs.colorPolygon"
                 @onInput="(val) => gs.colorPolygon = val">
               </LabeledInput>
-              <input type="number" style="flex:1; " min="0" max="1" step="0.05" :value="gs.colorAlphaPolygon"
-                @input="(ev) => gs.colorAlphaPolygon = ev.target!.value" />
+              <input type="number" style="flex:1; " min="0" max="1" step="0.05" :value="gs.colorAlphaPolygon" @input="(ev: Event) => {
+                gs.colorAlphaSpacesBarn = parseInt((ev.target as HTMLInputElement).value, 10);
+              }" />
             </div>
             <div style="display: flex;">
               <LabeledInput label-text="Color Spaces Pasture" :input-type="'color'" :default-value="gs.colorSpacesPasture"
                 @onInput="(val) => gs.colorSpacesPasture = val">
               </LabeledInput>
               <input type="number" style="flex: 1;" min="0" max="1" step="0.05" :value="gs.colorAlphaSpacesPasture"
-                @input="(ev) => gs.colorAlphaSpacesPasture = ev.target!.value" />
+                @input="(ev: Event) => { gs.colorAlphaSpacesPasture = parseInt((ev.target as HTMLInputElement).value, 10) }" />
             </div>
             <div style="display: flex;">
               <LabeledInput label-text="Color Spaces Barn" :input-type="'color'" :default-value="gs.colorSpacesBarn"
                 @onInput="(val) => gs.colorSpacesBarn = val">
               </LabeledInput>
               <input type="number" style="flex: 1; " min="0" max="1" step="0.05" :value="gs.colorAlphaSpacesBarn"
-                @input="(ev) => gs.colorAlphaSpacesBarn = ev.target!.value" />
+                @input="(ev: Event) => { gs.colorAlphaSpacesBarn = parseInt((ev.target as HTMLInputElement).value, 10) }" />
             </div>
             <div style="display: flex;flex-direction: row; padding: 3px 0 3px 0; border: 1px solid #00000033;">
               <label style="flex: 0 1 250px; padding: 0 0 0 5px;"> Display Space IDs </label>

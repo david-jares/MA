@@ -11,6 +11,6 @@ GET {{baseURL}}/configuration
 PUT {{baseURL}}/configuration
 Content-Type: application/json
 
-{
-    "sensors": "my super sensor"
-}
+# {
+#     "sensors": "my super sensor"
+# }
