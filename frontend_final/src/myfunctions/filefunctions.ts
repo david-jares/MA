@@ -1,4 +1,5 @@
 import { useGlobalsStore } from "@/stores/globals";
+import { getConfigurationJSONString } from "./utilityfunctions";
 
 export function helloDave(): void {
   console.log("Hello Dave");
@@ -72,14 +73,18 @@ export function selectFiles(): void {
 }
 
 export function exportSensorsAndSpaces(): void {
-  const gs = useGlobalsStore();
+  // const gs = useGlobalsStore();
 
-  const data = {
-    sensors: gs.sensors,
-    spaces: gs.spaces
-  };
-  const json = JSON.stringify(data, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
+  // const data = {
+  //   sensors: gs.sensors,
+  //   spaces: gs.spaces
+  // };
+
+  const dataJson = getConfigurationJSONString();
+
+  // const json = JSON.stringify(data, null, 2);
+  // const blob = new Blob([json], { type: 'application/json' });
+  const blob = new Blob([dataJson], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.download = 'SensorsAndSpaces.json';

@@ -6,7 +6,7 @@ import { useGlobalsStore } from '@/stores/globals';
 import TooltipButton from './TooltipButton.vue';
 
 const gs = useGlobalsStore();
-let isFolded = ref(false);
+let isFolded = ref(true);
 
 const props = defineProps<{
     // event: SMARTEvent;

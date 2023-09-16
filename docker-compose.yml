@@ -84,16 +84,16 @@ services:
       - ./scripts/init/transform_measurements.sql:/docker-entrypoint-initdb.d/7.sql
 
   # ### Web UI ###
-  # web-ui:
-  #   build: web-ui
-  #   depends_on:
-  #     - db
-  #   environment:
-  #     # REACT_APP_SERVER_URL: http://localhost:8080
-  #     REACT_APP_SERVER_URL: http://157.230.24.1:8080
+  web-ui:
+    build: web-ui
+    depends_on:
+      - db
+    environment:
+      # REACT_APP_SERVER_URL: http://localhost:8080
+      REACT_APP_SERVER_URL: http://157.230.24.1:8080
 
-  #   volumes:
-  #     - ./web-ui:/app
+    volumes:
+      - ./web-ui:/app
 
   vite_docker:
     image: node:alpine

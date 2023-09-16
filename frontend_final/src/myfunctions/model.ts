@@ -138,7 +138,7 @@ export class SMARTEvent {
     colorRGB: string;
     colorAlpha: number;
 
-    constructor(id: number,screenDescription:string, description: string, metaeventId: number, profileIndex: number, spaceIds: string, capacityMetaPersonId: number, capacityRangeMin: number, capacityRangeMax: number, startDate: string, endDate: string, period: string, periodInterval: number, startTime: string, endTime: string, requiredAttendance: string, colorRGB: string, colorAlpha: number) {
+    constructor(id: number, screenDescription: string, description: string, metaeventId: number, profileIndex: number, spaceIds: string, capacityMetaPersonId: number, capacityRangeMin: number, capacityRangeMax: number, startDate: string, endDate: string, period: string, periodInterval: number, startTime: string, endTime: string, requiredAttendance: string, colorRGB: string, colorAlpha: number) {
         this.id = id;
         this.description = description;
         this.screenDescription = screenDescription;
@@ -160,13 +160,148 @@ export class SMARTEvent {
     }
 }
 
-export class BridgePair{
-    id:number;
-    space1Id:number;
-    space2Id:number;
-    constructor(id:number,space1Id:number,space2Id:number){
+export class BridgePair {
+    id: number;
+    space1Id: number;
+    space2Id: number;
+    constructor(id: number, space1Id: number, space2Id: number) {
         this.id = id;
         this.space1Id = space1Id;
         this.space2Id = space2Id;
     }
+}
+
+export class ExportableSensor {
+    id: number;
+    'metasensor-Id': number; // must be seperated with a dash
+    coverage: number[];
+    coordinates: number[];
+    geoCoordinates: number[];
+    constructor(id: number, metasensorId: number, coverage: number[], coordinates: number[], geoCoordinates: number[]) {
+        this.id = id;
+        this['metasensor-Id'] = metasensorId;
+        this.coverage = coverage;
+        this.coordinates = coordinates;
+        this.geoCoordinates = geoCoordinates;
+    }
+    ToString(): string {
+        return JSON.stringify(this);
+        // }, 2);
+    }
+}
+
+export class ExportableSpace {
+    id: number;
+    description: string;
+    capacity: number;
+    coordinates: number[];
+    geoCoordinates: number[];
+    latitude: number;
+    longitude: number;
+    neighbors: number[];
+
+    constructor(id: number, description: string, capacity: number, coordinates: number[], geoCoordinates: number[], latitude: number, longitude: number, neighbors: number[]) {
+        this.id = id;
+        this.description = description;
+        this.capacity = capacity;
+        this.coordinates = coordinates;
+        this.geoCoordinates = geoCoordinates;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.neighbors = neighbors;
+    }
+    ToString(): string {
+        return JSON.stringify(this, null);
+        // return JSON.stringify(this, null, 2);
+    }
+}
+
+export class ExportableMetasensor {
+    id: number;
+    description: string;
+    constructor(id: number, description: string) {
+        this.id = id;
+        this.description = description;
+    }
+    ToString(): string {
+        return JSON.stringify(this, null);
+        // return JSON.stringify(this, null, 2);
+    }
+}
+
+export class ExportableLearningConfig {
+    startDate: string; // format 2022-04-26 
+    endDate: string;
+    unit: number;
+    validity: number;
+    smooth: string;
+    window: number;
+    timethresh: number;
+    occthresh: number; //written occ-thresh
+    constructor(startDate: string, endDate: string, unit: number, validity: number, smooth: string, window: number, timethresh: number, occThresh: number) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.unit = unit;
+        this.validity = validity;
+        this.smooth = smooth;
+        this.window = window;
+        this.timethresh = timethresh;
+        this.occthresh = occThresh;
+    }
+    ToString(): string {
+        let result = "";
+        result += '[learners]\n';
+        result += 'start = ' + this.startDate + '\n';
+        result += 'end = ' + this.endDate + '\n';
+        result += 'unit = ' + this.unit + '\n';
+        result += 'validity = ' + this.validity + '\n';
+        result += 'smooth = ' + this.smooth + '\n';
+        result += 'window = ' + this.window + '\n';
+        result += 'time-thresh = ' + this.timethresh + '\n';
+        result += 'occ-thresh = ' + this.occthresh + '\n';
+        result += '\n';
+
+        return result;
+    }
+}
+
+
+export class ExportableGeneratioConfig {
+    peopleNumber: number;
+    peopleGeneration: string;
+
+    eventsNumber: number;
+    eventsGeneration: string;
+
+    startDate: string; //2022-04-26 
+    endDate: string;
+
+    constructor(peopleNumber: number, peopleGeneration: string, eventsNumber: number, eventsGeneration: string, startDate: string, endDate: string) {
+        this.peopleNumber = peopleNumber;
+        this.peopleGeneration = peopleGeneration;
+        this.eventsNumber = eventsNumber;
+        this.eventsGeneration = eventsGeneration;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
+    ToString(): string {
+        let result = "";
+        result += '[people]\n';
+        result += 'number = ' + this.peopleNumber + '\n';
+        result += 'generation = ' + this.peopleGeneration + '\n';
+        result += '\n';
+        result += '[events]\n';
+        result += 'number = ' + this.eventsNumber + '\n';
+        result += 'generation = ' + this.eventsGeneration + '\n';
+        result += '\n';
+        result += '[synthetic-data-generator]\n';
+        result += 'start = ' + this.startDate + '\n';
+        result += 'end = ' + this.endDate + '\n';
+        result += '\n';
+
+        return result;
+    }
+
+
 }

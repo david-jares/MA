@@ -50,11 +50,13 @@ func (s *service) Learn(ctx context.Context) *errors.Error {
 	if err := s.utils.StartLearning(); err != nil {
 		return errors.New(http.StatusServiceUnavailable, err.Error())
 	}
+	log.Infof("Learning Started.")
 
 	if err := s.fetchConfig(ctx); err != nil {
 		learnInProgress = false
 		return errors.New(http.StatusInternalServerError, err.Error())
 	}
+	log.Infof("Config Fetched.")
 
 	go func() {
 		defer s.utils.StopLearning()
@@ -226,40 +228,50 @@ func (s *service) GenerationPersist(ctx context.Context) *errors.Error {
 // fetchConfig fetches the SmartSPEC configuration and stores it in files.
 func (s *service) fetchConfig(ctx context.Context) error {
 	config, err := s.repository.GetConfiguration(ctx)
+
 	if err != nil {
 		return err
 	}
+	log.Infof("Got Config From Repo")
 
 	sensorsConfig, err := s.utils.PrettyPrintJSON(config.Sensors)
 	if err != nil {
 		return err
 	}
+	log.Infof("got sensorsConfig")
 	spacesConfig, err := s.utils.PrettyPrintJSON(config.Spaces)
 	if err != nil {
 		return err
 	}
+	log.Infof("got spaces Config")
 	metasensorsConfig, err := s.utils.PrettyPrintJSON(config.Metasensors)
 	if err != nil {
 		return err
 	}
+	log.Infof("got metasensors Config")
 	learnConf := []byte(config.LearnConf + learnPaths)
 	genConf := []byte(config.GenConf + genPaths)
 
 	if err = os.WriteFile(dataPath+"/Sensors.json", sensorsConfig, 0644); err != nil {
 		return err
 	}
+	log.Infof("Written Sensors")
 	if err = os.WriteFile(dataPath+"/Spaces.json", spacesConfig, 0644); err != nil {
 		return err
 	}
+	log.Infof("Written Spaces")
 	if err = os.WriteFile(dataPath+"/MetaSensors.json", metasensorsConfig, 0644); err != nil {
 		return err
 	}
+	log.Infof("Written MetaSensors")
 	if err = os.WriteFile(dataPath+"/learn.conf", learnConf, 0644); err != nil {
 		return err
 	}
+	log.Infof("Written learn.conf")
 	if err = os.WriteFile(dataPath+"/gen.conf", genConf, 0644); err != nil {
 		return err
 	}
+	log.Infof("Written gen.conf")
 
 	return nil
 }

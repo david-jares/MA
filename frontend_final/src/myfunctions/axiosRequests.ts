@@ -3,21 +3,6 @@ import axios, { type AxiosResponse } from "axios";
 const apiAddress = "http://157.230.24.1:8080/api/";
 
 
-// export async function getStatusLearning(): Promise<any> {
-//     console.log("awaiting status");
-//     // const status = await getStatusLearningAPI();
-//     try {
-//         const response = await axios.get(apiAddress + 'configuration');
-//         console.log("status result ");
-//         console.log(response);
-//         return response.data;
-//     } catch (error) {
-//         console.error(error);
-//         return error as Error;
-//     }
-
-//     // setStatusLearning(status)
-// }
 
 
 /**

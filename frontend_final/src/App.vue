@@ -17,6 +17,7 @@ import { drawScene } from './myfunctions/drawingfunctions';
 import CanvasScalable from './components/CanvasScalable.vue';
 import BridgeList from './components/BridgeList.vue';
 import BridgeEntry from './components/BridgeEntry.vue';
+import CowDisplayPicker from './components/CowDisplayPicker.vue';
 import axios from 'axios';
 import { getStatusLearningAPI } from './myfunctions/axiosRequests';
 const gs = useGlobalsStore();
@@ -82,15 +83,15 @@ const handleCowIDChanged = (cowId: string) => {
 <template>
   <header style="background-color: white; padding: 50px;">
     <div class="wrapper">
-      <h1>Weideinsight Setups</h1>
+      <h1>Weideinsight Setup</h1>
       <div style="display: flex;">
         <div class="leftside" style=" flex: 1; flex-direction: column;">
           <CanvasScalable></CanvasScalable>
           <Console></Console>
         </div>
         <div class="rightside" style=" flex: 1;  flex-direction: column;">
-          <button @click="() => getStatusLearningAPI()">test</button>
-          <p>{{ gs.serverAddress }}</p>
+          <!-- <button @click="() => getStatusLearningAPI()">test</button>
+          <p>{{ gs.serverAddress }}</p> -->
           <div class=" form-container" style="display: flex;flex-direction: column;">
             <SeparationLine></SeparationLine>
             <p style="padding-left: 5px;"> Press I = Display HotKeys </p>
@@ -141,6 +142,7 @@ const handleCowIDChanged = (cowId: string) => {
                 @input="(ev) => gs.drawSpaceIds = !gs.drawSpaceIds" />
             </div>
             <SeparationLine></SeparationLine>
+            <CowDisplayPicker></CowDisplayPicker>
             <LabeledInput label-text="Cow ID : " :default-value="gs.cowId" input-type="number" :min-value="1"
               @on-input="(n) => handleCowIDChanged(n)"></LabeledInput>
 
@@ -178,13 +180,13 @@ const handleCowIDChanged = (cowId: string) => {
           </div>
         </div>
       </div>
-      <!-- <nav>
+      <nav>
         <RouterLink to="/">Home</RouterLink>
-      </nav> -->
+      </nav>
     </div>
   </header>
 
-  <!-- <RouterView /> -->
+  <RouterView />
 </template>
 
 <style scoped>

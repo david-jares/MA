@@ -15,7 +15,7 @@ interface GlobalsState {
     canvasHeight: number;
     canvasPanOffsetX: number;
     canvasPanOffsetY: number;
-
+    
 
     cowId: string;
     recordIntervalInSeconds: number;
@@ -77,6 +77,7 @@ interface GlobalsState {
     colorPolygon:string;
     colorAlphaPolygon:number;
     drawSpaceIds:boolean;
+    cowDisplayMode: string;
 }
 
 export const useGlobalsStore = defineStore({
@@ -109,8 +110,8 @@ export const useGlobalsStore = defineStore({
         drawBarnRects: true,
         drawPastureRects: true,
         drawNeighbourSpaces: false,
-        forbiddenSpaceIds: [2, 3, 8, 9, 16, 17, 23, 24, 25],
-        bridgeSpaceIdPairs: [new BridgePair(0,10,94),new BridgePair(1,10,98), new BridgePair(2,10,102)],
+        forbiddenSpaceIds: [2, 3, 8, 9,10, 16,22, 23],
+        bridgeSpaceIdPairs: [new BridgePair(0,24,77), new BridgePair(1,17,77)],
         colorSpacesPasture: "#FF0000",
         colorAlphaSpacesPasture: 0.25,
         colorSpacesBarn: "#00FF00",
@@ -122,19 +123,19 @@ export const useGlobalsStore = defineStore({
 
         isCowInBarn: false,
         isCowInPasture: false,
-
+        cowDisplayMode: "Image",
         nextEventID: 1,
         nextUtilityId: 1,
         smartEvents: [{
             id: 1,
-            description: "watering",
-            screenDescription: "watering",
+            description: "drink",
+            screenDescription: "drink",
             metaeventId: 1,
             profileIndex: 1,
-            spaceIds: '55,56,57',
+            spaceIds: '73,81',
             capacityMetaPersonId: 1,
             capacityRangeMin: 1,
-            capacityRangeMax: 10000,
+            capacityRangeMax: 1,
             startDate: "2021-01-01",
             endDate: "2021-02-01",
             period: 'day',
@@ -142,7 +143,7 @@ export const useGlobalsStore = defineStore({
             startTime: "00:00",
             endTime: "23:59",
             requiredAttendance: '02:00',
-            colorRGB: "#00FFFF",
+            colorRGB: "#FFFF00",
             colorAlpha: 0.5
         }, {
             id: 2,
@@ -150,7 +151,7 @@ export const useGlobalsStore = defineStore({
             screenDescription: "feeding",
             metaeventId: 1,
             profileIndex: 1,
-            spaceIds: '67,68,69,70',
+            spaceIds: '67,71,75,79,83,87,91,95,99,103',
             capacityMetaPersonId: 1,
             capacityRangeMin: 1,
             capacityRangeMax: 10000,
@@ -163,7 +164,66 @@ export const useGlobalsStore = defineStore({
             requiredAttendance: '02:00',
             colorRGB: "#0000FF",
             colorAlpha: 0.5
-        }],
+        },{
+            id: 3,
+            description: "milking",
+            screenDescription: "milk",
+            metaeventId: 1,
+            profileIndex: 1,
+            spaceIds: '69',
+            capacityMetaPersonId: 1,
+            capacityRangeMin: 1,
+            capacityRangeMax: 1,
+            startDate: "2021-01-01",
+            endDate: "2021-02-01",
+            period: 'day',
+            periodInterval: 1,
+            startTime: "00:00",
+            endTime: "23:59",
+            requiredAttendance: '05:00',
+            colorRGB: "#FF00FF",
+            colorAlpha: 0.5
+        },{
+            id: 4,
+            description: "rest",
+            screenDescription: "rest",
+            metaeventId: 1,
+            profileIndex: 1,
+            spaceIds: '72,73,76,77,80,81,84,85,88,89,92,93',
+            capacityMetaPersonId: 1,
+            capacityRangeMin: 1,
+            capacityRangeMax: 1,
+            startDate: "2021-01-01",
+            endDate: "2021-02-01",
+            period: 'day',
+            periodInterval: 1,
+            startTime: "00:00",
+            endTime: "23:59",
+            requiredAttendance: '01:00',
+            colorRGB: "#00FFFF",
+            colorAlpha: 0.5
+        },
+        {
+            id: 4,
+            description: "grazing",
+            screenDescription: "grazing",
+            metaeventId: 1,
+            profileIndex: 1,
+            spaceIds: '4,5,6,7,10,11,12,13,14,15,18,19,20,21,22,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66',
+            capacityMetaPersonId: 1,
+            capacityRangeMin: 1,
+            capacityRangeMax: 10000,
+            startDate: "2021-01-01",
+            endDate: "2021-02-01",
+            period: 'day',
+            periodInterval: 1,
+            startTime: "06:00",
+            endTime: "19:00",
+            requiredAttendance: '30:00',
+            colorRGB: "#FF00FF",
+            colorAlpha: 0.15
+        }
+    ],
         coordinatesPasture: [
             { lat: 49.68101400333333, lon: 12.20009942 },
             { lat: 49.68115214666667, lon: 12.200764548333334 },
@@ -187,13 +247,23 @@ export const useGlobalsStore = defineStore({
             { lon: 12.198977630381377, lat: 49.681693094242426 }, //C
             { lon: 12.198725503930264, lat: 49.6816012760606 },// D
             { lon: 12.199206206559584, lat: 49.68104582151515 },// E
-            { lon: 12.199459718320865, lat: 49.681139457878785 },// F
+            { lon: 12.199459718320865, lat: 49.681139457878785 },// F   
+          
         ],
         coordinatesBridgeBarnToPasture: [
-            { lat: 49.681470, lon: 12.199744 },// A
-            { lat: 49.681314, lon: 12.199313 },// B
-            { lon: 12.199357205368216, lat: 49.681257639696966 },// G
-            { lat: 49.681418, lon: 12.199800 },// H
+            // 12.199470800802233, 49.681716730606055
+            // 12.199074602093344, 49.68158218515151
+            // 12.199125858569667, 49.68152673060606
+            // 12.199526213209072, 49.681666730606054
+
+            { lon: 12.199463874251379,lat: 49.68172400333333},// A
+            { lat: 49.68158218515151, lon: 12.199074602093344 },// B
+            { lat: 49.68152673060606, lon: 12.199125858569667 },// G
+            { lon:12.199513745417534, lat:49.68166763969697} ,// H    
+            // { lat: 49.681470, lon: 12.199744 },// A
+            // { lat: 49.681314, lon: 12.199313 },// B
+            // { lon: 12.199357205368216, lat: 49.681257639696966 },// G
+            // { lat: 49.681418, lon: 12.199800 },// H
         ],
         //    coordinatesBarn: [
         //     { lat: 49.681714, lon: 12.199252 },
@@ -211,20 +281,50 @@ export const useGlobalsStore = defineStore({
             { lat: 49.681985108333336, lon: 12.198418175 },
             { lat: 49.68204832833333, lon: 12.199110575 },
 
-            { lat: 49.681470, lon: 12.199744 },// A
-            { lat: 49.681314, lon: 12.199313 },// B
+            { lon: 12.199463874251379,lat: 49.68172400333333},// A
+            { lat: 49.68158218515151, lon: 12.199074602093344 },// B
             { lon: 12.198977630381377, lat: 49.681693094242426 }, //C
             { lon: 12.198725503930264, lat: 49.6816012760606 },// D
             { lon: 12.199206206559584, lat: 49.68104582151515 },// E
             { lon: 12.199459718320865, lat: 49.681139457878785 },// F
-            { lon: 12.199357205368216, lat: 49.681257639696966 },// G
-            { lat: 49.681418, lon: 12.199800 },// H
+            { lat: 49.68152673060606, lon: 12.199125858569667 },// G
+            { lon:12.199513745417534, lat:49.68166763969697} //H
+        //    {lon: 12.199553919412491,lat: 49.6816412760606} //H
+            // H
+            // { lat: 49.68152673060606, lon: 12.199125858569667 }// H
 
 
 
 
-            { lat: 49.68131979333333, lon: 12.199891363333334 },
-            { lat: 49.68111546833333, lon: 12.200051731666667 }
+            // { lat: 49.68131979333333, lon: 12.199891363333334 },
+            // { lat: 49.68111546833333, lon: 12.200051731666667 }
+
+
+
+            // { lat: 49.68101400333333, lon: 12.20009942 },
+            // { lat: 49.68115214666667, lon: 12.200764548333334 },
+            // { lat: 49.682404365, lon: 12.199464525 },
+            // { lat: 49.68266766333333, lon: 12.197345735 },
+            // { lat: 49.68249247666667, lon: 12.197450201666667 },
+            // // { lat: 49.68194168, lon: 12.198492973333334 },
+            // { lat: 49.681985108333336, lon: 12.198418175 },
+            // { lat: 49.68204832833333, lon: 12.199110575 },
+
+            // { lat: 49.681470, lon: 12.199744 },// A
+            // { lat: 49.681314, lon: 12.199313 },// B
+            // { lon: 12.198977630381377, lat: 49.681693094242426 }, //C
+            // { lon: 12.198725503930264, lat: 49.6816012760606 },// D
+            // { lon: 12.199206206559584, lat: 49.68104582151515 },// E
+            // { lon: 12.199459718320865, lat: 49.681139457878785 },// F
+            // { lon: 12.199357205368216, lat: 49.681257639696966 },// G
+            // { lat: 49.681418, lon: 12.199800 },// H
+
+
+
+
+            // { lat: 49.68131979333333, lon: 12.199891363333334 },
+            // { lat: 49.68111546833333, lon: 12.200051731666667 }
+ 
         ],
 
         tipEventDescription: "a human understandable description of this event",

@@ -100,9 +100,10 @@ onMounted(() => {
             moveCanvasRight();
         }
         else if (e.key == "p") {
-            console.log(getMouseGeoCoords());
+            console.log(getMouseGeoCoords().lon + ", " + getMouseGeoCoords().lat);
             console.log("MousePos " + latestMousePosYInv.value.x + ", " + latestMousePosYInv.value.y);
             console.log(highlightedSpace.value);
+            console.log(highlightedSpace.value?.neighbors.join(", "));
         } else if (e.key == "q") {
             if (scale.value != 10) {
                 previousScale = scale.value;
@@ -207,7 +208,7 @@ function drawHotekeysInfo() {
         const startOffsetY = 100;
         setFillColor(ctx!, "rgba(0,255,255,0.8)");
         drawRectangleDefault(ctx!, new Rectangle(-1, startOffsetX, startOffsetY, 600, 400), true);
-        setFontProperties(ctx!, "rgba(0,0,0,1)", 25,"Monospace");
+        setFontProperties(ctx!, "rgba(0,0,0,1)", 25, "Monospace");
         drawText(ctx!, "I = Toggle Display Hotkeys", startOffsetX + 10, startOffsetY + 30);
         drawText(ctx!, "Shift + ArrowKeys = Panning", startOffsetX + 10, startOffsetY + 60);
         drawText(ctx!, "Q = Toggle Zoom To Barn", startOffsetX + 10, startOffsetY + 90);
@@ -356,7 +357,7 @@ function getBridgePartners(spaceId: number) {
                 result.push(pair.space2Id)
             }
             else {
-                result.push(pair.space2Id);
+                result.push(pair.space1Id);
             }
         }
     });
@@ -455,8 +456,15 @@ function isMouseInBarn(): boolean {
 }
 
 function assignAllNeighbors() {
-    gs.spaces.forEach((space) => {
+    for (let i = 0; i < gs.spaces.length; i++) {
+        const space = gs.spaces[i];
+
+        if(gs.forbiddenSpaceIds.includes(space.id)) continue;
+
         // debugger;
+        // if(space.id == 17){
+        //     debugger;
+        // }
         if (gs.spaceNeighborCache.has(space.id) && !needToUpdateComputations) {
             space.neighbors = gs.spaceNeighborCache.get(space.id)!;
         } else {
@@ -464,13 +472,16 @@ function assignAllNeighbors() {
             gs.spaceNeighborCache.set(space.id, space.neighbors);
         }
         // space.neighbors = getCloseNeighbourSpacesOfCanvasPoint({ x: space.canvasCoordinates[0], y: space.canvasCoordinates[1] });
-    });
+    };
     needToUpdateComputations = false;
 }
 
 function getCloseNeighbourSpacesOfCanvasPoint(point: Point): number[] {
     let result: number[] = [];
     let space = GetSpaceUnderCanvasPoint(point);
+    if(space && space.id == 17){
+        debugger;
+    }
     // first lets add the bridgePairs
     if (space) {
         let bridgePartners = getBridgePartners(space.id);
@@ -642,13 +653,49 @@ function isPastureRectOverlappingBarnRect(pastureRect: Rectangle, barnRectPath: 
 }
 
 
-function drawCowImage(spaceId: number, amount: number = 1) {
+function drawCowImage(spaceId: number, cowId: number = 1, amount: number = 1) {
     let space = gs.spaces.find(x => x.id == spaceId);
-    const img = new Image();
-    img.src = cowImage;
-    let imageCorner = { x: space!.canvasCoordinates[0], y: space!.canvasCoordinates[1] };
-    let size = (space?.sensorType == "Mioty" ? 15 : 4) * scale.value;
-    drawRotatedImage(ctx!, img, imageCorner.x, getYInv(ctx!, imageCorner.y), 0, size, size, 0.7);
+    if (gs.cowDisplayMode == "Image") {
+
+        const img = new Image();
+        img.src = cowImage;
+        let imageCorner = { x: space!.canvasCoordinates[0], y: space!.canvasCoordinates[1] };
+        let size = (space?.sensorType == "Mioty" ? 15 : 4) * scale.value;
+        drawRotatedImage(ctx!, img, imageCorner.x, getYInv(ctx!, imageCorner.y), 0, size, size, 0.7);
+    } else if (gs.cowDisplayMode == "Point") {
+        let imageCorner = { x: space!.canvasCoordinates[0], y: space!.canvasCoordinates[1] };
+        let size = (space?.sensorType == "Mioty" ? 3 : 1) * scale.value;
+        drawPoint(ctx!, { x: imageCorner.x, y: getYInv(ctx!, imageCorner.y) }, size * (1 + 0.3 * amount));
+    } else if (gs.cowDisplayMode == "Id") {
+        let imageCorner = { x: space!.canvasCoordinates[0], y: space!.canvasCoordinates[1] };
+        let size = (space?.sensorType == "Mioty" ? 6 : 2) * scale.value;
+        setFillColor(ctx!, "rgba(0,0,255,0.5)");
+        drawPoint(ctx!, { x: imageCorner.x, y: getYInv(ctx!, imageCorner.y) }, size * (1 + 0.3 * amount));
+        let fontsize = (space?.sensorType == "Mioty" ? 3 : 1) * scale.value;
+
+        setFontProperties(ctx!, "rgb(255,255,0,1)", fontsize * 5)
+        if (space?.sensorType == "Mioty" || space?.sensorType == "GPS") {
+            drawText(ctx!, cowId.toString(), imageCorner.x - 5 * scale.value, getYInv(ctx!, imageCorner.y - 5 * scale.value));
+
+        } else if (space?.sensorType == "Beacon") {
+            drawText(ctx!, cowId.toString(), imageCorner.x - 1.5 * scale.value, getYInv(ctx!, imageCorner.y - 1.5 * scale.value));
+        }
+    } else if (gs.cowDisplayMode == "AmountOfCows") {
+        let imageCorner = { x: space!.canvasCoordinates[0], y: space!.canvasCoordinates[1] };
+        let size = (space?.sensorType == "Mioty" ? 6 : 2) * scale.value;
+        setFillColor(ctx!, "rgba(0,0,255,0.5)");
+        drawPoint(ctx!, { x: imageCorner.x, y: getYInv(ctx!, imageCorner.y) }, size * (1 + 0.3 * amount));
+        let fontsize = (space?.sensorType == "Mioty" ? 3 : 1) * scale.value;
+
+        setFontProperties(ctx!, "rgb(255,0,0,1)", fontsize * 5)
+        if (space?.sensorType == "Mioty" || space?.sensorType == "GPS") {
+            drawText(ctx!, amount.toString(), imageCorner.x - 5 * scale.value, getYInv(ctx!, imageCorner.y - 5 * scale.value));
+
+        } else if (space?.sensorType == "Beacon") {
+            drawText(ctx!, amount.toString(), imageCorner.x - 1.5 * scale.value, getYInv(ctx!, imageCorner.y - 1.5 * scale.value));
+        }
+    }
+    // const displayTypes = ["Image", "Point", "ID", "AmountOfCows"];
 
 }
 

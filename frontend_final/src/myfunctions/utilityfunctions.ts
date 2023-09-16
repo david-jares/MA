@@ -1,4 +1,6 @@
+import { useGlobalsStore } from "@/stores/globals";
 import type { Point } from "./tempfunctions";
+import { ExportableGeneratioConfig, ExportableLearningConfig, ExportableMetasensor, ExportableSensor, ExportableSpace } from "./model";
 
 export function writeToConsoleOutput(content: string): void {
     let consoleOutput: HTMLTextAreaElement = document.getElementById('consoleOutput') as HTMLTextAreaElement;
@@ -100,4 +102,62 @@ export function getDateTimeString(timeInSeconds: number): string {
     const minutes = date.getMinutes().toString().padStart(2, '0');
     const seconds = date.getSeconds().toString().padStart(2, '0');
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+function getDateNow_YYYY_MM_DD() {
+    const gs = useGlobalsStore();
+    return gs.now.toLocaleDateString('en-CA');
+}
+
+function getDateInTwoDays_YYYY_MM_DD() {
+    const gs = useGlobalsStore();
+    return new Date(gs.now.getTime() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA');
+}
+
+
+export function getConfigurationJSONString() {
+    const gs = useGlobalsStore();
+    let result = [];
+    let sensors: string[] = [];
+    gs.sensors.forEach((s) => {
+        sensors.push(new ExportableSensor(s.id, s.metasensorId, s.coverage, s.coordinates, s.geoCoordinates).ToString());
+    });
+    // add special Sensor ?
+
+    let spaces: string[] = [];
+    gs.spaces.forEach((s) => {
+        spaces.push(new ExportableSpace(s.id, s.description, s.capacity, s.coordinates, s.geoCoordinates, s.latitude, s.longitude, s.neighbors).ToString());
+    });
+    // add special Space 
+    let metasensors = [];
+    metasensors.push(new ExportableMetasensor(1, "Bluetooth Beacon").ToString());
+
+    let scenarioLearningConfig = new ExportableLearningConfig(
+        getDateNow_YYYY_MM_DD(),
+        getDateInTwoDays_YYYY_MM_DD(),
+        1,
+        1,
+        "EMA",
+        10,
+        5,
+        1
+    ).ToString();
+
+    let scenarioGenerationCongig = new ExportableGeneratioConfig(
+        10,
+        "all",
+        300,
+        "all",
+        getDateNow_YYYY_MM_DD(),
+        getDateInTwoDays_YYYY_MM_DD()
+    ).ToString();
+    // add special Event
+    result.push(sensors);
+    result.push(spaces);
+    result.push(metasensors);
+    result.push(scenarioLearningConfig);
+    result.push(scenarioGenerationCongig);
+    console.log(result);
+
+    return JSON.stringify(result, null, 2);
 }
