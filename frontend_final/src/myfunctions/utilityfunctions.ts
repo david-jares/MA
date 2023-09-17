@@ -1,6 +1,6 @@
 import { useGlobalsStore } from "@/stores/globals";
 import type { Point } from "./tempfunctions";
-import { ExportableEvent, ExportableEventCapacityEntry, ExportableGenerationConfig, ExportableLearningConfig, ExportableMetasensor, ExportableSensor, ExportableSpace, MetaPeople, MetaPerson, Space } from "./model";
+import { ExportableConfig, ExportableEvent, ExportableEventCapacityEntry, ExportableGenerationConfig, ExportableLearningConfig, ExportableMetasensor, ExportableSensor, ExportableSpace, MetaEvent, MetaEventAffinity, MetaEventCapacity, MetaEventSpace, MetaPeople as MetaPerson, MetaPerson as Person, Space, TimeProfile } from "./model";
 
 export function writeToConsoleOutput(content: string): void {
     let consoleOutput: HTMLTextAreaElement = document.getElementById('consoleOutput') as HTMLTextAreaElement;
@@ -127,7 +127,7 @@ export function getConfigurationJSONString() {
 
     let spaces: ExportableSpace[] = [];
     gs.spaces.forEach((s) => {
-        spaces.push(new ExportableSpace(s.id, s.description, s.capacity, s.coordinates, s.geoCoordinates, s.latitude, s.longitude, s.neighbors).ToString());
+        spaces.push(new ExportableSpace(s.id, s.description, s.capacity, s.coordinates, s.geoCoordinates, s.latitude, s.longitude, s.neighbors));
     });
     // add special Space 
     spaces.push(new ExportableSpace(0, "outside", -1, [-1000, -1000, 0], [0, 0, 1], 0, 0, [0]));
@@ -137,13 +137,58 @@ export function getConfigurationJSONString() {
     metasensors.push(new ExportableMetasensor(1, "Bluetooth Beacon Sensor"));
     metasensors.push(new ExportableMetasensor(2, "Mioty Sensor"));
 
-    let cow1 :MetaPerson = new MetaPerson()
 
-    let metapeople : MetaPeople
+    // Step 1
+    let metaevents: MetaEvent[] = [];
+    for (let i = 0; i < gs.smartEvents.length; i++) {
+        const smartEvent = gs.smartEvents[i];
+        let smartEventSpaceIds = smartEvent.spaceIds.split(",").map(Number);
+        let metaevent = new MetaEvent(
+            smartEvent.id,
+            smartEvent.description,
+            1,
+            [new MetaEventSpace(smartEventSpaceIds, smartEventSpaceIds.length)],
+            [new TimeProfile(smartEvent.startDate, smartEvent.endDate, smartEvent.startTime, smartEvent.endTime, smartEvent.requiredAttendance, 1)],
+            [new MetaEventCapacity(1, 1, 0, 1000, 0)]);
+        metaevents.push(metaevent);
+    }
 
 
+    let metapersonTimeProfile = new TimeProfile("2021-01-01", "2021-01-03", "00:00:00", "23:59:59", "23:59:00");
+    let metaPersonEventAffinities: MetaEventAffinity[] = [];
+    for (let i = 0; i < metaevents.length; i++) {
+        const metaevent = metaevents[i];
+        metaPersonEventAffinities.push(new MetaEventAffinity(metaevent.id, 1));
+    }
+    let metapeople: MetaPerson[] = [];
+    metapeople.push(new MetaPerson(
+        1, "cow default", 1, [metapersonTimeProfile], metaPersonEventAffinities
+    ));
 
 
+    // Step 2
+    let people: Person[] = [];
+    for (let i = 1; i <= 8; i++) {
+        let person = new Person(i, 1, "Cow " + i, 0);
+        people.push(person);
+    }
+
+    let expevents: ExportableEvent[] = [];
+    for (let i = 0; i < metaevents.length; i++) {
+        const metaevent = metaevents[i];
+        let expevent = new ExportableEvent(
+            metaevent.id,
+            metaevent.id,
+            metaevent.description,
+            0,
+            metaevent.spaces[0]["space-ids"],
+            [new ExportableEventCapacityEntry(1, [0, 1000])]
+        );
+        expevents.push(expevent);
+    }
+    // add special Event:  A special event with id=0 denoting the "leisure" event should be defined.
+    // The leisure event serves as a default event that a person will attend if they are unable to attend any other event.
+    expevents.push(new ExportableEvent(0, 1, "leisure", 0, [0], [new ExportableEventCapacityEntry(1, [0, 1000])]))
 
 
 
@@ -156,33 +201,19 @@ export function getConfigurationJSONString() {
         gs.scenarioLearning_window,
         gs.scenarioLearning_timeThreshold,
         gs.scenarioLearning_occThreshold
-    ).ToString();
+    );
 
     let scenarioGenerationCongig = new ExportableGenerationConfig(
         gs.scenarioGeneration_numberOfCows,
-        "all",
+        "none", // TODO //none, diff, all
         gs.scenarioGeneration_numberOfEvents,
-        "all",
+        "none", // TODO
         gs.scenarioLearning_startDate,
         gs.scenarioLearning_endDate
-    ).ToString();
+    );
 
-    // add Events
-    let events: ExportableEvent[] = [];
-    gs.smartEvents.forEach((e) => {
-        events.push((new ExportableEvent(e.id, e.metaeventId, e.description, e.profileIndex, e.spaceIds.split(",").map(Number), [new ExportableEventCapacityEntry(1, [e.capacityRangeMin, e.capacityRangeMax])])))
-    });
-    // add special Event
-    // A special event with id=0 denoting the "leisure" event should be defined. 
-    // The leisure event serves as a default event that a person will attend if they are unable to attend any other event.
-    // events.push(new ExportableEvent(0,1,"leisure",))
 
-    result.push(sensors);
-    result.push(spaces);
-    result.push(metasensors);
-    result.push(scenarioLearningConfig);
-    result.push(scenarioGenerationCongig);
-    console.log(result);
+    let config = new ExportableConfig(sensors, spaces, metasensors, metapeople, metaevents, expevents, people, scenarioLearningConfig, scenarioGenerationCongig);
 
-    return JSON.stringify(result, null, 2);
+    return JSON.stringify(config, null, 2);
 }

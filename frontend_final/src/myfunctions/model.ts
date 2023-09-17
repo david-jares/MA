@@ -453,6 +453,11 @@ export class MetaEventAffinity {
  * TimeProfile: Used for both MetaPeople and MetaEvents; it denotes an "active" time period for an "active" day.
  *  The semantics of an "active" day and time depends on the object it describes: an active day/time for an event denotes when the event occurs,
  *  and an active day/time for a person denotes the expected time of entry/exit from the simulated space.
+ *  @param startDate The start-date and end-date properties are strings in the form of 'YYYY-MM-DD' and denote the start/end dates of the time profile pattern
+ * @param endDate The start-date and end-date properties are strings in the form of 'YYYY-MM-DD' and denote the start/end dates of the time profile pattern
+ * @param startTime The start-time and end-time properties are strings in the form 'HH:MM:SS' and denote the start/end times for a given active day. The 2-list represents a mean time and standard deviation time as parameters to a Normal distribution.
+ * @param endTime The start-time and end-time properties are strings in the form 'HH:MM:SS' and denote the start/end times for a given active day. The 2-list represents a mean time and standard deviation time as parameters to a Normal distribution.
+ * @param requiredAttendance The required property denotes the minimum duration of an active period -- for people, this denotes the minimum amount of time that they must be able to attend an event before committing, and for events, this denotes the minimum amount of time that the event spans. The required property is defined by a mean time and standard deviation time, also as parameters to a Normal distribution.
  */
 export class TimeProfile {
     probability: number;

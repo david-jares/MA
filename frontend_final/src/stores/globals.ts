@@ -161,8 +161,8 @@ export const useGlobalsStore = defineStore({
     scenarioLearning_occThreshold:1,
 
     //scenario Generation
-    scenarioGeneration_numberOfCows:10,
-    scenarioGeneration_numberOfEvents:300,
+    scenarioGeneration_numberOfCows:8,
+    scenarioGeneration_numberOfEvents:100,
     scenarioGeneration_startDate:"2021-01-01",
     scenarioGeneration_endDate:"2021-03-01",
 
