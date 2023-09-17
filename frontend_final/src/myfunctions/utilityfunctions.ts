@@ -1,6 +1,6 @@
 import { useGlobalsStore } from "@/stores/globals";
 import type { Point } from "./tempfunctions";
-import { ExportableEvent, ExportableEventCapacityEntry, ExportableGeneratioConfig, ExportableLearningConfig, ExportableMetasensor, ExportableSensor, ExportableSpace, Space } from "./model";
+import { ExportableEvent, ExportableEventCapacityEntry, ExportableGenerationConfig, ExportableLearningConfig, ExportableMetasensor, ExportableSensor, ExportableSpace, MetaPeople, MetaPerson, Space } from "./model";
 
 export function writeToConsoleOutput(content: string): void {
     let consoleOutput: HTMLTextAreaElement = document.getElementById('consoleOutput') as HTMLTextAreaElement;
@@ -117,24 +117,35 @@ function getDateInTwoDays_YYYY_MM_DD() {
 
 export function getConfigurationJSONString() {
     const gs = useGlobalsStore();
-    let result = [];
-    let sensors: string[] = [];
+    // let result = [];
+
+    let sensors: ExportableSensor[] = [];
     gs.sensors.forEach((s) => {
-        sensors.push(new ExportableSensor(s.id, s.metasensorId, s.coverage, s.coordinates, s.geoCoordinates).ToString());
+        sensors.push(new ExportableSensor(s.id, s.sensorType + " Sensor", s.metasensorId, s.coverage, s.coordinates, s.geoCoordinates));
     });
     // add special Sensor ?
 
-    let spaces: string[] = [];
+    let spaces: ExportableSpace[] = [];
     gs.spaces.forEach((s) => {
         spaces.push(new ExportableSpace(s.id, s.description, s.capacity, s.coordinates, s.geoCoordinates, s.latitude, s.longitude, s.neighbors).ToString());
     });
     // add special Space 
-    spaces.push(new ExportableSpace(0, "outside", -1, [-1000, -1000, 0], [0, 0, 1], 0, 0, [0]).ToString());
+    spaces.push(new ExportableSpace(0, "outside", -1, [-1000, -1000, 0], [0, 0, 1], 0, 0, [0]));
 
 
-    let metasensors = [];
-    metasensors.push(new ExportableMetasensor(1, "Bluetooth Beacon Sensor").ToString());
-    metasensors.push(new ExportableMetasensor(2, "Mioty Sensor").ToString());
+    let metasensors: ExportableMetasensor[] = [];
+    metasensors.push(new ExportableMetasensor(1, "Bluetooth Beacon Sensor"));
+    metasensors.push(new ExportableMetasensor(2, "Mioty Sensor"));
+
+    let cow1 :MetaPerson = new MetaPerson()
+
+    let metapeople : MetaPeople
+
+
+
+
+
+
 
     let scenarioLearningConfig = new ExportableLearningConfig(
         gs.scenarioLearning_startDate,
@@ -147,7 +158,7 @@ export function getConfigurationJSONString() {
         gs.scenarioLearning_occThreshold
     ).ToString();
 
-    let scenarioGenerationCongig = new ExportableGeneratioConfig(
+    let scenarioGenerationCongig = new ExportableGenerationConfig(
         gs.scenarioGeneration_numberOfCows,
         "all",
         gs.scenarioGeneration_numberOfEvents,
@@ -157,15 +168,15 @@ export function getConfigurationJSONString() {
     ).ToString();
 
     // add Events
-    let events: string[] = [];
+    let events: ExportableEvent[] = [];
     gs.smartEvents.forEach((e) => {
-        events.push((new ExportableEvent(e.id, e.metaeventId, e.description, e.profileIndex, e.spaceIds.split(",").map(Number), [new ExportableEventCapacityEntry(1,[e.capacityRangeMin, e.capacityRangeMax])])).ToString())
+        events.push((new ExportableEvent(e.id, e.metaeventId, e.description, e.profileIndex, e.spaceIds.split(",").map(Number), [new ExportableEventCapacityEntry(1, [e.capacityRangeMin, e.capacityRangeMax])])))
     });
     // add special Event
     // A special event with id=0 denoting the "leisure" event should be defined. 
     // The leisure event serves as a default event that a person will attend if they are unable to attend any other event.
     // events.push(new ExportableEvent(0,1,"leisure",))
-    
+
     result.push(sensors);
     result.push(spaces);
     result.push(metasensors);
