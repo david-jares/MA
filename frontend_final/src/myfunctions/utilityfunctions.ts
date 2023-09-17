@@ -1,6 +1,6 @@
 import { useGlobalsStore } from "@/stores/globals";
 import type { Point } from "./tempfunctions";
-import { ExportableGeneratioConfig, ExportableLearningConfig, ExportableMetasensor, ExportableSensor, ExportableSpace } from "./model";
+import { ExportableEvent, ExportableEventCapacityEntry, ExportableGeneratioConfig, ExportableLearningConfig, ExportableMetasensor, ExportableSensor, ExportableSpace, Space } from "./model";
 
 export function writeToConsoleOutput(content: string): void {
     let consoleOutput: HTMLTextAreaElement = document.getElementById('consoleOutput') as HTMLTextAreaElement;
@@ -129,29 +129,43 @@ export function getConfigurationJSONString() {
         spaces.push(new ExportableSpace(s.id, s.description, s.capacity, s.coordinates, s.geoCoordinates, s.latitude, s.longitude, s.neighbors).ToString());
     });
     // add special Space 
+    spaces.push(new ExportableSpace(0, "outside", -1, [-1000, -1000, 0], [0, 0, 1], 0, 0, [0]).ToString());
+
+
     let metasensors = [];
-    metasensors.push(new ExportableMetasensor(1, "Bluetooth Beacon").ToString());
+    metasensors.push(new ExportableMetasensor(1, "Bluetooth Beacon Sensor").ToString());
+    metasensors.push(new ExportableMetasensor(2, "Mioty Sensor").ToString());
 
     let scenarioLearningConfig = new ExportableLearningConfig(
-        getDateNow_YYYY_MM_DD(),
-        getDateInTwoDays_YYYY_MM_DD(),
-        1,
-        1,
-        "EMA",
-        10,
-        5,
-        1
+        gs.scenarioLearning_startDate,
+        gs.scenarioLearning_endDate,
+        gs.scenarioLearning_unit,
+        gs.scenarioLearning_validity,
+        gs.scenarioLearning_smoothing,
+        gs.scenarioLearning_window,
+        gs.scenarioLearning_timeThreshold,
+        gs.scenarioLearning_occThreshold
     ).ToString();
 
     let scenarioGenerationCongig = new ExportableGeneratioConfig(
-        10,
+        gs.scenarioGeneration_numberOfCows,
         "all",
-        300,
+        gs.scenarioGeneration_numberOfEvents,
         "all",
-        getDateNow_YYYY_MM_DD(),
-        getDateInTwoDays_YYYY_MM_DD()
+        gs.scenarioLearning_startDate,
+        gs.scenarioLearning_endDate
     ).ToString();
+
+    // add Events
+    let events: string[] = [];
+    gs.smartEvents.forEach((e) => {
+        events.push((new ExportableEvent(e.id, e.metaeventId, e.description, e.profileIndex, e.spaceIds.split(",").map(Number), [new ExportableEventCapacityEntry(1,[e.capacityRangeMin, e.capacityRangeMax])])).ToString())
+    });
     // add special Event
+    // A special event with id=0 denoting the "leisure" event should be defined. 
+    // The leisure event serves as a default event that a person will attend if they are unable to attend any other event.
+    // events.push(new ExportableEvent(0,1,"leisure",))
+    
     result.push(sensors);
     result.push(spaces);
     result.push(metasensors);

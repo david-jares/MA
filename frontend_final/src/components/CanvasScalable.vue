@@ -172,9 +172,9 @@ function toggleDisplayHotkeys() {
 
 
 function UpdateDrawings() {
-    if (_stepTimerId != -1) {
-        drawDebugGreenRectangle();
-    }
+    // if (_stepTimerId != -1) {
+    //     drawDebugGreenRectangle();
+    // }
     setFontProperties(ctx!, "rgba(0,0,255,1)", 25);
 
     drawCoordinateSystemYInv(ctx!);
@@ -200,6 +200,16 @@ function UpdateDrawings() {
     drawSMARTEventsToCanvas();
 
     drawHotekeysInfo();
+    // debugDrawNeighborsText();
+}
+
+function debugDrawNeighborsText() {
+    let space = getSpaceUnderMouse();
+    if (space) {
+        // debugger;
+        setFontProperties(ctx!, "black", 20, "Monospace");
+        drawText(ctx!, "Space: " + space.id + " Neighbors: " + space?.neighbors.join(", "), 100, 100);
+    }
 }
 
 function drawHotekeysInfo() {
@@ -459,16 +469,12 @@ function assignAllNeighbors() {
     for (let i = 0; i < gs.spaces.length; i++) {
         const space = gs.spaces[i];
 
-        if(gs.forbiddenSpaceIds.includes(space.id)) continue;
+        if (gs.forbiddenSpaceIds.includes(space.id)) continue;
 
-        // debugger;
-        // if(space.id == 17){
-        //     debugger;
-        // }
         if (gs.spaceNeighborCache.has(space.id) && !needToUpdateComputations) {
             space.neighbors = gs.spaceNeighborCache.get(space.id)!;
         } else {
-            space.neighbors = getCloseNeighbourSpacesOfCanvasPoint({ x: space.canvasCoordinates[0], y: space.canvasCoordinates[1] });
+            space.neighbors = getCloseNeighbourSpacesOfCanvasPoint({ x: space.canvasCoordinates[0], y: space.canvasCoordinates[1] }, space.sensorType);
             gs.spaceNeighborCache.set(space.id, space.neighbors);
         }
         // space.neighbors = getCloseNeighbourSpacesOfCanvasPoint({ x: space.canvasCoordinates[0], y: space.canvasCoordinates[1] });
@@ -476,19 +482,24 @@ function assignAllNeighbors() {
     needToUpdateComputations = false;
 }
 
-function getCloseNeighbourSpacesOfCanvasPoint(point: Point): number[] {
+function getCloseNeighbourSpacesOfCanvasPoint(point: Point, targetSensorType: string): number[] {
     let result: number[] = [];
-    let space = GetSpaceUnderCanvasPoint(point);
-    if(space && space.id == 17){
-        debugger;
-    }
+    // if (spaces.length > 1 && spaces[1].id == 17) {
+    //     debugger;
+    // }
     // first lets add the bridgePairs
+    // if (spaces.length > 0) {
+    // spaces.forEach((space) => {
+    // if(targetSensorType == "Beacon"){}
+    let space = GetSpaceUnderCanvasPoint(point, targetSensorType);
     if (space) {
         let bridgePartners = getBridgePartners(space.id);
         bridgePartners.forEach((bridgePartnerId) => {
             if (bridgePartnerId >= 0 && !result.includes(bridgePartnerId)) result.push(bridgePartnerId);
         });
     }
+    // });
+    // }
 
 
     if (space && space.sensorType == "Beacon") {
@@ -502,14 +513,14 @@ function getCloseNeighbourSpacesOfCanvasPoint(point: Point): number[] {
         let pTL = { x: point.x - offsetCol.x - offsetRow.x, y: point.y - offsetCol.y - offsetRow.y };
         let pBR = { x: point.x + offsetCol.x + offsetRow.x, y: point.y + offsetCol.y + offsetRow.y };
         let pBL = { x: point.x - offsetCol.x + offsetRow.x, y: point.y - offsetCol.y + offsetRow.y };
-        let nR = GetSpaceUnderCanvasPoint(pR);
-        let nL = GetSpaceUnderCanvasPoint(pL);
-        let nT = GetSpaceUnderCanvasPoint(pT);
-        let nB = GetSpaceUnderCanvasPoint(pB);
-        let nTR = GetSpaceUnderCanvasPoint(pTR);
-        let nTL = GetSpaceUnderCanvasPoint(pTL);
-        let nBR = GetSpaceUnderCanvasPoint(pBR);
-        let nBL = GetSpaceUnderCanvasPoint(pBL);
+        let nR = GetSpaceUnderCanvasPoint(pR, "Beacon");
+        let nL = GetSpaceUnderCanvasPoint(pL, "Beacon");
+        let nT = GetSpaceUnderCanvasPoint(pT, "Beacon");
+        let nB = GetSpaceUnderCanvasPoint(pB, "Beacon");
+        let nTR = GetSpaceUnderCanvasPoint(pTR, "Beacon");
+        let nTL = GetSpaceUnderCanvasPoint(pTL, "Beacon");
+        let nBR = GetSpaceUnderCanvasPoint(pBR, "Beacon");
+        let nBL = GetSpaceUnderCanvasPoint(pBL, "Beacon");
         let potentialNeighbours = [nR, nL, nT, nB, nTR, nTL, nBR, nBL];
         potentialNeighbours.forEach((neighbour) => {
             if (neighbour &&
@@ -526,16 +537,16 @@ function getCloseNeighbourSpacesOfCanvasPoint(point: Point): number[] {
     //TODO - übergang nur in Neighbourspaces möglich
 
     // add Neighbours for BarnSpaces
-    if (space && !gs.forbiddenSpaceIds.includes(space.id) && space.sensorType == "Mioty") {
+    if (space && space.sensorType == "Mioty" && !gs.forbiddenSpaceIds.includes(space.id)) {
         let offset = gs.sensorWidthInMeters * scale.value;
-        let nL = GetSpaceUnderCanvasPoint({ x: point.x - offset, y: point.y });
-        let nR = GetSpaceUnderCanvasPoint({ x: point.x + offset, y: point.y });
-        let nT = GetSpaceUnderCanvasPoint({ x: point.x, y: point.y + offset });
-        let nB = GetSpaceUnderCanvasPoint({ x: point.x, y: point.y - offset });
-        let nTL = GetSpaceUnderCanvasPoint({ x: point.x - offset, y: point.y + offset });
-        let nBL = GetSpaceUnderCanvasPoint({ x: point.x - offset, y: point.y - offset });
-        let nTR = GetSpaceUnderCanvasPoint({ x: point.x + offset, y: point.y + offset });
-        let nBR = GetSpaceUnderCanvasPoint({ x: point.x + offset, y: point.y - offset });
+        let nL = GetSpaceUnderCanvasPoint({ x: point.x - offset, y: point.y }, "Mioty");
+        let nR = GetSpaceUnderCanvasPoint({ x: point.x + offset, y: point.y }, "Mioty");
+        let nT = GetSpaceUnderCanvasPoint({ x: point.x, y: point.y + offset }, "Mioty");
+        let nB = GetSpaceUnderCanvasPoint({ x: point.x, y: point.y - offset }, "Mioty");
+        let nTL = GetSpaceUnderCanvasPoint({ x: point.x - offset, y: point.y + offset }, "Mioty");
+        let nBL = GetSpaceUnderCanvasPoint({ x: point.x - offset, y: point.y - offset }, "Mioty");
+        let nTR = GetSpaceUnderCanvasPoint({ x: point.x + offset, y: point.y + offset }, "Mioty");
+        let nBR = GetSpaceUnderCanvasPoint({ x: point.x + offset, y: point.y - offset }, "Mioty");
         let potentialNeighbours = [nL, nR, nT, nB, nTL, nBL, nTR, nBR];
         potentialNeighbours.forEach((neighbour) => {
             if (neighbour && !gs.forbiddenSpaceIds.includes(neighbour.id) && neighbour.sensorType == "Mioty") {
@@ -549,20 +560,25 @@ function getCloseNeighbourSpacesOfCanvasPoint(point: Point): number[] {
     return result;
 }
 
-function GetSpaceUnderCanvasPoint(point: Point): Space | null {
+function GetSpaceUnderCanvasPoint(point: Point, targetSensorType: string): Space | null {
     let resultSpace: Space | null = null;
-    for (let i = 0; i < gs.spacesBarn.length; i++) {
-        const space = gs.spacesBarn[i];
-        if (space.sensorType == "Beacon") {
-            let spacePath = space.pathGeoCoords.map(x => GeoCoordToCanvasPoint(x));
-            spacePath = spacePath.map(x => getPointYInv(ctx!, x));
-            if (isInsidePolygon(getPointYInv(ctx!, point), spacePath)) {
-                resultSpace = space;
-                break;
+    if (targetSensorType == "Beacon") {
+        // debugger;
+        for (let i = 0; i < gs.spacesBarn.length; i++) {
+            const space = gs.spacesBarn[i];
+            if (space.sensorType == "Beacon") {
+                let spacePath = space.pathGeoCoords.map(x => GeoCoordToCanvasPoint(x));
+                spacePath = spacePath.map(x => getPointYInv(ctx!, x));
+                if (isInsidePolygon(getPointYInv(ctx!, point), spacePath)) {
+                    resultSpace = space;
+                    break;
+                }
             }
         }
-    }
-    if (!resultSpace) {
+    } else if (targetSensorType == "Mioty") {
+
+        // second we search for pasture spaces which could be overlapping with the barn spaces
+        // if (!resultSpaces) {
         for (let i = 0; i < gs.spacesPasture.length; i++) {
             const space = gs.spacesPasture[i];
             if (space.sensorType == "Mioty") {
@@ -574,6 +590,7 @@ function GetSpaceUnderCanvasPoint(point: Point): Space | null {
             }
         }
     }
+    // }
     return resultSpace;
 }
 
@@ -637,7 +654,7 @@ function createOutsideSpace() {
     gs.spaces.push(outsideSpace);
 }
 function createSensor(space: Space) {
-    let sensor = new Sensor(space.id, 1, space.sensorType, [space.id], [space.coordinates[0], space.coordinates[1], 1], space.geoCoordinates);
+    let sensor = new Sensor(space.id, space.sensorType == "Beacon" ? 1 : 2, space.sensorType, [space.id], [space.coordinates[0], space.coordinates[1], 1], space.geoCoordinates);
     gs.sensors.push(sensor);
 }
 
@@ -923,13 +940,19 @@ function drawSpace(space: Space) {
 }
 
 function drawAllSpaces() {
-    gs.spaces.forEach((space) => {
+
+    for (let i = 0; i < gs.spaces.length; i++) {
+        const space = gs.spaces[i];
+
+        if (gs.forbiddenSpaceIds.includes(space.id) && !gs.drawForbiddenSpaces) {
+            continue;
+        }
         if (space.sensorType == "Mioty" && gs.drawPastureRects) {
             drawSpace(space)
         } else if (space.sensorType == "Beacon" && gs.drawBarnRects) {
             drawSpace(space)
         }
-    });
+    };
 }
 
 function drawPastureSpace(id: number) {
@@ -999,7 +1022,7 @@ function drawSMARTEventsToCanvas() {
                     fillColor: eventColor,
                 });
                 drawRectangleDefault(ctx!, getRectYInv(ctx!, new Rectangle(-1, x - 0.5 * gs.sensorWidthInMeters * scale.value, y - 0.5 * gs.sensorWidthInMeters * scale.value, gs.sensorWidthInMeters * scale.value, gs.sensorWidthInMeters * scale.value)), true);
-                setFontProperties(ctx!, "white", 10 * scale.value)
+                setFontProperties(ctx!, "white", 10 * scale.value * smartEvent.fontScale)
                 if (i == spaceIds.length - 1) drawText(ctx!, smartEvent.screenDescription, x - 8 * scale.value, getYInv(ctx!, y - 3 * scale.value));
             } else if (space.sensorType == "Beacon") {
                 setCanvasProperties(ctx!, {
@@ -1010,7 +1033,7 @@ function drawSMARTEventsToCanvas() {
                 setStrokeProperties(ctx!, eventColor, 1);
                 setFillColor(ctx!, eventColor);
                 drawPath(ctx!, space.pathGeoCoords.map(x => GeoCoordToCanvasPoint(x)).map(x => getPointYInv(ctx!, x)), true, true);
-                setFontProperties(ctx!, "white", 4 * scale.value)
+                setFontProperties(ctx!, "white", 4 * scale.value * smartEvent.fontScale)
                 if (i == spaceIds.length - 1) drawRotatedText(ctx!, smartEvent.screenDescription, x, getYInv(ctx!, y), -28);
             }
         }

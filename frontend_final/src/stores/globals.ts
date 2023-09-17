@@ -67,6 +67,7 @@ interface GlobalsState {
     drawBarnRects: boolean;
     drawPastureRects: boolean;
     drawNeighbourSpaces: boolean;
+    drawForbiddenSpaces: boolean;
     forbiddenSpaceIds: number[];
     bridgeSpaceIdPairs: BridgePair[];
 
@@ -78,6 +79,25 @@ interface GlobalsState {
     colorAlphaPolygon:number;
     drawSpaceIds:boolean;
     cowDisplayMode: string;
+
+
+    // scenario Learning
+    scenarioLearning_startDate: string;
+    scenarioLearning_endDate: string;
+    scenarioLearning_unit:number;
+    scenarioLearning_validity:number;
+    scenarioLearning_smoothing:string;
+    scenarioLearning_window:number;
+    scenarioLearning_timeThreshold:number;
+    scenarioLearning_occThreshold:number;
+
+    //scenario Generation
+    scenarioGeneration_numberOfCows:number;
+    scenarioGeneration_numberOfEvents:number;
+    scenarioGeneration_startDate:string;
+    scenarioGeneration_endDate:string;
+
+
 }
 
 export const useGlobalsStore = defineStore({
@@ -112,6 +132,7 @@ export const useGlobalsStore = defineStore({
         drawNeighbourSpaces: false,
         forbiddenSpaceIds: [2, 3, 8, 9,10, 16,22, 23],
         bridgeSpaceIdPairs: [new BridgePair(0,24,77), new BridgePair(1,17,77)],
+        // bridgeSpaceIdPairs: [],
         colorSpacesPasture: "#FF0000",
         colorAlphaSpacesPasture: 0.25,
         colorSpacesBarn: "#00FF00",
@@ -119,6 +140,7 @@ export const useGlobalsStore = defineStore({
         colorPolygon: "#FF00FF",
         colorAlphaPolygon: 0.45,
         drawSpaceIds: true,
+        drawForbiddenSpaces: true,
         loops: 0,
 
         isCowInBarn: false,
@@ -126,18 +148,41 @@ export const useGlobalsStore = defineStore({
         cowDisplayMode: "Image",
         nextEventID: 1,
         nextUtilityId: 1,
+
+
+        // scenario Learning
+    scenarioLearning_startDate: "2021-01-01",
+    scenarioLearning_endDate:  "2021-03-01",
+    scenarioLearning_unit:1,
+        scenarioLearning_validity:1,
+    scenarioLearning_smoothing:"EMA",
+    scenarioLearning_window:10,
+    scenarioLearning_timeThreshold:5,
+    scenarioLearning_occThreshold:1,
+
+    //scenario Generation
+    scenarioGeneration_numberOfCows:10,
+    scenarioGeneration_numberOfEvents:300,
+    scenarioGeneration_startDate:"2021-01-01",
+    scenarioGeneration_endDate:"2021-03-01",
+
+
+
+
         smartEvents: [{
             id: 1,
             description: "drink",
             screenDescription: "drink",
+            drawTextVertically: false,
+            fontScale: 1,
             metaeventId: 1,
             profileIndex: 1,
-            spaceIds: '73,81',
+            spaceIds: '72,80',
             capacityMetaPersonId: 1,
             capacityRangeMin: 1,
             capacityRangeMax: 1,
             startDate: "2021-01-01",
-            endDate: "2021-02-01",
+            endDate: "2022-01-01",
             period: 'day',
             periodInterval: 1,
             startTime: "00:00",
@@ -149,14 +194,16 @@ export const useGlobalsStore = defineStore({
             id: 2,
             description: "feeding",
             screenDescription: "feeding",
+            drawTextVertically: false,
+            fontScale: 1,
             metaeventId: 1,
             profileIndex: 1,
-            spaceIds: '67,71,75,79,83,87,91,95,99,103',
+            spaceIds: '66,70,74,78,82,86,90,94,98,102',
             capacityMetaPersonId: 1,
             capacityRangeMin: 1,
             capacityRangeMax: 10000,
             startDate: "2021-01-01",
-            endDate: "2021-02-01",
+            endDate: "2022-01-01",
             period: 'day',
             periodInterval: 1,
             startTime: "12:00",
@@ -168,14 +215,16 @@ export const useGlobalsStore = defineStore({
             id: 3,
             description: "milking",
             screenDescription: "milk",
+            drawTextVertically: false,
+            fontScale: 1,
             metaeventId: 1,
             profileIndex: 1,
-            spaceIds: '69',
+            spaceIds: '68',
             capacityMetaPersonId: 1,
             capacityRangeMin: 1,
             capacityRangeMax: 1,
             startDate: "2021-01-01",
-            endDate: "2021-02-01",
+            endDate: "2022-01-01",
             period: 'day',
             periodInterval: 1,
             startTime: "00:00",
@@ -187,14 +236,16 @@ export const useGlobalsStore = defineStore({
             id: 4,
             description: "rest",
             screenDescription: "rest",
+            drawTextVertically: false,
+            fontScale: 1,
             metaeventId: 1,
             profileIndex: 1,
-            spaceIds: '72,73,76,77,80,81,84,85,88,89,92,93',
+            spaceIds: '71,72,75,76,79,80,83,84,87,88,91,92',
             capacityMetaPersonId: 1,
             capacityRangeMin: 1,
             capacityRangeMax: 1,
             startDate: "2021-01-01",
-            endDate: "2021-02-01",
+            endDate: "2022-01-01",
             period: 'day',
             periodInterval: 1,
             startTime: "00:00",
@@ -204,17 +255,19 @@ export const useGlobalsStore = defineStore({
             colorAlpha: 0.5
         },
         {
-            id: 4,
+            id: 5,
             description: "grazing",
             screenDescription: "grazing",
+            drawTextVertically: false,
+            fontScale: 1,
             metaeventId: 1,
             profileIndex: 1,
-            spaceIds: '4,5,6,7,10,11,12,13,14,15,18,19,20,21,22,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66',
+            spaceIds: '4,5,6,7,11,12,13,14,15,18,19,20,21,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66',
             capacityMetaPersonId: 1,
             capacityRangeMin: 1,
             capacityRangeMax: 10000,
             startDate: "2021-01-01",
-            endDate: "2021-02-01",
+            endDate: "2022-01-01",
             period: 'day',
             periodInterval: 1,
             startTime: "06:00",
@@ -390,6 +443,8 @@ export const useGlobalsStore = defineStore({
                 id: this.getNextEventID(),
                 description: "defaultevent",
                 screenDescription: "defaultevent",
+                drawTextVertically: false,
+                fontScale: 1,
                 // cowId: '1',
                 metaeventId: 1,
                 profileIndex: 1,

@@ -20,6 +20,7 @@ import BridgeEntry from './components/BridgeEntry.vue';
 import CowDisplayPicker from './components/CowDisplayPicker.vue';
 import axios from 'axios';
 import { getStatusLearningAPI } from './myfunctions/axiosRequests';
+import ScenarioGenerationConfig from './components/ScenarioGenerationConfig.vue';
 const gs = useGlobalsStore();
 const testevent = ref();
 // const serverURL = process.env.VUE_APP_SERVER_URL;
@@ -119,7 +120,7 @@ const handleCowIDChanged = (cowId: string) => {
                 @onInput="(val) => gs.colorPolygon = val">
               </LabeledInput>
               <input type="number" style="flex:1; " min="0" max="1" step="0.05" :value="gs.colorAlphaPolygon" @input="(ev: Event) => {
-                gs.colorAlphaSpacesBarn = parseInt((ev.target as HTMLInputElement).value, 10);
+                gs.colorAlphaPolygon = parseFloat((ev.target as HTMLInputElement).value);
               }" />
             </div>
             <div style="display: flex;">
@@ -127,14 +128,14 @@ const handleCowIDChanged = (cowId: string) => {
                 @onInput="(val) => gs.colorSpacesPasture = val">
               </LabeledInput>
               <input type="number" style="flex: 1;" min="0" max="1" step="0.05" :value="gs.colorAlphaSpacesPasture"
-                @input="(ev: Event) => { gs.colorAlphaSpacesPasture = parseInt((ev.target as HTMLInputElement).value, 10) }" />
+                @input="(ev: Event) => { gs.colorAlphaSpacesPasture = parseFloat((ev.target as HTMLInputElement).value) }" />
             </div>
             <div style="display: flex;">
               <LabeledInput label-text="Color Spaces Barn" :input-type="'color'" :default-value="gs.colorSpacesBarn"
                 @onInput="(val) => gs.colorSpacesBarn = val">
               </LabeledInput>
               <input type="number" style="flex: 1; " min="0" max="1" step="0.05" :value="gs.colorAlphaSpacesBarn"
-                @input="(ev: Event) => { gs.colorAlphaSpacesBarn = parseInt((ev.target as HTMLInputElement).value, 10) }" />
+                @input="(ev: Event) => { gs.colorAlphaSpacesBarn = parseFloat((ev.target as HTMLInputElement).value) }" />
             </div>
             <div style="display: flex;flex-direction: row; padding: 3px 0 3px 0; border: 1px solid #00000033;">
               <label style="flex: 0 1 250px; padding: 0 0 0 5px;"> Display Space IDs </label>
@@ -146,9 +147,9 @@ const handleCowIDChanged = (cowId: string) => {
             <LabeledInput label-text="Cow ID : " :default-value="gs.cowId" input-type="number" :min-value="1"
               @on-input="(n) => handleCowIDChanged(n)"></LabeledInput>
 
-            <LabeledInput label-text="Record Interval in Seconds : "
-              :default-value="gs.recordIntervalInSeconds.toString()" input-type="number" :min-value="1"
-              @on-input="(n) => gs.recordIntervalInSeconds = n"></LabeledInput>
+            <LabeledInput label-text="Record Interval in Minutes : "
+              :default-value="(Math.round(gs.recordIntervalInSeconds / 60)).toString()" input-type="number" :min-value="1"
+              @on-input="(n) => gs.recordIntervalInSeconds = n * 60"></LabeledInput>
 
             <LabeledInput label-text="Record Duration In Days : " :default-value="gs.recordDurationInDays.toString()"
               input-type="number" :min-value="1" @on-input="(n) => gs.recordDurationInDays = n"></LabeledInput>
@@ -170,12 +171,17 @@ const handleCowIDChanged = (cowId: string) => {
               :default-value="gs.forbiddenSpaceIds.toString()" @onInput="(val) => gs.forbiddenSpaceIds = val"
               :tooltip="gs.tipEventSpaceIds">
             </LabeledInput>
+            <div style="display: flex;flex-direction: row; padding: 3px 0 3px 0; border: 1px solid #00000033;">
+              <label style="flex: 0 1 250px; padding: 0 0 0 5px;"> Display Forbidden Spaces</label>
+              <input type="checkbox" style="flex: 0 1 70px; width: 70px;" checked value="drawids"
+                @input="(ev) => gs.drawForbiddenSpaces = !gs.drawForbiddenSpaces" />
+            </div>
+            <SeparationLine></SeparationLine>
+            <ScenarioGenerationConfig></ScenarioGenerationConfig>
+
             <SeparationLine></SeparationLine>
 
-
-
             <h2>Events Configuration</h2>
-
             <SmartEventList></SmartEventList>
           </div>
         </div>

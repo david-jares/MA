@@ -12,6 +12,8 @@ const props = defineProps<{
     // event: SMARTEvent;
     id: number;
     description: string;
+    drawTextVertically: boolean;
+    fontScale: number;
     metaeventId: number;
     profileIndex: number;
     spaceIds: string;
@@ -30,6 +32,8 @@ const props = defineProps<{
 }>();
 
 const description = ref();
+const drawTextVertically = ref();
+const fontScale = ref();
 const eventid = ref();
 const metaeventId = ref();
 const profileIndex = ref();
@@ -49,6 +53,8 @@ const colorAlpha = ref();
 
 
 description.value = props.description;
+drawTextVertically.value = props.drawTextVertically;
+fontScale.value = props.fontScale;
 eventid.value = props.id;
 metaeventId.value = props.metaeventId;
 profileIndex.value = props.profileIndex;
@@ -68,6 +74,7 @@ colorAlpha.value = props.colorAlpha;
 
 function updateGS(property: string, value: any) {
     console.log("updateGS");
+    // debugger;
     gs.updateSmartEvent(props.id, property, value);
 }
 
@@ -102,6 +109,15 @@ function removeEvent() {
             <LabeledInput ref="screenDescription" :label-text="'screen description'" :input-type="'text'"
                 :default-value="description" @onInput="(val) => updateGS('screenDescription', val)"
                 :tooltip="gs.tipEventDescription">
+            </LabeledInput>
+            <div style="display: flex;flex-direction: row; padding: 3px 0 3px 0; border: 1px solid #00000033;">
+              <label style="flex: 0 1 250px; padding: 0 0 0 5px;"> Draw Text Vertically</label>
+              <input type="checkbox" style="flex: 0 1 70px; width: 70px;" checked value="drawids"
+                @input="(ev) => {drawTextVertically.value = !drawTextVertically.value;updateGS('drawTextVertically', drawTextVertically.value);}" />
+            </div>
+            <LabeledInput ref="fontScale" :label-text="'font scale'" :input-type="'number'"
+                :default-value="fontScale" :min-value="0.1" :max-value="10"
+                @onInput="(val) => updateGS('fontScale', val)" :tooltip="gs.tipEventId">
             </LabeledInput>
             <LabeledInput ref="eventid" :label-text="'id'" :input-type="'number'" :default-value="id.toString()"
                 :min-value="1" :max-value="10000" @onInput="(val) => updateGS('id', val)" :tooltip="gs.tipEventId">
@@ -139,12 +155,12 @@ function removeEvent() {
                 @onInput="(val) => updateGS('endDate', val)">
             </LabeledInput>
 
-            <LabeledInput ref="period" :label-text="'period'" :input-type="'text'" :default-value="period"
+            <!-- <LabeledInput ref="period" :label-text="'period'" :input-type="'text'" :default-value="period"
                 @onInput="(val) => updateGS('period', val)"></LabeledInput>
 
             <LabeledInput ref="periodInterval" :label-text="'period interval'" :input-type="'number'"
                 :default-value="periodInterval" :min-value="1" @onInput="(val) => updateGS('periodInterval', val)">
-            </LabeledInput>
+            </LabeledInput> -->
 
             <LabeledInput ref="startTime" :label-text="'start time'" :input-type="'time'" :default-value="startTime"
                 @onInput="(val) => updateGS('startTime', val)">
@@ -162,7 +178,7 @@ function removeEvent() {
                     @onInput="(val) => updateGS('colorRGB', val)">
                 </LabeledInput>
                 <input type="number" ref="colorAlpha" style="flex:1; width: 70px;" min="0" max="1" step="0.1" value="0.5"
-                    @input="(ev: Event) => updateGS('colorAlpha', parseInt((ev.target as HTMLInputElement).value, 10))" />
+                    @input="(ev: Event) => updateGS('colorAlpha', parseFloat((ev.target as HTMLInputElement).value))" />
             </div>
         </div>
     </div>

@@ -122,6 +122,8 @@ export class SMARTEvent {
     id: number;
     description: string;
     screenDescription: string;
+    drawTextVertically: boolean;
+    fontScale: number;
     metaeventId: number;
     profileIndex: number;
     spaceIds: string;
@@ -138,10 +140,12 @@ export class SMARTEvent {
     colorRGB: string;
     colorAlpha: number;
 
-    constructor(id: number, screenDescription: string, description: string, metaeventId: number, profileIndex: number, spaceIds: string, capacityMetaPersonId: number, capacityRangeMin: number, capacityRangeMax: number, startDate: string, endDate: string, period: string, periodInterval: number, startTime: string, endTime: string, requiredAttendance: string, colorRGB: string, colorAlpha: number) {
+    constructor(id: number, screenDescription: string, description: string, drawTextVertically: boolean, fontScale: number, metaeventId: number, profileIndex: number, spaceIds: string, capacityMetaPersonId: number, capacityRangeMin: number, capacityRangeMax: number, startDate: string, endDate: string, period: string, periodInterval: number, startTime: string, endTime: string, requiredAttendance: string, colorRGB: string, colorAlpha: number) {
         this.id = id;
         this.description = description;
         this.screenDescription = screenDescription;
+        this.drawTextVertically = drawTextVertically;
+        this.fontScale = fontScale;
         this.metaeventId = metaeventId;
         this.profileIndex = profileIndex;
         this.spaceIds = spaceIds;
@@ -174,7 +178,9 @@ export class BridgePair {
 export class ExportableSensor {
     id: number;
     'metasensor-Id': number; // must be seperated with a dash
+    mobility = "static";
     coverage: number[];
+    interval: number; // in minutes
     coordinates: number[];
     geoCoordinates: number[];
     constructor(id: number, metasensorId: number, coverage: number[], coordinates: number[], geoCoordinates: number[]) {
@@ -183,6 +189,7 @@ export class ExportableSensor {
         this.coverage = coverage;
         this.coordinates = coordinates;
         this.geoCoordinates = geoCoordinates;
+        this.interval = Math.round(useGlobalsStore().recordIntervalInSeconds / 60);
     }
     ToString(): string {
         return JSON.stringify(this);
@@ -226,6 +233,78 @@ export class ExportableMetasensor {
     ToString(): string {
         return JSON.stringify(this, null);
         // return JSON.stringify(this, null, 2);
+    }
+}
+
+// export class Exportable_TimeProfilePerdiodDetails{
+//     periodInterval:number;
+// }
+
+export class MetaPeople{
+    
+}
+
+export class ExportableMetaevent {
+
+}
+
+export class Exportable_TimeProfile {
+
+    constructor(startDate: string, endDate: string, startTime: string, endTime: string, requiredAttendance: string) {
+        let x: any = {
+            "probability": 1.0,
+            "profile": [
+                {
+                    "pattern": {
+                        "start-date": startDate,
+                        "end-date": endDate,
+                        "period": "day",
+                        "period-details": {
+                            "repeat-every": 1
+                        }
+                    },
+                    "duration": {
+                        "start-time": [startTime, "00:02:00"],
+                        "end-time": [endTime, "00:02:00"],
+                        "required": [requiredAttendance, "00:01:00"],
+                    }
+                }
+
+            ]
+        }
+    }
+
+}
+
+export class ExportableEventCapacityEntry {
+    "metaperson-id": number;
+    range: number[];
+
+    constructor(metapersonId: number, range: number[]) {
+        this["metaperson-id"] = metapersonId;
+        this.range = range;
+    }
+}
+
+export class ExportableEvent {
+    id: number;
+    'metaevent-Id': number;
+    description: string;
+    "profile-index": number;
+    "space-ids": number[];
+    capacity: ExportableEventCapacityEntry[];
+
+    constructor(id: number, metaeventId: number, description: string, timeProfileIndex: number, spaceIds: number[], capacity: ExportableEventCapacityEntry[]) {
+        this.id = id;
+        this['metaevent-Id'] = metaeventId;
+        this.description = description;
+        this["profile-index"] = timeProfileIndex;
+        this["space-ids"] = spaceIds;
+        this.capacity = capacity;
+    }
+
+    ToString() {
+        return JSON.stringify(this, null);
     }
 }
 
