@@ -21,6 +21,7 @@ import CowDisplayPicker from './components/CowDisplayPicker.vue';
 import axios from 'axios';
 import { getStatusLearningAPI } from './myfunctions/axiosRequests';
 import ScenarioGenerationConfig from './components/ScenarioGenerationConfig.vue';
+import {fixthatShit} from './myfunctions/debugfunctions';
 // import { Exportable_TimeProfile } from './myfunctions/model';
 const gs = useGlobalsStore();
 const testevent = ref();
@@ -92,7 +93,7 @@ const handleCowIDChanged = (cowId: string) => {
           <Console></Console>
         </div>
         <div class="rightside" style=" flex: 1;  flex-direction: column;">
-          <!-- <button @click="() => console.log(new Exportable_TimeProfile('2021-01-01', '2021-01-03', '00:00:00', '23:59:59','02:00:00').ToString())">test</button> -->
+          <button @click="() => fixthatShit()">test</button>
           <div class=" form-container" style="display: flex;flex-direction: column;">
             <SeparationLine></SeparationLine>
             <p style="padding-left: 5px;"> Press I = Display HotKeys </p>

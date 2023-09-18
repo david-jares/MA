@@ -1,22 +1,15 @@
-LOAD DATA INFILE '/data/cattle-gps-formatted-with-sensorid.csv'
+LOAD DATA INFILE '/data/cattle_handdrawn.csv'
 INTO TABLE simcattle.measurement
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS
 (@cattle_id, @timestamp, @longitude, @latitude, @nmea_valid, @sensor_id)
-SET `valid` = @nmea_valid="TRUE",
-    `device` = @cattle_id,
+SET `cattle_id` = @cattle_id,
     `time` = @timestamp,
-    `latitude` = @latitude,
+    `sensor_id` = @sensor_id,
     `longitude` = @longitude,
-    `altitude` = 0,
-    -- `beacon` = @beacon,
-    -- `major` = @major,
-    `minor` = @sensor_id,
-    -- `uuid` = @uuid,
-    -- `speed` = @speed,
-    -- `attributes` = @attributes,
-    `input_type` = 'GPS';
+    `latitude` = @latitude,
+    `altitude` = 0;
 
 -- -- 103_(W10T_A7H_2)
 -- LOAD DATA INFILE '/data/103_(W10T_A7H_2).csv'

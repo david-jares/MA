@@ -190,23 +190,23 @@ export class ExportableConfig {
     sensors: ExportableSensor[];
     spaces: ExportableSpace[];
     metasensors: ExportableMetasensor[];
-    metaPeople: MetaPeople[];
-    metaEvents: MetaEvent[];
+    metapeople: MetaPeople[];
+    metaevents: MetaEvent[];
     events: ExportableEvent[];
     people: MetaPerson[];
-    learningConfig: ExportableLearningConfig;
-    generationConfig: ExportableGenerationConfig;
+    learn_conf: string;
+    gen_conf: string;
 
-    constructor(sensors: ExportableSensor[], spaces: ExportableSpace[], metasensors: ExportableMetasensor[], metaPeople: MetaPeople[], metaEvents: MetaEvent[], events: ExportableEvent[], people: MetaPerson[], learningConfig: ExportableLearningConfig, generationConfig: ExportableGenerationConfig) {
+    constructor(sensors: ExportableSensor[], spaces: ExportableSpace[], metasensors: ExportableMetasensor[], metaPeople: MetaPeople[], metaEvents: MetaEvent[], events: ExportableEvent[], people: MetaPerson[], learningConfig: string, generationConfig: string) {
         this.sensors = sensors;
         this.spaces = spaces;
         this.metasensors = metasensors;
-        this.metaPeople = metaPeople;
-        this.metaEvents = metaEvents;
+        this.metapeople = metaPeople;
+        this.metaevents = metaEvents;
         this.events = events;
         this.people = people;
-        this.learningConfig = learningConfig;
-        this.generationConfig = generationConfig;
+        this.learn_conf = learningConfig;
+        this.gen_conf = generationConfig;
     }
 }
 
@@ -329,7 +329,7 @@ export class ExportableEvent {
 
 /**
  *  The capacity property denotes the number of people of each type of metaperson. The range property specifies bounds ([lo, high]) on the number of people in attendance.
- * */ 
+ * */
 export class ExportableEventCapacityEntry {
     "metaperson-id": number;
     range: number[];
@@ -518,17 +518,31 @@ export class ExportableLearningConfig {
         this.occthresh = occThresh;
     }
     ToString(): string {
-        let result = "";
-        result += '[learners]\n';
-        result += 'start = ' + this.startDate + '\n';
-        result += 'end = ' + this.endDate + '\n';
-        result += 'unit = ' + this.unit + '\n';
-        result += 'validity = ' + this.validity + '\n';
-        result += 'smooth = ' + this.smooth + '\n';
-        result += 'window = ' + this.window + '\n';
-        result += 'time-thresh = ' + this.timethresh + '\n';
-        result += 'occ-thresh = ' + this.occthresh + '\n';
-        result += '\n';
+
+
+        let result = "[learners]\n" +
+            "start = " + this.startDate + "\n" +
+            "end = " + this.endDate + "\n" +
+            "unit = " + this.unit + "\n" +
+            "validity = " + this.validity + "\n" +
+            "smooth = " + this.smooth + "\n" +
+            "window = " + this.window + "\n" +
+            "time-thresh = " + this.timethresh + "\n" +
+            "occ-thresh = " + this.occthresh + "\n";
+
+
+
+        // let result = "";
+        // result += '[learners]\n';
+        // result += 'start = ' + this.startDate + '\n';
+        // result += 'end = ' + this.endDate + '\n';
+        // result += 'unit = ' + this.unit + '\n';
+        // result += 'validity = ' + this.validity + '\n';
+        // result += 'smooth = ' + this.smooth + '\n';
+        // result += 'window = ' + this.window + '\n';
+        // result += 'time-thresh = ' + this.timethresh + '\n';
+        // result += 'occ-thresh = ' + this.occthresh + '\n';
+        // result += '\n';
 
         return result;
     }
@@ -563,19 +577,31 @@ export class ExportableGenerationConfig {
     }
 
     ToString(): string {
-        let result = "";
-        result += '[people]\n';
-        result += 'number = ' + this.peopleNumber + '\n';
-        result += 'generation = ' + this.peopleGeneration + '\n';
-        result += '\n';
-        result += '[events]\n';
-        result += 'number = ' + this.eventsNumber + '\n';
-        result += 'generation = ' + this.eventsGeneration + '\n';
-        result += '\n';
-        result += '[synthetic-data-generator]\n';
-        result += 'start = ' + this.startDate + '\n';
-        result += 'end = ' + this.endDate + '\n';
-        result += '\n';
+
+        let result = "[people]\n" +
+            "number = " + this.peopleNumber +
+            "\ngeneration = " + this.peopleGeneration +
+            "\n\n[events]\n" +
+            "number = " + this.eventsNumber +
+            "\ngeneration = " + this.eventsGeneration +
+            "\n\n[synthetic-data-generator]\n" +
+            "start = " + this.startDate +
+            "\nend = " + this.endDate +
+            "\n";
+
+        // let result = "";
+        // result += '[people]\n';
+        // result += 'number = ' + this.peopleNumber + '\n';
+        // result += 'generation = ' + this.peopleGeneration + '\n';
+        // result += '\n';
+        // result += '[events]\n';
+        // result += 'number = ' + this.eventsNumber + '\n';
+        // result += 'generation = ' + this.eventsGeneration + '\n';
+        // result += '\n';
+        // result += '[synthetic-data-generator]\n';
+        // result += 'start = ' + this.startDate + '\n';
+        // result += 'end = ' + this.endDate + '\n';
+        // result += '\n';
 
         return result;
     }

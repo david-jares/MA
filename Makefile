@@ -2,6 +2,10 @@
 # Docker machine states
 #############################
 
+## Start the db
+up_db:
+	docker compose up -d db
+	
 ## Start the project
 up:
 	docker compose up -d

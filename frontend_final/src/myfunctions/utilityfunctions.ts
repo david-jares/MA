@@ -201,19 +201,33 @@ export function getConfigurationJSONString() {
         gs.scenarioLearning_window,
         gs.scenarioLearning_timeThreshold,
         gs.scenarioLearning_occThreshold
-    );
+    ).ToString();
 
     let scenarioGenerationCongig = new ExportableGenerationConfig(
         gs.scenarioGeneration_numberOfCows,
-        "none", // TODO //none, diff, all
+        "all", // TODO //none, diff, all
         gs.scenarioGeneration_numberOfEvents,
-        "none", // TODO
+        "all", // TODO
         gs.scenarioLearning_startDate,
         gs.scenarioLearning_endDate
-    );
+    ).ToString();
 
 
     let config = new ExportableConfig(sensors, spaces, metasensors, metapeople, metaevents, expevents, people, scenarioLearningConfig, scenarioGenerationCongig);
 
-    return JSON.stringify(config, null, 2);
+    // return JSON.stringify(config, null, 2);
+    let result = `
+    '${JSON.stringify(config.sensors,null,2)}',
+    '${JSON.stringify(config.spaces,null,2)}',
+    '${JSON.stringify(config.metasensors,null,2)}',
+    '${JSON.stringify(config.metapeople,null,2)}',
+    '${JSON.stringify(config.metaevents,null,2)}',
+    '${JSON.stringify(config.events,null,2)}',
+    '${JSON.stringify(config.people,null,2)}',
+    '${config.learn_conf}',
+    '${config.gen_conf}'
+    `
+    return result;
 }
+
+

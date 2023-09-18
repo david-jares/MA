@@ -59,6 +59,18 @@ func (r *repository) getUpdates(config *Config) []string {
 	if config.Metasensors != nil {
 		updates = append(updates, "metasensors")
 	}
+	if config.Metapeople != nil {
+		updates = append(updates, "metapeople")
+	}
+	if config.Metaevents != nil {
+		updates = append(updates, "metaevents")
+	}
+	if config.Events != nil {
+		updates = append(updates, "events")
+	}
+	if config.People != nil {
+		updates = append(updates, "people")
+	}
 	if config.LearnConf != nil {
 		updates = append(updates, "learn_conf")
 	}
@@ -67,4 +79,23 @@ func (r *repository) getUpdates(config *Config) []string {
 	}
 
 	return updates
+
+	// updates := []string{}
+	// if config.Sensors != nil {
+	// 	updates = append(updates, "sensors")
+	// }
+	// if config.Spaces != nil {
+	// 	updates = append(updates, "spaces")
+	// }
+	// if config.Metasensors != nil {
+	// 	updates = append(updates, "metasensors")
+	// }
+	// if config.LearnConf != nil {
+	// 	updates = append(updates, "learn_conf")
+	// }
+	// if config.GenConf != nil {
+	// 	updates = append(updates, "gen_conf")
+	// }
+
+	// return updates
 }
