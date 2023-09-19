@@ -44,7 +44,6 @@ CREATE TABLE simcattle.smartspec_conf
     `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
     `sensors` TEXT,
     `spaces` TEXT,
-    `events` TEXT,
     `metasensors` TEXT,
     `learn_conf` TEXT,
     `gen_conf` TEXT,

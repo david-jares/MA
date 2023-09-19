@@ -259,7 +259,7 @@ export class ExportableSpace {
 export class ExportableSensor {
     id: number; //The id property should uniquely identify a sensor.
     description: string; //The description property is optional and provides a user-friendly name for the sensor.
-    'metasensor-Id': number;
+    'metasensor-id': number;
     mobility = "static"; //The mobility property is a string taking on one of the values "static" or "mobile". An in-situ sensor is modeled with mobility="static" and a list of covered spaces coverage=[int].
     coverage: number[];
     interval: number; // in minutes; The interval property determines the periodic interval in minutes for which the sensor produces observations.
@@ -268,7 +268,7 @@ export class ExportableSensor {
     constructor(id: number, description: string, metasensorId: number, coverage: number[], coordinates: number[], geoCoordinates: number[]) {
         this.id = id;
         this.description = description;
-        this['metasensor-Id'] = metasensorId;
+        this['metasensor-id'] = metasensorId;
         this.coverage = coverage;
         this.coordinates = coordinates;
         this.geoCoordinates = geoCoordinates;

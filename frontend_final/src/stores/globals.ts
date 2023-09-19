@@ -152,9 +152,9 @@ export const useGlobalsStore = defineStore({
 
         // scenario Learning
     scenarioLearning_startDate: "2021-01-01",
-    scenarioLearning_endDate:  "2021-03-01",
-    scenarioLearning_unit:1,
-        scenarioLearning_validity:1,
+    scenarioLearning_endDate:  "2021-01-03",
+    scenarioLearning_unit:5,
+        scenarioLearning_validity:5,
     scenarioLearning_smoothing:"EMA",
     scenarioLearning_window:10,
     scenarioLearning_timeThreshold:5,
@@ -164,7 +164,7 @@ export const useGlobalsStore = defineStore({
     scenarioGeneration_numberOfCows:8,
     scenarioGeneration_numberOfEvents:100,
     scenarioGeneration_startDate:"2021-01-01",
-    scenarioGeneration_endDate:"2021-03-01",
+    scenarioGeneration_endDate:"2021-01-01",
 
 
 

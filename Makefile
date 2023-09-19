@@ -2,10 +2,15 @@
 # Docker machine states
 #############################
 
+reload_smartspec:
+	# docker compose up --build smartspec-service
+	docker compose up --no-deps --build -d smartspec-service
 ## Start the db
 up_db:
 	docker compose up -d db
-	
+	# docker compose up --build smartspec-service
+reload_db:
+	docker compose up --build db
 ## Start the project
 up:
 	docker compose up -d

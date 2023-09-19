@@ -115,19 +115,23 @@ function getDateInTwoDays_YYYY_MM_DD() {
 }
 
 
-export function getConfigurationJSONString() {
+export function getConfigurationJSONString(includeEvents: boolean = true) {
     const gs = useGlobalsStore();
     // let result = [];
 
     let sensors: ExportableSensor[] = [];
     gs.sensors.forEach((s) => {
-        sensors.push(new ExportableSensor(s.id, s.sensorType + " Sensor", s.metasensorId, s.coverage, s.coordinates, s.geoCoordinates));
+        if (!gs.forbiddenSpaceIds.includes(s.id)) {
+            sensors.push(new ExportableSensor(s.id, s.sensorType + " Sensor", s.metasensorId, s.coverage, s.coordinates, s.geoCoordinates));
+        }
     });
     // add special Sensor ?
 
     let spaces: ExportableSpace[] = [];
     gs.spaces.forEach((s) => {
-        spaces.push(new ExportableSpace(s.id, s.description, s.capacity, s.coordinates, s.geoCoordinates, s.latitude, s.longitude, s.neighbors));
+        if (!gs.forbiddenSpaceIds.includes(s.id)) {
+            spaces.push(new ExportableSpace(s.id, s.description, s.capacity, s.coordinates, s.geoCoordinates, s.latitude, s.longitude, s.neighbors));
+        }
     });
     // add special Space 
     spaces.push(new ExportableSpace(0, "outside", -1, [-1000, -1000, 0], [0, 0, 1], 0, 0, [0]));
@@ -216,18 +220,36 @@ export function getConfigurationJSONString() {
     let config = new ExportableConfig(sensors, spaces, metasensors, metapeople, metaevents, expevents, people, scenarioLearningConfig, scenarioGenerationCongig);
 
     // return JSON.stringify(config, null, 2);
-    let result = `
-    '${JSON.stringify(config.sensors,null,2)}',
-    '${JSON.stringify(config.spaces,null,2)}',
-    '${JSON.stringify(config.metasensors,null,2)}',
-    '${JSON.stringify(config.metapeople,null,2)}',
-    '${JSON.stringify(config.metaevents,null,2)}',
-    '${JSON.stringify(config.events,null,2)}',
-    '${JSON.stringify(config.people,null,2)}',
-    '${config.learn_conf}',
-    '${config.gen_conf}'
-    `
-    return result;
+    if (includeEvents) {
+
+        let result = `
+        INSERT INTO simcattle.smartspec_conf (\`sensors\`, \`spaces\`, \`metasensors\`,\`metapeople\`,\`metaevents\`,\`events\`,\`people\`, \`learn_conf\`, \`gen_conf\`)
+        VALUES (
+        '${JSON.stringify(config.sensors, null, 2)}',
+        '${JSON.stringify(config.spaces, null, 2)}',
+        '${JSON.stringify(config.metasensors, null, 2)}',
+        '${JSON.stringify(config.metapeople, null, 2)}',
+        '${JSON.stringify(config.metaevents, null, 2)}',
+        '${JSON.stringify(config.events, null, 2)}',
+        '${JSON.stringify(config.people, null, 2)}',
+        '${config.learn_conf}',
+        '${config.gen_conf}'
+        );
+        `
+        return result;
+    } else {
+        let result = `
+        INSERT INTO simcattle.smartspec_conf (\`sensors\`, \`spaces\`, \`metasensors\`, \`learn_conf\`, \`gen_conf\`)
+        VALUES (
+        '${JSON.stringify(config.sensors, null, 2)}',
+        '${JSON.stringify(config.spaces, null, 2)}',
+        '${JSON.stringify(config.metasensors, null, 2)}',
+        '${config.learn_conf}',
+        '${config.gen_conf}'
+        );
+        `
+        return result;
+    }
 }
 
 

@@ -1,3 +1,6 @@
+docker exec -it ma-smartspec-service-1 /bin/bash
+
+
 Questions to paul:
     - what is this lat lon difference in the datasources ?
     - what is this metasensor with id:1 in inser_in_smartspec_conf.sql - and WHY do we need it ?
