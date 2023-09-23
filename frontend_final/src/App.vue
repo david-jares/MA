@@ -93,7 +93,7 @@ const handleCowIDChanged = (cowId: string) => {
           <Console></Console>
         </div>
         <div class="rightside" style=" flex: 1;  flex-direction: column;">
-          <button @click="() => fixthatShit()">test</button>
+          <!-- <button @click="() => fixthatShit()">test</button> -->
           <div class=" form-container" style="display: flex;flex-direction: column;">
             <SeparationLine></SeparationLine>
             <p style="padding-left: 5px;"> Press I = Display HotKeys </p>

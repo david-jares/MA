@@ -1,3 +1,30 @@
+1) Daten Faken
+2) Daten Faken zum Evaluation aufsetzen
+
+3) Smartspec ohne Docker lokal ( wird nix wahrscheinlich ). 
+
+4) Daten Pfade checken -> noch versuchen !
+5) Manuelle People Generierung ( Per Dateien )
+6) Paul kontaktieren
+7) 2ten Server aufsetzen, Anderen rechner ( klappt nicht )
+
+8) Anschreiben an die Entwickler ( Error ) -> 
+9) Fix mal alle module auf bestimmte version
+
+
+Architekur Kapitel -> bleibt wie besprochen
+ExpertenFeedback als Notlösung für Evaluation
+	- Evaluatio auf Requirement analysis orientieren . Hybride Localisierung spielt keine Rolle. 
+	- Gefakte Daten könnten zur Evaluation dienen ( wenn man es kennzeichnet ) -> Proof of Concept / Viability / Plausibility
+	-> Conclusion -> Hybrid geht auf jeden Fall. 
+
+
+
+
+email Pauol
+email chao
+SmartSpec Lokal 
+
 docker exec -it ma-smartspec-service-1 /bin/bash
 
 
