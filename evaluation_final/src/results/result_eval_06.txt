@@ -1,0 +1,2 @@
+Real Data Descriptive Statistics: DescribeResult(nobs=91, minmax=(0.0, 346.0), mean=25.318681318681318, variance=3644.7306471306474, skewness=4.0279018497346195, kurtosis=16.642108601484264)
+Simulated Data Descriptive Statistics: DescribeResult(nobs=91, minmax=(0.0, 253.0), mean=25.318681318681318, variance=2411.197313797314, skewness=3.6513160372726374, kurtosis=12.958786372375302)

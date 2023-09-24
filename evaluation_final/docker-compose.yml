@@ -4,4 +4,4 @@ services:
     build: .
     volumes:
       - ./src:/app
-    command: python my_script.py
+    command: python start_evaluation.py

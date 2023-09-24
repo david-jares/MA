@@ -1,0 +1,16 @@
+    sensor-id  counts_real  counts_sim
+0           4          3.0         7.0
+1           5          3.0         7.0
+2           6          1.0         9.0
+3          11          2.0         9.0
+4          12          8.0        16.0
+..        ...          ...         ...
+86         74          0.0        11.0
+87         75          0.0       218.0
+88         78          0.0         3.0
+89         79          0.0       248.0
+90         86          0.0         4.0
+
+[91 rows x 3 columns]
+Correlation between real and simulated sensor counts:
+0.3050325160837879
