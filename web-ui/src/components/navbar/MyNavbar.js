@@ -11,13 +11,13 @@ const MyNavbar = () => {
     return (
     <Navbar bg="light" expand="lg">
       <Container>
-        <Navbar.Brand href="/">SimCattle DAVE</Navbar.Brand>
+        <Navbar.Brand href="/">SimCattle </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
-            <Nav.Link href="/">Execution</Nav.Link>
-            <Nav.Link href="/map">Map View</Nav.Link>
-            <Nav.Link href="/settings">Settings</Nav.Link>
+            <Nav.Link href="/settings">Advanced</Nav.Link>
+            <Nav.Link href="/"> </Nav.Link>
+            <Nav.Link href="/map"> </Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>

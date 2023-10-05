@@ -15,9 +15,9 @@ const App = () => {
     <>
       <MyNavbar />
       <Routes>
-        <Route path="" element={<Execution />} />
+        <Route path="/Advanced" element={<Settings />} />
         <Route path="/map" element={<MapView />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="" element={<Execution />} />
 
       </Routes>
     </>

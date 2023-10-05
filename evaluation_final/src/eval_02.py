@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from scipy.spatial import distance
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -59,8 +60,27 @@ rects2 = plt.bar(sensor_counts['sensor-id'] + bar_width, sensor_counts['counts_s
 plt.xlabel('Sensor ID')
 plt.ylabel('Counts')
 plt.title('Comparison of sensor counts between real and simulated data')
-plt.xticks(sensor_counts['sensor-id'] + bar_width / 2, sensor_counts['sensor-id'])  # labels get centered
+labelinterval = 10
+# plt.xticks(sensor_counts['sensor-id'][::labelinterval] + bar_width / 2, sensor_counts['sensor-id'][::labelinterval])  # labels get centered
+plt.xticks(np.arange(0, len(sensor_counts), 10) + bar_width / 2, np.arange(0, len(sensor_counts), 10))
 plt.legend()
+
+
+# # Set up the plot
+# fig, ax = plt.subplots(figsize=(10, 6))
+
+# # Fill the area under the real data curve
+# plt.fill_between(sensor_counts['sensor-id'], sensor_counts['counts_real'], alpha=0.5, label='Real')
+
+# # Fill the area under the simulated data curve
+# plt.fill_between(sensor_counts['sensor-id'], sensor_counts['counts_sim'], alpha=0.5, label='Simulated')
+
+# plt.xlabel('Sensor ID')
+# plt.ylabel('Counts')
+# plt.title('Comparison of sensor counts between real and simulated data')
+# plt.xticks(np.arange(0, len(sensor_counts), 10))
+# plt.legend()
+
 
 plt.tight_layout()
 plt.savefig('results/result_graphic_eval_02.png')

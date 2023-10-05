@@ -52,9 +52,11 @@ plt.title('Temporal Distribution of Sensor Hits: Real vs Simulated')
 plt.xlabel('Hour of Day')
 plt.ylabel('Count of Sensor Hits')
 plt.legend()
+plt.xticks(range(24))
 plt.savefig('results/result_graphic_eval_03.png')
 plt.show()
-# In this evaluation step, we aim to perform a temporal analysis comparing the distribution of sensor hits over the course of the day between real and simulated data. The primary objective is to visualize any deviations in the frequency of sensor hits across different hours of the day in both datasets.
+# In this evaluation step, we aim to perform a temporal analysis comparing the distribution of sensor hits over the course of the day between real and simulated data. 
+# The primary objective is to visualize any deviations in the frequency of sensor hits across different hours of the day in both datasets.
 
 # Data Pre-processing:
 

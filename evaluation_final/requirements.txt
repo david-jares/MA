@@ -6,3 +6,5 @@ scipy==1.7.1
 statsmodels==0.12.2
 scikit-learn==0.24.2
 geopy==2.2.0
+pyproj==3.2.1
+
