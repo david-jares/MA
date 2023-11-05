@@ -10,8 +10,6 @@ simulated_data_filepath = 'simulated_data.csv'
 
 print("----------  distance travelled ----------")
 
-
-
 # Define a projection centered around the average coordinates of Allmersbach im Tal
 proj = pyproj.Proj(proj='tmerc', lat_0=48.9167, lon_0=9.4333)  # Transverse Mercator projection
 

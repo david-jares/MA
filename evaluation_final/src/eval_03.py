@@ -55,22 +55,3 @@ plt.legend()
 plt.xticks(range(24))
 plt.savefig('results/result_graphic_eval_03.png')
 plt.show()
-# In this evaluation step, we aim to perform a temporal analysis comparing the distribution of sensor hits over the course of the day between real and simulated data. 
-# The primary objective is to visualize any deviations in the frequency of sensor hits across different hours of the day in both datasets.
-
-# Data Pre-processing:
-
-# The data is loaded from CSV files, each containing real and simulated movement data. The 'timestamp' column is parsed as a datetime object for temporal analysis.
-# The datasets are sorted by 'id' and 'timestamp', enabling us to analyze consecutive sensor hits.
-# Consecutive sensor hits with the same 'sensor_id' are filtered out to only include transitions between different sensors.
-# Temporal Distribution Analysis:
-
-# The 'hour' is extracted from each timestamp, representing the hour of the day when the sensor hit occurred.
-# The datasets are grouped by 'hour' to count the occurrences or sensor hits in each respective hour for both real and simulated data. This results in a distribution of sensor hits across the different hours of the day.
-# The real and simulated distributions are then merged into a single DataFrame based on the 'hour' for direct comparison.
-# Visualization:
-
-# Finally, a line plot is generated to visualize the temporal distribution of sensor hits for both real and simulated data.
-# The X-axis represents the hour of the day, and the Y-axis represents the count of sensor hits.
-# This visualization provides an immediate visual insight into the correlation or discrepancies between the temporal distributions of the real and simulated data.
-# This step helps in assessing whether the simulated data adequately replicates the real data in terms of the temporal distribution of sensor hits, identifying the hours with high concordance or any significant deviations.

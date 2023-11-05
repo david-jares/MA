@@ -24,33 +24,6 @@ real_data = pd.read_csv(real_data_filepath)
 simulated_data = pd.read_csv(simulated_data_filepath)
 
 
-# # Extract coordinates
-# real_coordinates = real_data[['x', 'y']].values
-# simulated_coordinates = simulated_data[['x', 'y']].values
-
-# # Calculate Euclidean distances for real and simulated data
-# real_distances = [euclidean(real_coordinates[i], real_coordinates[i + 1]) for i in range(len(real_coordinates) - 1)]
-# simulated_distances = [euclidean(simulated_coordinates[i], simulated_coordinates[i + 1]) for i in range(len(simulated_coordinates) - 1)]
-
-# # Plotting the distances
-# plt.figure(figsize=(10,5))
-# plt.hist(real_distances, bins=20, color='b', alpha=0.5, label='Real Distances')
-# plt.hist(simulated_distances, bins=20, color='r', alpha=0.5, label='Simulated Distances')
-# plt.title('Comparison of Euclidean Distances')
-# plt.xlabel('Distance')
-# plt.ylabel('Frequency')
-# plt.legend(loc='upper right')
-
-# # Show the plot
-# plt.show()
-
-
-# # Define a projection centered around the average coordinates of Allmersbach im Tal
-# proj = pyproj.Proj(proj='tmerc', lat_0=48.9167, lon_0=9.4333)  # Transverse Mercator projection
-
-# def convert_to_meters(df):
-#     x, y = proj(df['x'].values, df['y'].values)
-#     return pd.DataFrame({'x': x, 'y': y})
 
 # Convert coordinates to meters
 real_data_meters = convert_to_meters(real_data)
@@ -88,21 +61,3 @@ plt.show()
 plt.savefig('results/result_graphic_eval_01.png')
 
 
-# \subsection{Spatial Analysis Visualization}
-# A crucial part of our spatial analysis was comparing the Euclidean distances between consecutive points in both real and simulated datasets. 
-# The idea is to study the spread and frequency of distances to see how well the simulated data replicate the real-world movements.
-
-# The Python script utilized for this analysis first loads the datasets and extracts the coordinates of points in each trajectory. 
-# Subsequently, it calculates the Euclidean distances between every pair of consecutive points in both real and simulated datasets.
-
-# To visualize the comparison, we have opted for a histogram, which enables a clear observation of the frequency distribution of distances in both datasets. 
-# In this histogram, each bin has two bars side by side; the left bar (in blue) represents the real dataset, while the right bar (in red) represents the simulated dataset. 
-# This side-by-side arrangement of bars facilitates an immediate and intuitive comparison between the two datasets.
-
-
-
-
-# This approach aids in discerning the discrepancies and similarities between the datasets,
-# offering insights into the plausibility of the simulated trajectories in mimicking the real-world movements.
-# The result of this analysis is illustrated in Figure XX, where the X-axis represents the distances
-# and the Y-axis represents the frequencies of those distances in the datasets.

@@ -96,24 +96,4 @@ for var in variables:
     plt.ylabel('Density')
     plt.legend()
     plt.savefig(f'results/result_graphic_eval_07_distribution_comparison_{var}.png')
-    # plt.show()
-
-# Combined Explanation:
-# Statistical Comparison and Visualization:
-# In the evaluation process, comprehensive statistical comparison and visual analysis are performed to discern the differences and similarities between the real and simulated datasets. Various metrics and variables are analyzed using both statistical tests and visualization methods to offer a holistic view of the data characteristics.
-
-# Variables Analysis:
-
-# Variables like sensor hits, time intervals, and spatial coordinates are scrutinized using summary statistics including means, medians, and standard deviations. These provide insights into the central tendencies and spreads of the distributions in both datasets.
-# Appropriate statistical tests are employed to assess whether the observed differences in these variables are statistically significant. This involves comparing p-values to a significance level, often 0.05, to determine the likelihood of observing such differences if the datasets were identical.
-# Visualization Techniques:
-
-# Bar Plots: Mean and Median comparisons are visualized using bar plots, allowing for an immediate and clear understanding of the central tendencies in both datasets. This enables readers to quickly gauge differences in average values and middle points of the datasets.
-# Kernel Density Estimate (KDE) Plots: These plots offer a smooth visualization of the data distributions. By overlaying the KDE plots of the real and simulated data, discrepancies and congruences in the distribution shapes, central values, and spreads become discernible.
-# Objective:
-# The combination of statistical comparison and visualization aims to ground visual observations with statistical rigor, providing a conclusive and comprehensive evaluation of the disparities and parallels between the real and simulated datasets. This approach ensures that the evaluation is not solely reliant on numerical metrics or visual cues but amalgamates both to furnish a more rounded and robust analysis.
-
-# Insightful Interpretation:
-# By employing both statistical and visual tools, the evaluation elucidates the nuances of the datasets, allowing readers to interpret the results intuitively while being backed by quantitative analysis. This synergy of methodologies offers an enriched perspective, essential for validating the reliability and relevance of the simulated dataset against its real counterpart.
-
-# In essence, the intertwining of statistical analysis with visualization forms a symbiotic methodological approach, ensuring the evaluation's clarity, comprehensibility, and accuracy, crucial for substantiating the fidelity of the simulation model in replicating real-world scenarios.
+  

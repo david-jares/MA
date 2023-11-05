@@ -56,24 +56,3 @@ plt.legend(loc='upper right')
 plt.title('Distribution of Time Intervals Between Consecutive Sensor Hits')
 plt.savefig('results/result_graphic_eval_04.png')
 
-# This script is designed to conduct a comprehensive analysis on the time intervals between consecutive sensor hits for both real and simulated datasets. The main objective is to assess and compare the distributions of time intervals in both datasets, shedding light on the movement speeds and dwell times of the moving objects within the sensor network.
-
-# Data Loading and Preparation:
-
-# The real and simulated datasets are loaded, ensuring that the ‘timestamp’ column is recognized as datetime objects.
-# The datasets are preprocessed by sorting the rows based on 'id' and 'timestamp' to align consecutive sensor hits correctly.
-# Subsequent columns are created to hold the ‘id’ and ‘sensor_id’ of the next sensor hit, along with the ‘interval’ representing the time difference between consecutive hits.
-# Data Processing:
-
-# Filtering is applied to discard rows where the ‘id’ changes, signifying a different moving object, and where consecutive sensor hits pertain to the same ‘sensor_id’, reflecting static positioning.
-# The ‘interval’ column is converted to timedelta objects to facilitate further analysis and visualization.
-# Any errors or non-convertible values during conversion are logged for troubleshooting.
-# Histogram Visualization:
-
-# A histogram is constructed to visualize the distribution of time intervals between consecutive sensor hits in minutes.
-# The X-axis represents the intervals in minutes, and the Y-axis represents the frequency of each interval.
-# Separate histograms for real and simulated data are plotted in the same graph, each with a different color and opacity, for comparative analysis.
-# Output:
-
-# The histogram is saved as ‘interval_histogram.png’, providing a visual representation of how closely the simulated data replicates the time intervals between consecutive sensor hits observed in the real data.
-# This analysis is pivotal in understanding whether the simulated data replicates the dwell times and movement speeds exhibited in the real data, allowing for identification of any significant deviations or patterns.

@@ -1,5 +1,4 @@
 version: '3.3'
-# version: '3.3'
 services:
   ### Gateway ###
   gateway:
@@ -24,18 +23,6 @@ services:
       MYSQL_PASSWORD: password
     volumes:
       - ./smartspec-service:/app
-  # smartspec-service:
-  #   build: smartspec-service
-  #   depends_on:
-  #     - db
-
-  #   environment:
-  #     MYSQL_HOST: db
-  #     MYSQL_DATABASE: simcattle
-  #     MYSQL_USER: user
-  #     MYSQL_PASSWORD: password
-  #   volumes:
-  #     - ./smartspec-service:/app
 
   ### Configuration service ###
   configuration-service:
@@ -117,27 +104,12 @@ services:
     ports:
       - 8000:8000
     working_dir: /srv/app
-    # environment:
-    #   VUE_APP_SERVER_URL: http://157.230.24.1:8000
+
     volumes:
       - type: bind
-        source: ./frontend_final/
+        source: ./frontend/
         target: /srv/app
     tty: true
 
 volumes:
   my-db:
-
-    # services:
-    #   vite_docker:
-    #     image: node:alpine
-    #     container_name: vite_docker
-    #     entrypoint: /bin/sh
-    #     ports:
-    #       - 8000:8000
-    #     working_dir: /srv/app
-    #     volumes:
-    #       - type: bind
-    #         source: ./frontend_final/
-    #         target: /srv/app
-    #     tty: true

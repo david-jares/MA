@@ -2,13 +2,20 @@
 # Docker machine states
 #############################
 
+up_all:	stop clean up_db_sleep vue_first vue_start
+
+
 reload_smartspec:
 	# docker compose up --build smartspec-service
 	docker compose up --no-deps --build -d smartspec-service
 ## Start the db
 up_db:
 	docker compose up -d db
-	# docker compose up --build smartspec-service
+	
+up_db_sleep:
+	docker compose up -d db
+	sleep 35
+
 reload_db:
 	docker compose up --build db
 ## Start the project
@@ -50,43 +57,12 @@ rebuild: stop
 logs:
 	docker compose logs -f --tail=50 $(s)
 
-# ## Reloads a service with updated src
-# ## Usage: make reload s=some-service
-# reload:
-# 	docker exec -it code_$(s)_1 bash -c "cd /app && go build -o /service && chown 1000:1000 /service"
-# 	docker stop code_$(s)_1
-# 	docker commit code_$(s)_1 code_$(s)
-# 	docker rm code_$(s)_1
-# 	make up
-
-## Reloads a service with updated src
-## Usage: make reload s=some-service
-# reload:
-# 	docker exec -it code-$(s)-1 bash -c "cd /app && go build -o /service && chown 1000:1000 /service"
-# 	docker stop code-$(s)_1
-# 	docker commit code-$(s)-1 code-$(s)
-# 	docker rm code-$(s)-1
-# 	make up
-
-# reloadui:
-# 	docker exec -it code-web-ui-1 sh -c "cd /app && go build -o /service && chown 1000:1000 /service"
-# 	docker stop code-web-ui-1
-# 	docker commit code-web-ui-1 code-web-ui
-# 	docker rm code-web-ui-1
-# 	make up
 
 update-frontend:
 	docker cp "/root/2022-ma-paul-pongratz/code/web-ui/." code-web-ui-1:"/"
 	docker restart code-web-ui-1
 
-# .PHONY: reload-sql-scripts
 
-# reload-sql-scripts:
-
-# 	docker compose exec db mysql -u user -p password simcattle < /docker-entrypoint-initdb.d/1.sql
-# 	# docker compose exec db mysql -u user -p password simcattle < /docker-entrypoint-initdb.d/2.sql
-# 	# docker compose exec db mysql -u user -p password simcattle < /docker-entrypoint-initdb.d/4.sql
-# 	# docker compose exec db mysql -u user -p password simcattle < /docker-entrypoint-initdb.d/5.sql
 
 dave:
 	go run ./scripts/dave/execute_multiple_files_sequentially.go
@@ -129,9 +105,6 @@ run-my-farm-script:
 
 
 
-# # So David die E-Mail nur an dich.
-# # Die CSV mit den Koordinaten ist etwas verwirrend formatiert. Latitude ist immer etwas mit 480.xxxxxxxx und Longtitude ist zweistellig mit 12.xxxxxxx
-# # Kirchweihdach müsste das sein.
 
 CURRENT_DIR=$(patsubst %/,%,$(dir $(realpath $(firstword $(MAKEFILE_LIST)))))
 ROOT_DIR=$(CURRENT_DIR)
@@ -152,6 +125,9 @@ vue_install:
 
 vue_dev:
 	$(DOCKER_EXEC_TOOLS_APP) -c $(SERVER_RUN)
+
+vue_dev_with_exit:
+	$(DOCKER_EXEC_TOOLS_APP) -c $(SERVER_RUN) && exit
 
 vue_up:
 	$(DOCKER_COMPOSE) up -d
