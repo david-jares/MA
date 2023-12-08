@@ -7,7 +7,7 @@ service web-ui/ "REACT_APP_SERVER_URL" - currently its set to: http://157.230.24
 - for the current Vue.js-based frontend to be server on your custom server address, go to the file : "/src/stores/globals.ts" there is a variable called "serverAddress" - set your custom server adress there
 
 2)
-- in the root folder exexute in the terminal: "make up_all".
+- in the root folder execute in the terminal: "make up_all".
 - the frontend service is currently set up in such a way that its code can be edited while the service is running and will reflect sourcecode-changes in realtime in the frontend. As a little caveat executing the makecommand will block that one terminal and to stop it you will have to ctrl+C out of it.
 - To display the logs of all the services open another terminal and run the command "make logs"
 
